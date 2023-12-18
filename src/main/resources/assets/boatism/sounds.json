@@ -4,5 +4,11 @@
     "sounds": [
       "boatism:boat_engine_default"
     ]
+  },
+  "boat_engine_underwater": {
+    "subtitle": "sound.boatism.boat_engine_underwater",
+    "sounds": [
+      "boatism:boat_engine_underwater"
+    ]
   }
 }
