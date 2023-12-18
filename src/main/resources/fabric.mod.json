@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "boatism",
+	"version": "${version}",
+	"name": "Boatism",
+	"description": "A Fabric mod created for the ModFest 1.20 event, which adds boats and boat utility!",
+	"authors": [
+		"ShiroJR - Dev",
+		"ShiroJR - Artist"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/boatism/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.shirojr.boatism.Boatism"
+		],
+		"client": [
+			"net.shirojr.boatism.BoatismClient"
+		],
+		"fabric-datagen": [
+			"net.shirojr.boatism.BoatismDataGenerator"
+		]
+	},
+	"mixins": [
+		"boatism.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.2",
+		"minecraft": "~1.20.4",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

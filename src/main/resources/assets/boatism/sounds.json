@@ -1,0 +1,8 @@
+{
+  "boat_engine_default": {
+    "subtitle": "sound.boatism.boat_engine_default",
+    "sounds": [
+      "boatism:boat_engine_default"
+    ]
+  }
+}
