@@ -1,5 +1,5 @@
 
-![boatism_thumbnail](promo/boatism_thumb_v1.png)
+![boatism_thumbnail](extrernal/promo/boatism_thumb_v1.png)
 
 # Boatism Fabric Mod for Minecraft
 
@@ -21,12 +21,12 @@ This mod adds more functionality and utility to the existing boats in Minecraft.
 
 <br>
 <a href="https://fabricmc.net/"><img
-    src="promo/fabric_supported.png"
+    src="extrernal/promo/fabric_supported.png"
     alt="Supported on Fabric"
     width="200"
 ></a>
 <a href="https://modfest.net/1.20"><img
-    src="promo/created_for_modfest_1_20_long.png"
+    src="extrernal/promo/created_for_modfest_1_20_long.png"
     alt="Supported on Fabric"
     width="200"
 ></a>
