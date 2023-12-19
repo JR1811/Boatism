@@ -5,6 +5,9 @@ import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 
 import net.shirojr.boatism.config.BoatismConfig;
+import net.shirojr.boatism.entity.BoatismEntities;
+import net.shirojr.boatism.entity.BoatismEntityAttributes;
+import net.shirojr.boatism.item.BoatismItems;
 import net.shirojr.boatism.util.LoggerUtil;
 
 public class Boatism implements ModInitializer {
@@ -14,6 +17,9 @@ public class Boatism implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		initConfig();
+		BoatismItems.initialize();
+		BoatismEntities.initialize();
+		BoatismEntityAttributes.initialize();
 
 		LoggerUtil.devLogger("initialized common entrypoint");
 		LoggerUtil.LOGGER.info("Spread the Boatism!");
