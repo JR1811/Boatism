@@ -21,7 +21,12 @@ This mod adds more functionality and utility to the existing boats in Minecraft.
 
 <br>
 <a href="https://fabricmc.net/"><img
-    src="https://cdn.discordapp.com/attachments/705864145169416313/969720133998239794/fabric_supported.png"
+    src="promo/fabric_supported.png"
+    alt="Supported on Fabric"
+    width="200"
+></a>
+<a href="https://modfest.net/1.20"><img
+    src="promo/created_for_modfest_1_20_long.png"
     alt="Supported on Fabric"
     width="200"
 ></a>
