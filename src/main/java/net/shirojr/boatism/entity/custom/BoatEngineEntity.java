@@ -13,6 +13,7 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -94,7 +95,7 @@ public class BoatEngineEntity extends LivingEntity {
         BoatEngineNbtHelper.writeItemStacksToNbt(this.armorItems, "ArmorItems", nbt);
         BoatEngineNbtHelper.writeItemStacksToNbt(this.heldItems, "HandItems", nbt);
         nbt.putInt("PowerOutput", this.getPowerOutput());
-        //FIXME: no eulerangle nbt handling yet
+        nbt.put("ArmRotation", this.getArmRotation().toNbt());
         nbt.putBoolean("IsSubmerged", this.isSubmerged());
         nbt.putBoolean("HasLowFuel", this.hasLowFuel());
         nbt.putBoolean("EngineIsResting", this.isResting());
@@ -109,7 +110,7 @@ public class BoatEngineEntity extends LivingEntity {
         DefaultedList<ItemStack> armorList = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "ArmorItems");
         DefaultedList<ItemStack> handList = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "HandItems");
         this.setPowerOutput(nbt.getInt("PowerOutput"));
-        //FIXME: no eulerangle nbt handling yet
+        this.setArmRotation(new EulerAngle(nbt.getList("ArmRotation", NbtElement.FLOAT_TYPE)));
         this.setSubmerged(nbt.getBoolean("IsSubmerged"));
         this.setLowFuel(nbt.getBoolean("HasLowFuel"));
         this.setResting(nbt.getBoolean("EngineIsResting"));
@@ -259,6 +260,14 @@ public class BoatEngineEntity extends LivingEntity {
 
     public void setPowerOutput(int level) {
         this.dataTracker.set(POWER_OUTPUT, level);
+    }
+
+    public EulerAngle getArmRotation() {
+        return this.dataTracker.get(ARM_ROTATION);
+    }
+
+    public void setArmRotation(EulerAngle armRotation) {
+        this.dataTracker.set(ARM_ROTATION, armRotation);
     }
 
     public boolean isSubmerged() {
