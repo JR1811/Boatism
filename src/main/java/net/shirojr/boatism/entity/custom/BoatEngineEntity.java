@@ -15,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
@@ -35,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public class BoatEngineEntity extends LivingEntity {
     private final DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2, ItemStack.EMPTY);
@@ -86,17 +88,31 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
+        if (getHookedBoatEntity().isPresent()) {
+            nbt.putUuid("HookedEntity", getHookedBoatEntity().get().getUuid());
+        }
         BoatEngineNbtHelper.writeItemStacksToNbt(this.armorItems, "ArmorItems", nbt);
         BoatEngineNbtHelper.writeItemStacksToNbt(this.heldItems, "HandItems", nbt);
         nbt.putInt("PowerOutput", this.getPowerOutput());
-
+        //FIXME: no eulerangle nbt handling yet
+        nbt.putBoolean("IsSubmerged", this.isSubmerged());
+        nbt.putBoolean("HasLowFuel", this.hasLowFuel());
+        nbt.putBoolean("EngineIsResting", this.isResting());
     }
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
+        if (nbt.contains("HookedEntity")) {
+            this.setHookedBoatEntity(nbt.getUuid("HookedEntity"));
+        }
         DefaultedList<ItemStack> armorList = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "ArmorItems");
         DefaultedList<ItemStack> handList = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "HandItems");
+        this.setPowerOutput(nbt.getInt("PowerOutput"));
+        //FIXME: no eulerangle nbt handling yet
+        this.setSubmerged(nbt.getBoolean("IsSubmerged"));
+        this.setLowFuel(nbt.getBoolean("HasLowFuel"));
+        this.setResting(nbt.getBoolean("EngineIsResting"));
     }
 
     @Override
@@ -137,8 +153,19 @@ public class BoatEngineEntity extends LivingEntity {
         return Optional.ofNullable(this.hookedBoatEntity);
     }
 
-    public int getPowerOutput() {
-        return this.dataTracker.get(POWER_OUTPUT);
+    /**
+     * @param uuid Boat entity to bind the engine on
+     * @return true, if entity has been successfully bound (can be ignored)
+     */
+    public boolean setHookedBoatEntity(UUID uuid) {
+        if (this.getWorld() instanceof ServerWorld serverWorld) {
+            Entity entity = serverWorld.getEntity(uuid);
+            if (entity instanceof BoatEntity boatEntity) {
+                this.hookedBoatEntity = boatEntity;
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -223,22 +250,39 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public boolean isPushable() {
-        return true;
+        return false;
+    }
+
+    public int getPowerOutput() {
+        return this.dataTracker.get(POWER_OUTPUT);
+    }
+
+    public void setPowerOutput(int level) {
+        this.dataTracker.set(POWER_OUTPUT, level);
     }
 
     public boolean isSubmerged() {
         return this.dataTracker.get(IS_SUBMERGED);
     }
 
+    public void setSubmerged(boolean isSubmerged) {
+        this.dataTracker.set(IS_SUBMERGED, isSubmerged);
+    }
+
     public boolean isResting() {
         return this.dataTracker.get(ENGINE_IS_RESTING);
     }
+
     public void setResting(boolean resting) {
         this.dataTracker.set(ENGINE_IS_RESTING, resting);
     }
 
     public boolean hasLowFuel() {
         return this.dataTracker.get(HAS_LOW_FUEL);
+    }
+
+    public void setLowFuel(boolean hasLowFuel) {
+        this.dataTracker.set(HAS_LOW_FUEL, hasLowFuel);
     }
 
     public boolean hasLowHealth() {
