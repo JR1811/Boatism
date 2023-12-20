@@ -8,11 +8,20 @@ public interface BoatComponent {
     default List<ItemStack> getConflictingParts() {
         return List.of();
     }
+
     default float getThrust() {
+        return 0.0f;
+    }
+
+    default float consumedFuelPerTick() {
         return 0.0f;
     }
 
     default float getAdditionalArmor() {
         return 0.0f;
+    }
+
+    default boolean waterProofesEngine() {
+        return false;
     }
 }

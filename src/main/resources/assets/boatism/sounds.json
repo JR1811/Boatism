@@ -5,6 +5,24 @@
       "boatism:boat_engine_default"
     ]
   },
+  "boat_engine_hit": {
+    "subtitle": "sound.boatism.boat_engine_underwater",
+    "sounds": [
+      "boatism:boat_engine_hit"
+    ]
+  },
+  "boat_engine_low_fuel": {
+    "subtitle": "sound.boatism.boat_engine_low_fuel",
+    "sounds": [
+      "boatism:boat_engine_low_fuel"
+    ]
+  },
+  "boat_engine_low_health": {
+    "subtitle": "sound.boatism.boat_engine_low_health",
+    "sounds": [
+      "boatism:boat_engine_low_health"
+    ]
+  },
   "boat_engine_underwater": {
     "subtitle": "sound.boatism.boat_engine_underwater",
     "sounds": [

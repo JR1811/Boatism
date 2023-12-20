@@ -12,6 +12,8 @@ public class BoatismSounds {
     public static SoundEvent BOAT_ENGINE_UNDERWATER = of("boat_engine_underwater");
     public static SoundEvent BOAT_ENGINE_LOW_FUEL = of("boat_engine_low_fuel");
     public static SoundEvent BOAT_ENGINE_LOW_HEALTH = of("boat_engine_low_health");
+    public static SoundEvent BOAT_ENGINE_HIT = of("boat_engine_hit");
+
 
 
     static SoundEvent of(String id) {

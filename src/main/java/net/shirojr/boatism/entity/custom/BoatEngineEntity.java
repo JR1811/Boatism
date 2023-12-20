@@ -2,50 +2,58 @@ package net.shirojr.boatism.entity.custom;
 
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.EulerAngle;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.entity.BoatismEntities;
-import net.shirojr.boatism.mixin.BoatEntityInvoker;
 import net.shirojr.boatism.network.BoatismS2C;
+import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.BoatComponent;
+import net.shirojr.boatism.util.BoatEngineHandler;
+import net.shirojr.boatism.util.BoatEngineNbtHelper;
 import net.shirojr.boatism.util.SoundInstanceHelper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 public class BoatEngineEntity extends LivingEntity {
     private final DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2, ItemStack.EMPTY);
     private final DefaultedList<ItemStack> armorItems = DefaultedList.ofSize(4, ItemStack.EMPTY);
-    private static final TrackedData<Integer> POWER_OUTPUT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Integer> POWER_OUTPUT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER); // implement power steps which are controllable with mouse wheel
     private static final TrackedData<EulerAngle> ARM_ROTATION = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.ROTATION);
     private static final TrackedData<Boolean> IS_SUBMERGED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> HAS_LOW_FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Boolean> ENGINE_IS_RESTING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Boolean> ENGINE_IS_RESTING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN); // angle upwards (immunity on land)
 
     @Nullable
     private BoatEntity hookedBoatEntity;
 
+    @NotNull
+    private BoatEngineHandler engineHandler;
+
     public BoatEngineEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
-        this.hasNoGravity();
+        this.engineHandler = BoatEngineHandler.create(this.heldItems, this.armorItems);
         this.setStepHeight(0.0f);
     }
 
@@ -56,6 +64,7 @@ public class BoatEngineEntity extends LivingEntity {
 
     public BoatEngineEntity(World world, BoatEntity hookedBoatEntity) {
         this(BoatismEntities.BOAT_ENGINE, world);
+        this.setPos(hookedBoatEntity.getX(), hookedBoatEntity.getY(), hookedBoatEntity.getZ());
         this.hookOntoBoatEntity(hookedBoatEntity);
     }
 
@@ -75,9 +84,39 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     @Override
-    public boolean shouldRenderName() {
-        return super.shouldRenderName();
+    public void writeCustomDataToNbt(NbtCompound nbt) {
+        super.writeCustomDataToNbt(nbt);
+        BoatEngineNbtHelper.writeItemStacksToNbt(this.armorItems, "ArmorItems", nbt);
+        BoatEngineNbtHelper.writeItemStacksToNbt(this.heldItems, "HandItems", nbt);
+        nbt.putInt("PowerOutput", this.getPowerOutput());
+
     }
+
+    @Override
+    public void readCustomDataFromNbt(NbtCompound nbt) {
+        super.readCustomDataFromNbt(nbt);
+        DefaultedList<ItemStack> armorList = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "ArmorItems");
+        DefaultedList<ItemStack> handList = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "HandItems");
+    }
+
+    @Override
+    protected void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) {
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        this.engineHandler.incrementTick();
+
+        if (this.hookedBoatEntity == null) return;
+        Vec3d vec3d = this.hookedBoatEntity.getPos().subtract(this.getPos());
+
+        if (this.hookedBoatEntity != null && (vec3d.lengthSquared()) < 64.0) {
+            this.setVelocity(this.getVelocity());
+        }
+        this.move(MovementType.SELF, this.getVelocity());
+    }
+
 
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
@@ -120,6 +159,18 @@ public class BoatEngineEntity extends LivingEntity {
     public Arm getMainArm() {
         return Arm.RIGHT;
     }
+
+    @Nullable
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return BoatismSounds.BOAT_ENGINE_HIT;
+    }
+
+    @Nullable
+    @Override
+    protected SoundEvent getDeathSound() {
+        return BoatismSounds.BOAT_ENGINE_HIT;
+    }
     //endregion
 
     @Override
@@ -136,33 +187,28 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     public float getMaxThrust() {
-        boolean isHooked = getHookedBoatEntity().isPresent();
-        if (!isHooked) return 0.0f;
-        int passengerCount = getHookedBoatEntity().get().getPassengerList().size();
-
-        List<ItemStack> boatComponentStacks = new ArrayList<>();
-        this.getArmorItems().forEach(stack -> {
-            if (stack.getItem() instanceof BoatComponent component && component.getThrust() > 0.0f) {
-                boatComponentStacks.add(stack);
-            }
-        });
-        this.getHandItems().forEach(stack -> {
-            if (stack.getItem() instanceof BoatComponent component && component.getThrust() > 0.0f) {
-                boatComponentStacks.add(stack);
-            }
-        });
-        int thrust = 0;
-        for (ItemStack thrustModifierStack : boatComponentStacks) {
-            thrust += ((BoatComponent) thrustModifierStack.getItem()).getThrust();
-        }
-        BoatEntity boatEntity = getHookedBoatEntity().get();
-        int maxPassenger = ((BoatEntityInvoker) boatEntity).invokeGetMaxPassenger();
-        return thrust * ((maxPassenger - passengerCount) * 0.1f); //TODO: implement better balancing
+        return this.engineHandler.calculateMaxThrust(getHookedBoatEntity().orElse(null));
     }
 
     @Override
     public boolean canEquip(ItemStack stack) {
         return stack.getItem() instanceof BoatComponent;
+    }
+
+    @Override
+    protected boolean canStartRiding(Entity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean canBeHitByProjectile() {
+        return false;
+    }
+
+    @Override
+    public boolean collidesWith(Entity other) {
+        if (other instanceof BoatEntity) return false;
+        return super.collidesWith(other);
     }
 
     @Override
@@ -175,8 +221,20 @@ public class BoatEngineEntity extends LivingEntity {
         return false;
     }
 
+    @Override
+    public boolean isPushable() {
+        return true;
+    }
+
     public boolean isSubmerged() {
         return this.dataTracker.get(IS_SUBMERGED);
+    }
+
+    public boolean isResting() {
+        return this.dataTracker.get(ENGINE_IS_RESTING);
+    }
+    public void setResting(boolean resting) {
+        this.dataTracker.set(ENGINE_IS_RESTING, resting);
     }
 
     public boolean hasLowFuel() {
