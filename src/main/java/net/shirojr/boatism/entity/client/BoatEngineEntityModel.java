@@ -63,11 +63,9 @@ public class BoatEngineEntityModel<T extends BoatEngineEntity> extends Composite
     @Override
     public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
         float scaleFactor = 1.0f;
-        //matrices.push();
-        //matrices.translate(0.0f, - scaleFactor, 0.0f);
-        matrices.scale(scaleFactor * 1.1f, scaleFactor, scaleFactor);
-        //matrices.pop();
 
+        matrices.translate(0.0f, 0.0f, 0.1f);
+        matrices.scale(scaleFactor * 1.3f, scaleFactor, scaleFactor);
         root.render(matrices, vertices, light, overlay, red, green, blue, alpha);
     }
 

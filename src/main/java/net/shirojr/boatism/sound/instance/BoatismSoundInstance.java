@@ -44,16 +44,16 @@ public class BoatismSoundInstance extends MovingSoundInstance {
 
     protected static void defaultSoundHandling(BoatismSoundInstance soundInstance) {
         double horizontalVelocity = soundInstance.boatEngineEntity.getVelocity().horizontalLength();
-        if (soundInstance.boatEngineEntity.getWorld().getTickManager().shouldTick()) {
+        if (!soundInstance.boatEngineEntity.getWorld().getTickManager().shouldTick()) {
+            soundInstance.distance = 0.0f;
+            soundInstance.volume = 0.0f;
+            soundInstance.pitch = 1.0f;
+        } else {
             soundInstance.distance = MathHelper.clamp(soundInstance.distance + 0.0025f, 0.0f, 1.0f);
 
             float velocityClamp = (float)MathHelper.clamp(horizontalVelocity, 0.0f, 0.5f);
             soundInstance.volume = MathHelper.lerp(velocityClamp, 0.0f, 0.7f);
             soundInstance.pitch = MathHelper.lerp(velocityClamp, 0.9f, 1.2f);
-        } else {
-            soundInstance.distance = 0.0f;
-            soundInstance.volume = 0.0f;
-            soundInstance.pitch = 1.0f;
         }
     }
 }

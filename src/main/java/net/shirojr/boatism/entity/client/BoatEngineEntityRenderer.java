@@ -33,8 +33,8 @@ public class BoatEngineEntityRenderer extends LivingEntityRenderer<BoatEngineEnt
         if (livingEntity.getHookedBoatEntity().isPresent()) {
             BoatEntity boat = livingEntity.getHookedBoatEntity().get();
             matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-(boat.getYaw())));
-        }
 
+        }
         if (livingEntity.isResting()) {
             float rotationOffsetX = 0.0f;
             float rotationOffsetY = 0.43f;
@@ -44,8 +44,6 @@ public class BoatEngineEntityRenderer extends LivingEntityRenderer<BoatEngineEnt
             matrixStack.multiply(new Quaternionf().setAngleAxis((Math.PI / 180) * tiltAngle, 1.0f, 0.0f, 0.0f));
             matrixStack.translate(-rotationOffsetX, -rotationOffsetY, -rotationOffsetZ);
         }
-
-        //matrixStack.pop();
         super.render(livingEntity, f, g, matrixStack, vertexConsumerProvider, light);
     }
 

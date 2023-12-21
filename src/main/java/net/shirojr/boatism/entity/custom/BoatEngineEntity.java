@@ -57,6 +57,10 @@ public class BoatEngineEntity extends LivingEntity {
     public BoatEngineEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
         this.engineHandler = BoatEngineHandler.create(this.heldItems, this.armorItems);
+        //this.noClip = true;
+        this.setNoGravity(true);
+        this.setVelocity(Vec3d.ZERO);
+        this.velocityModified = true;
         this.setStepHeight(0.0f);
     }
 
@@ -118,12 +122,17 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     protected void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) {
+        super.fall(heightDifference, onGround, state, landedPosition);
     }
 
     @Override
     public void tick() {
         super.tick();
         this.engineHandler.incrementTick();
+
+        if (!this.getWorld().isClient()) {
+            this.setNoGravity(true);
+        }
 
         if (this.hookedBoatEntity == null) return;
         Vec3d vec3d = this.hookedBoatEntity.getPos().subtract(this.getPos());
@@ -134,6 +143,11 @@ public class BoatEngineEntity extends LivingEntity {
         this.move(MovementType.SELF, this.getVelocity());
     }
 
+    @Override
+    public void travel(Vec3d movementInput) {
+        super.travel(movementInput);
+
+    }
 
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
@@ -158,6 +172,7 @@ public class BoatEngineEntity extends LivingEntity {
      * @param uuid Boat entity to bind the engine on
      * @return true, if entity has been successfully bound (can be ignored)
      */
+    @SuppressWarnings("UnusedReturnValue")
     public boolean setHookedBoatEntity(UUID uuid) {
         if (this.getWorld() instanceof ServerWorld serverWorld) {
             Entity entity = serverWorld.getEntity(uuid);
@@ -246,6 +261,11 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public boolean isMobOrPlayer() {
+        return false;
+    }
+
+    @Override
+    public boolean isClimbing() {
         return false;
     }
 
