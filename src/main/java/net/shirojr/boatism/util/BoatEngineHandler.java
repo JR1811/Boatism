@@ -8,7 +8,6 @@ import net.shirojr.boatism.mixin.BoatEntityInvoker;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class BoatEngineHandler {
     public static final int MAX_FUEL = 5000, MAX_POWER_LEVEL = 9;
@@ -17,13 +16,13 @@ public class BoatEngineHandler {
     private final DefaultedList<ItemStack> armorItems = DefaultedList.ofSize(4);
     private final EulerAngle armRotation;
     private float fuel;
-    private final int powerLevel;
+    private int powerLevel;
     private final boolean isSubmerged, hasLowFuel, isResting;
-    private int tick;
+    private int tick, overHeatTicks;
 
     private BoatEngineHandler(List<ItemStack> heldItems, List<ItemStack> armorItems,
-                             EulerAngle armRotation, float fuel, int powerLevel, boolean isSubmerged,
-                             boolean hasLowFuel, boolean isResting) {
+                              EulerAngle armRotation, float fuel, int powerLevel, boolean isSubmerged,
+                              boolean hasLowFuel, boolean isResting) {
         this.heldItems.addAll(heldItems);
         this.armorItems.addAll(armorItems);
         this.armRotation = armRotation;
@@ -33,6 +32,7 @@ public class BoatEngineHandler {
         this.hasLowFuel = hasLowFuel;
         this.isResting = isResting;
         this.tick = 0;
+        this.overHeatTicks = 0;
     }
 
     public static BoatEngineHandler create(List<ItemStack> heldItems, List<ItemStack> armorItems) {
@@ -42,15 +42,24 @@ public class BoatEngineHandler {
         return handler;
     }
 
+    public void incrementTick() {
+        this.tick++;
+    }
+
     public float getFuel() {
         return this.fuel;
     }
+
     public void setFuel(float fuel) {
         this.fuel = fuel;
     }
 
-    public void incrementTick() {
-        this.tick++;
+    public int getPowerLevel() {
+        return this.powerLevel;
+    }
+
+    public void setPowerLevel(int powerLevel) {
+        this.powerLevel = powerLevel;
     }
 
     public float calculateMaxThrust() {

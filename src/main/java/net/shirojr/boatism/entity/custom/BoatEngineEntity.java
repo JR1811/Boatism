@@ -134,12 +134,15 @@ public class BoatEngineEntity extends LivingEntity {
             this.setNoGravity(true);
         }
 
-        if (this.hookedBoatEntity == null) return;
-        Vec3d vec3d = this.hookedBoatEntity.getPos().subtract(this.getPos());
+        if (getHookedBoatEntity().isEmpty()) return;
+        BoatEntity hookedBoat = getHookedBoatEntity().get();
+        Vec3d hookedBoatPos = hookedBoat.getPos().add(0, 3, 3);
+        // Vec3d vec3d = hookedBoat.getPos().subtract(this.getPos());
 
-        if (this.hookedBoatEntity != null && (vec3d.lengthSquared()) < 64.0) {
-            this.setVelocity(this.getVelocity());
-        }
+        this.travel(hookedBoat.getVelocity());
+        this.velocityModified = true;
+        //this.refreshPositionAndAngles(hookedBoatPos.getX(), hookedBoatPos.getY(), getZ(), this.getHeadYaw(), this.getPitch());
+
         this.move(MovementType.SELF, this.getVelocity());
     }
 
