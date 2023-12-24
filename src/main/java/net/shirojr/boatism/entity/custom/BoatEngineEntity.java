@@ -198,6 +198,8 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
+        this.engineHandler.initiateSoundStateChange();
+
         Identifier stateIdentifier = null;
         if (this.getEngineHandler().engineIsRunning())
             stateIdentifier = SoundInstanceHelper.ENGINE_RUNNING.getIdentifier();

@@ -1,14 +1,22 @@
 package net.shirojr.boatism.util;
 
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.collection.DefaultedList;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.mixin.BoatEntityInvoker;
+import net.shirojr.boatism.network.BoatismS2C;
+import net.shirojr.boatism.sound.BoatismSounds;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class BoatEngineHandler {
     public static final int MAX_FUEL = 2000, MAX_POWER_LEVEL = 9, MAX_OVERHEAT_TICKS = 80;
@@ -126,7 +134,11 @@ public class BoatEngineHandler {
 
     public boolean isExperiencingHeavyLoad() {
         if (!engineIsRunning()) return false;
-        return this.getPowerLevel() >= MAX_POWER_LEVEL - 2;
+        if (this.getPowerLevel() >= MAX_POWER_LEVEL - 2) {
+            soundStateChange(SoundInstanceHelper.ENGINE_OVERHEATING);
+            return true;
+        }
+        return false;
         //TODO: add heavy load, if boat goes too slow for power level
     }
 
@@ -136,6 +148,7 @@ public class BoatEngineHandler {
 
     public void setSubmerged(boolean isSubmerged) {
         this.isSubmerged = isSubmerged;
+        soundStateChange(SoundInstanceHelper.ENGINE_RUNNING_UNDERWATER);
     }
 
     public boolean breaksWhenSubmerged() {
@@ -149,10 +162,16 @@ public class BoatEngineHandler {
 
     public void startEngine() {
         if (!engineCanStart()) return;
+        if (!boatEngine.getWorld().isClient()) boatEngine.getWorld().playSound(null, boatEngine.getBlockPos(),
+                BoatismSounds.BOAT_ENGINE_START, SoundCategory.NEUTRAL, 1.0f, 1.0f);
         this.isRunning = true;
+        soundStateChange(SoundInstanceHelper.ENGINE_RUNNING);
     }
 
     public void stopEngine() {
+        if (!engineIsRunning()) return;
+        if (!boatEngine.getWorld().isClient()) boatEngine.getWorld().playSound(null, boatEngine.getBlockPos(),
+                BoatismSounds.BOAT_ENGINE_STOP, SoundCategory.NEUTRAL, 1.0f, 0.9f);
         this.powerLevel = 0;
         this.isRunning = false;
     }
@@ -198,5 +217,30 @@ public class BoatEngineHandler {
             }
         }
         return flaggedParts.contains(stack);
+    }
+
+
+    public void initiateSoundStateChange() {
+        List<SoundInstanceHelper> instances = new ArrayList<>();
+        if (engineIsRunning()) instances.add(SoundInstanceHelper.ENGINE_RUNNING);
+        if (isOverheating()) instances.add(SoundInstanceHelper.ENGINE_OVERHEATING);
+        if (isSubmerged()) {
+            instances.add(SoundInstanceHelper.ENGINE_RUNNING_UNDERWATER);
+            instances.remove(SoundInstanceHelper.ENGINE_RUNNING);
+            instances.remove(SoundInstanceHelper.ENGINE_OVERHEATING);
+        }
+
+        for (SoundInstanceHelper entry : instances) {
+            soundStateChange(entry);
+        }
+    }
+
+    private void soundStateChange(@NotNull SoundInstanceHelper soundInstance) {
+        if (!(boatEngine.getWorld() instanceof ServerWorld serverWorld)) return;
+        PlayerLookup.around(serverWorld, boatEngine.getPos(), 20).forEach(player -> {
+            PacketByteBuf buf = PacketByteBufs.create();
+            buf.writeIdentifier(soundInstance.getIdentifier());
+            ServerPlayNetworking.send(player, BoatismS2C.CUSTOM_SOUND_INSTANCE_PACKET, buf);
+        });
     }
 }

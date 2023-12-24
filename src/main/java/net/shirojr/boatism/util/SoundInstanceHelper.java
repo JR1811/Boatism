@@ -9,7 +9,8 @@ public enum SoundInstanceHelper {
     ENGINE_RUNNING("engine_running"),
     ENGINE_RUNNING_UNDERWATER("engine_underwater"),
     ENGINE_LOW_FUEL("engine_low_fuel"),
-    ENGINE_LOW_HEALTH("engine_low_health");
+    ENGINE_LOW_HEALTH("engine_low_health"),
+    ENGINE_OVERHEATING("engine_overheating");
 
     private final Identifier identifier;
 

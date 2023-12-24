@@ -5,15 +5,11 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.sound.SoundInstance;
-import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.sound.instance.EngineLowFuelSoundInstance;
-import net.shirojr.boatism.sound.instance.EngineLowHealthSoundInstance;
-import net.shirojr.boatism.sound.instance.EngineRunningSoundInstance;
-import net.shirojr.boatism.sound.instance.EngineSubmergedSoundInstance;
+import net.shirojr.boatism.sound.instance.custom.*;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.SoundInstanceHelper;
 
@@ -43,6 +39,7 @@ public class BoatismS2C {
                 case ENGINE_RUNNING_UNDERWATER -> soundInstance = new EngineSubmergedSoundInstance(boatEngineEntity);
                 case ENGINE_LOW_FUEL -> soundInstance = new EngineLowFuelSoundInstance(boatEngineEntity);
                 case ENGINE_LOW_HEALTH -> soundInstance = new EngineLowHealthSoundInstance(boatEngineEntity);
+                case ENGINE_OVERHEATING -> soundInstance = new EngineOverheatingSoundInstance(boatEngineEntity);
                 default -> {
                     LoggerUtil.LOGGER.error(String.format("Failed to play %s SoundInstance", soundInstanceId.getPath()));
                     return;

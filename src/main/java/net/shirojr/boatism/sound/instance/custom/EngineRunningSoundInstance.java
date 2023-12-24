@@ -1,9 +1,10 @@
-package net.shirojr.boatism.sound.instance;
+package net.shirojr.boatism.sound.instance.custom;
 
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
+import net.shirojr.boatism.sound.instance.SoundInstanceState;
 
-public class EngineRunningSoundInstance extends BoatismSoundInstance {
+public class EngineRunningSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     public EngineRunningSoundInstance(BoatEngineEntity entity) {
         super(entity, BoatismSounds.BOAT_ENGINE_DEFAULT);
     }
@@ -21,5 +22,10 @@ public class EngineRunningSoundInstance extends BoatismSoundInstance {
             return;
         }
         BoatismSoundInstance.defaultSoundHandling(this);
+    }
+
+    @Override
+    public boolean isMainSound() {
+        return true;
     }
 }

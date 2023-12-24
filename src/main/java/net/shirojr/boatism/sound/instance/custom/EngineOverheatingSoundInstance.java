@@ -1,11 +1,12 @@
-package net.shirojr.boatism.sound.instance;
+package net.shirojr.boatism.sound.instance.custom;
 
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
+import net.shirojr.boatism.sound.instance.SoundInstanceState;
 
-public class EngineLowHealthSoundInstance extends BoatismSoundInstance {
-    public EngineLowHealthSoundInstance(BoatEngineEntity entity) {
-        super(entity, BoatismSounds.BOAT_ENGINE_LOW_HEALTH);
+public class EngineOverheatingSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
+    public EngineOverheatingSoundInstance(BoatEngineEntity boatEngineEntity) {
+        super(boatEngineEntity, BoatismSounds.BOAT_ENGINE_HEAT);
     }
 
     @Override
@@ -22,4 +23,10 @@ public class EngineLowHealthSoundInstance extends BoatismSoundInstance {
         }
         BoatismSoundInstance.defaultSoundHandling(this);
     }
+
+    @Override
+    public boolean isMainSound() {
+        return false;
+    }
+
 }

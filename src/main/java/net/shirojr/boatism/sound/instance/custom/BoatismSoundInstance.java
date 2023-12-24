@@ -1,4 +1,4 @@
-package net.shirojr.boatism.sound.instance;
+package net.shirojr.boatism.sound.instance.custom;
 
 import net.minecraft.client.sound.MovingSoundInstance;
 import net.minecraft.client.sound.SoundInstance;
@@ -35,6 +35,7 @@ public class BoatismSoundInstance extends MovingSoundInstance {
         this.x = this.boatEngineEntity.getX();
         this.y = this.boatEngineEntity.getY();
         this.z = this.boatEngineEntity.getZ();
+        currentTick++;
     }
 
     @Override
@@ -43,6 +44,7 @@ public class BoatismSoundInstance extends MovingSoundInstance {
     }
 
     protected static void defaultSoundHandling(BoatismSoundInstance soundInstance) {
+        //TODO: lerp for start of instance (low current tick)
         double horizontalVelocity = soundInstance.boatEngineEntity.getVelocity().horizontalLength();
         if (!soundInstance.boatEngineEntity.getWorld().getTickManager().shouldTick()) {
             soundInstance.distance = 0.0f;
