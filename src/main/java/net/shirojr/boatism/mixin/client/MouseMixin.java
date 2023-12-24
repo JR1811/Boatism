@@ -9,13 +9,17 @@ import net.minecraft.client.option.GameOptions;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.network.PacketByteBuf;
+import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.network.BoatismC2S;
+import net.shirojr.boatism.util.BoatEngineCoupler;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Optional;
 
 @Mixin(Mouse.class)
 public class MouseMixin {
@@ -30,10 +34,11 @@ public class MouseMixin {
         double delta = (mouseScrolled ? Math.signum(horizontal) : vertical) * options.getMouseWheelSensitivity().getValue();
         ClientPlayerEntity player = client.player;
 
-        if (player == null || player.getVehicle() == null || !(player.getVehicle() instanceof BoatEntity)) return;
-        Entity vehicle = player.getVehicle();
-        Entity pilot = vehicle.getFirstPassenger();
-        if (pilot == null || !pilot.equals(player)) return;
+        if (player == null || player.getVehicle() == null) return;
+        if (!(player.getVehicle() instanceof BoatEntity boatEntity)) return;
+        if (boatEntity.getFirstPassenger() == null || !boatEntity.getFirstPassenger().equals(player)) return;
+        Optional<BoatEngineEntity> boatEngineEntity = ((BoatEngineCoupler)boatEntity).boatism$getBoatEngineEntity();
+        if (boatEngineEntity.isEmpty()) return;
 
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeDouble(delta);

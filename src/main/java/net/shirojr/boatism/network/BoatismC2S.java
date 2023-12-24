@@ -7,10 +7,16 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
-import net.shirojr.boatism.util.LoggerUtil;
+import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.sound.BoatismSounds;
+import net.shirojr.boatism.util.BoatEngineCoupler;
+import net.shirojr.boatism.util.BoatEngineHandler;
+
+import java.util.Optional;
 
 public class BoatismC2S {
     public static final Identifier SCROLL_PACKET = new Identifier(Boatism.MODID, "scrolled");
@@ -24,15 +30,24 @@ public class BoatismC2S {
         double delta = buf.readDouble(); // -1.0 = down, 1.0 = up
         server.execute(() -> {
             if (!(player.getVehicle() instanceof BoatEntity boatEntity)) return;
-            LoggerUtil.devLogger("Scrolled MouseWheel | Mouse delta: " + delta);
+            Optional<BoatEngineEntity> boatEngineEntity = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntity();
+            if (boatEngineEntity.isEmpty()) return;
+            BoatEngineHandler engineHandler = boatEngineEntity.get().getEngineHandler();
 
-            if (delta > 0) {
-                int powerLevel = 1;
-                player.sendMessage(Text.translatable("mouse.boatism.scrolled_up", powerLevel), true);
-            } else {
-                int powerLevel = 0;
-                player.sendMessage(Text.translatable("mouse.boatism.scrolled_down", powerLevel), true);
+            int newPowerLevel = engineHandler.getPowerLevel() + (int) delta;
+            newPowerLevel = Math.min(newPowerLevel, BoatEngineHandler.MAX_POWER_LEVEL);
+            newPowerLevel = Math.max(newPowerLevel, 0);
+
+            if (newPowerLevel > engineHandler.getPowerLevel()) {
+                player.playSound(BoatismSounds.BOAT_ENGINE_POWER_UP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
+            } else if (newPowerLevel < engineHandler.getPowerLevel()) {
+                player.playSound(BoatismSounds.BOAT_ENGINE_POWER_DOWN, SoundCategory.NEUTRAL, 0.7f, 1.0f);
             }
+
+
+            boatEngineEntity.get().getEngineHandler().setPowerLevel(newPowerLevel);
+            player.sendMessage(Text.translatable("mouse.boatism.power_level", newPowerLevel), true);
+
         });
     }
 }

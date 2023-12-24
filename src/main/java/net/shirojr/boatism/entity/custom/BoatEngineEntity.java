@@ -3,7 +3,10 @@ package net.shirojr.boatism.entity.custom;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -29,12 +32,10 @@ import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.network.BoatismS2C;
 import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.util.BoatComponent;
-import net.shirojr.boatism.util.BoatEngineHandler;
-import net.shirojr.boatism.util.BoatEngineNbtHelper;
-import net.shirojr.boatism.util.SoundInstanceHelper;
+import net.shirojr.boatism.util.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -47,20 +48,20 @@ public class BoatEngineEntity extends LivingEntity {
     private static final TrackedData<Boolean> IS_SUBMERGED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> HAS_LOW_FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> ENGINE_IS_RESTING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN); // angle upwards (immunity on land)
-
     @Nullable
     private BoatEntity hookedBoatEntity;
-
     @NotNull
-    private BoatEngineHandler engineHandler;
+    private final BoatEngineHandler engineHandler;
+    private int lerpTicks;
+    private double x, y, z;
+    private double boatYaw, boatPitch;
 
     public BoatEngineEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
-        this.engineHandler = BoatEngineHandler.create(this.heldItems, this.armorItems);
-        //this.noClip = true;
+        this.engineHandler = BoatEngineHandler.create(this, this.heldItems, this.armorItems);
         this.setNoGravity(true);
-        this.setVelocity(Vec3d.ZERO);
-        this.velocityModified = true;
+        //this.setVelocity(Vec3d.ZERO);
+        //this.velocityModified = true;
         this.setStepHeight(0.0f);
     }
 
@@ -125,26 +126,69 @@ public class BoatEngineEntity extends LivingEntity {
         super.fall(heightDifference, onGround, state, landedPosition);
     }
 
+    //entity.refreshPositionAndAngles(x, y, z, entity.getYaw(), entity.getPitch())
+
     @Override
     public void tick() {
         super.tick();
+        this.setNoGravity(true);
+        if (this.getWorld().isClient()) return;
+
         this.engineHandler.incrementTick();
-
-        if (!this.getWorld().isClient()) {
-            this.setNoGravity(true);
-        }
-
-        if (getHookedBoatEntity().isEmpty()) return;
-        BoatEntity hookedBoat = getHookedBoatEntity().get();
-        Vec3d hookedBoatPos = hookedBoat.getPos().add(0, 3, 3);
-        // Vec3d vec3d = hookedBoat.getPos().subtract(this.getPos());
-
-        this.travel(hookedBoat.getVelocity());
-        this.velocityModified = true;
-        //this.refreshPositionAndAngles(hookedBoatPos.getX(), hookedBoatPos.getY(), getZ(), this.getHeadYaw(), this.getPitch());
-
-        this.move(MovementType.SELF, this.getVelocity());
+        this.engineHandler.setSubmerged(this.submergedInWater);
     }
+
+    public void updateEnginePosition(BoatEngineEntity passenger, PositionUpdater positionUpdater) {
+        getHookedBoatEntity().ifPresent(boatEntity -> {
+            Vec3d enginePos = enginePosition(boatEntity);
+            positionUpdater.accept(passenger, enginePos.x, enginePos.y, enginePos.z);
+        });
+    }
+
+    private Vec3d enginePosition(BoatEntity boatEntity) {
+        Vector3f attachmentPos = new Vector3f(0.0f, 0.2f, -1.0f);
+        return new Vec3d(attachmentPos.rotateY(-boatEntity.getYaw() * ((float) Math.PI / 180))).add(boatEntity.getPos());
+    }
+
+    public void updatePositionAndRotation() {
+        getHookedBoatEntity().ifPresent(boatEntity -> {
+            if (this.isLogicalSideForUpdatingMovement()) {
+                this.lerpTicks = 0;
+                this.updateTrackedPosition(this.getX(), this.getY(), this.getZ());
+            }
+            if (this.lerpTicks <= 0) {
+                return;
+            }
+            this.lerpPosAndRotation(this.lerpTicks, this.x, this.y, this.z, this.boatYaw, this.boatPitch);
+            --this.lerpTicks;
+        });
+    }
+
+    @Override
+    public double getLerpTargetX() {
+        return this.lerpTicks > 0 ? this.x : this.getX();
+    }
+
+    @Override
+    public double getLerpTargetY() {
+        return this.lerpTicks > 0 ? this.y : this.getY();
+    }
+
+    @Override
+    public double getLerpTargetZ() {
+        return this.lerpTicks > 0 ? this.z : this.getZ();
+    }
+
+    @Override
+    public float getLerpTargetPitch() {
+        return this.lerpTicks > 0 ? (float) this.boatPitch : this.getPitch();
+    }
+
+    @Override
+    public float getLerpTargetYaw() {
+        return this.lerpTicks > 0 ? (float) this.boatYaw : this.getYaw();
+    }
+
 
     @Override
     public void travel(Vec3d movementInput) {
@@ -155,6 +199,8 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
         Identifier stateIdentifier = null;
+        if (this.getEngineHandler().engineIsRunning())
+            stateIdentifier = SoundInstanceHelper.ENGINE_RUNNING.getIdentifier();
         if (this.hasLowFuel()) stateIdentifier = SoundInstanceHelper.ENGINE_LOW_FUEL.getIdentifier();
         if (this.hasLowHealth()) stateIdentifier = SoundInstanceHelper.ENGINE_LOW_HEALTH.getIdentifier();
         if (this.isSubmerged()) stateIdentifier = SoundInstanceHelper.ENGINE_RUNNING_UNDERWATER.getIdentifier();
@@ -229,6 +275,7 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     public void hookOntoBoatEntity(BoatEntity boatEntity) {
+        ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(this);
         this.hookedBoatEntity = boatEntity;
     }
 
@@ -277,6 +324,10 @@ public class BoatEngineEntity extends LivingEntity {
         return false;
     }
 
+    public @NotNull BoatEngineHandler getEngineHandler() {
+        return this.engineHandler;
+    }
+
     public int getPowerOutput() {
         return this.dataTracker.get(POWER_OUTPUT);
     }
@@ -319,5 +370,11 @@ public class BoatEngineEntity extends LivingEntity {
 
     public boolean hasLowHealth() {
         return this.getHealth() <= Boatism.CONFIG.boatValues.getLowHealthValue();
+    }
+
+    @Override
+    public void onRemoved() {
+        getHookedBoatEntity().ifPresent(boatEntity -> ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
+        super.onRemoved();
     }
 }

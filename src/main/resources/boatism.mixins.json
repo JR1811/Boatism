@@ -5,6 +5,7 @@
   "mixins": [
     "BoatEntityInvoker",
     "BoatEntityMixin",
+    "EntityMixin",
     "ItemMixin"
   ],
   "injectors": {

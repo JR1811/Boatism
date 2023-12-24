@@ -1,7 +1,8 @@
 {
   "entity.boatism.boat_engine": "Boat Engine",
-  "boatism:boat_engine_default": "Sound of running Engine",
-  "boatism:boat_engine_underwater": "Sound of running Engine under water",
-  "mouse.boatism.scrolled_up": "Increased throttle: §a%s§r",
-  "mouse.boatism.scrolled_down": "Decreased throttle: §c%s§r"
+  "boatism:boat_engine.default": "Sound of running Engine",
+  "boatism:boat_engine.underwater": "Sound of running Engine under water",
+  "boatism:boat_engine.power_up": "Sound of increased Boat Engine power",
+  "boatism:boat_engine.power_down": "Sound of decreased Boat Engine power",
+  "mouse.boatism.power_level": "Power Level: §a%s§r"
 }
