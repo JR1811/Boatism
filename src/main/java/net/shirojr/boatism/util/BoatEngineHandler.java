@@ -161,7 +161,11 @@ public class BoatEngineHandler {
     }
 
     public void startEngine() {
-        if (!engineCanStart()) return;
+        if (!engineCanStart()) {
+            if (!boatEngine.getWorld().isClient()) boatEngine.getWorld().playSound(null, boatEngine.getBlockPos(),
+                    BoatismSounds.BOAT_ENGINE_START_FAIL, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+            return;
+        }
         if (!boatEngine.getWorld().isClient()) boatEngine.getWorld().playSound(null, boatEngine.getBlockPos(),
                 BoatismSounds.BOAT_ENGINE_START, SoundCategory.NEUTRAL, 1.0f, 1.0f);
         this.isRunning = true;
