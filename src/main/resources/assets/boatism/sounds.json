@@ -1,32 +1,44 @@
 {
   "boat_engine_default": {
-    "subtitle": "sound.boatism.boat_engine_default",
+    "subtitle": "sound.boatism.boat_engine.default",
     "sounds": [
       "boatism:boat_engine_default"
     ]
   },
   "boat_engine_hit": {
-    "subtitle": "sound.boatism.boat_engine_underwater",
+    "subtitle": "sound.boatism.boat_engine.underwater",
     "sounds": [
       "boatism:boat_engine_hit"
     ]
   },
   "boat_engine_low_fuel": {
-    "subtitle": "sound.boatism.boat_engine_low_fuel",
+    "subtitle": "sound.boatism.boat_engine.low_fuel",
     "sounds": [
       "boatism:boat_engine_low_fuel"
     ]
   },
   "boat_engine_low_health": {
-    "subtitle": "sound.boatism.boat_engine_low_health",
+    "subtitle": "sound.boatism.boat_engine.low_health",
     "sounds": [
       "boatism:boat_engine_low_health"
     ]
   },
   "boat_engine_underwater": {
-    "subtitle": "sound.boatism.boat_engine_underwater",
+    "subtitle": "sound.boatism.boat_engine.underwater",
     "sounds": [
       "boatism:boat_engine_underwater"
+    ]
+  },
+  "boat_engine_power_up": {
+    "subtitle": "sound.boatism.boat_engine.power_up",
+    "sounds": [
+      "boatism:boat_engine_power_up"
+    ]
+  },
+  "boat_engine_power_down": {
+    "subtitle": "sound.boatism.boat_engine.power_down",
+    "sounds": [
+      "boatism:boat_engine_power_down"
     ]
   }
 }

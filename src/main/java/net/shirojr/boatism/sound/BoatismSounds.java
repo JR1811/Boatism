@@ -13,6 +13,8 @@ public class BoatismSounds {
     public static SoundEvent BOAT_ENGINE_LOW_FUEL = of("boat_engine_low_fuel");
     public static SoundEvent BOAT_ENGINE_LOW_HEALTH = of("boat_engine_low_health");
     public static SoundEvent BOAT_ENGINE_HIT = of("boat_engine_hit");
+    public static SoundEvent BOAT_ENGINE_POWER_UP = of("boat_engine_power_up");
+    public static SoundEvent BOAT_ENGINE_POWER_DOWN = of("boat_engine_power_down");
 
 
 
