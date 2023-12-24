@@ -1,8 +1,13 @@
 {
   "entity.boatism.boat_engine": "Boat Engine",
-  "boatism:boat_engine.default": "Sound of running Engine",
-  "boatism:boat_engine.underwater": "Sound of running Engine under water",
-  "boatism:boat_engine.power_up": "Sound of increased Boat Engine power",
-  "boatism:boat_engine.power_down": "Sound of decreased Boat Engine power",
-  "mouse.boatism.power_level": "Power Level: §a%s§r"
+
+  "mouse.boatism.power_level": "Power Level: §a%s§r",
+
+  "sound.boatism.boat_engine.default": "Sound of running Engine",
+  "sound.boatism.boat_engine.underwater": "Sound of running Engine under water",
+  "sound.boatism.boat_engine.power_up": "Sound of increased Boat Engine power",
+  "sound.boatism.boat_engine.power_down": "Sound of decreased Boat Engine power",
+  "sound.boatism.boat_engine.start": "Sound of starting Boat Engine",
+  "sound.boatism.boat_engine.stop": "Sound of stopping Boat Engine",
+  "sound.boatism.boat_engine.heat": "Sound of overheating Boat Engine"
 }

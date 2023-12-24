@@ -40,5 +40,23 @@
     "sounds": [
       "boatism:boat_engine_power_down"
     ]
+  },
+  "boat_engine_start": {
+    "subtitle": "sound.boatism.boat_engine.start",
+    "sounds": [
+      "boatism:boat_engine_start"
+    ]
+  },
+  "boat_engine_heat": {
+    "subtitle": "sound.boatism.boat_engine.heat",
+    "sounds": [
+      "boatism:boat_engine_heat"
+    ]
+  },
+  "boat_engine_stop": {
+    "subtitle": "sound.boatism.boat_engine.stop",
+    "sounds": [
+      "boatism:boat_engine_stop"
+    ]
   }
 }
