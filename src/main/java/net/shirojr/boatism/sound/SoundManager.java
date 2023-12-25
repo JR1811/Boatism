@@ -29,8 +29,9 @@ public class SoundManager {
      */
     public void start(SoundInstanceHelper soundInstanceHelper, SoundInstance soundInstance) {
         this.activeSoundInstances.put(soundInstanceHelper, soundInstance);
-        if (!(soundInstance instanceof SoundInstanceState state)) return;
+        this.client.getSoundManager().play(soundInstance);
 
+        if (!(soundInstance instanceof SoundInstanceState state)) return;
         for (var activeInstance : activeSoundInstances.entrySet()) {
             if (!(activeInstance.getValue() instanceof SoundInstanceState activeInstanceState)) continue;
             if (state.isMainSound() && activeInstanceState.isMainSound()) this.stop(activeInstance.getKey());

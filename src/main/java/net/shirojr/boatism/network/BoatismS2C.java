@@ -8,12 +8,11 @@ import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
+import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.instance.custom.*;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.SoundInstanceHelper;
-
-import java.util.Optional;
 
 public class BoatismS2C {
     public static final Identifier CUSTOM_SOUND_INSTANCE_PACKET = new Identifier(Boatism.MODID, "custom_sound_instance");
@@ -28,13 +27,11 @@ public class BoatismS2C {
         Identifier soundInstanceId = clientBuf.readIdentifier();
         int entityId = clientBuf.readVarInt();
 
-        client.execute(() -> {
-            Optional<SoundInstanceHelper> soundInstanceIdentifier = SoundInstanceHelper.fromIdentifier(soundInstanceId);
-            if (client.world == null || soundInstanceIdentifier.isEmpty()) return;
+        client.execute(() -> SoundInstanceHelper.fromIdentifier(soundInstanceId).ifPresent(soundInstanceHelper -> {
+            if (client.world == null) return;
             if (!(client.world.getEntityById(entityId) instanceof BoatEngineEntity boatEngineEntity)) return;
-
             SoundInstance soundInstance;
-            switch (soundInstanceIdentifier.get()) {
+            switch (soundInstanceHelper) {
                 case ENGINE_RUNNING -> soundInstance = new EngineRunningSoundInstance(boatEngineEntity);
                 case ENGINE_RUNNING_UNDERWATER -> soundInstance = new EngineSubmergedSoundInstance(boatEngineEntity);
                 case ENGINE_LOW_FUEL -> soundInstance = new EngineLowFuelSoundInstance(boatEngineEntity);
@@ -45,7 +42,9 @@ public class BoatismS2C {
                     return;
                 }
             }
-            client.getSoundManager().play(soundInstance);
-        });
+
+            // client.getSoundManager().play(soundInstance);
+            BoatismClient.soundManager.start(soundInstanceHelper, soundInstance);
+        }));
     }
 }
