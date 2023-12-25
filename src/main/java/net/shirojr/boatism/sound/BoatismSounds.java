@@ -19,7 +19,7 @@ public class BoatismSounds {
     public static SoundEvent BOAT_ENGINE_START_FAIL = of("boat_engine_start_fail");
     public static SoundEvent BOAT_ENGINE_STOP = of("boat_engine_stop");
     public static SoundEvent BOAT_ENGINE_HEAT = of("boat_engine_heat");
-
+    public static SoundEvent BOAT_ENGINE_FILL_UP = of("boat_engine_pour");
 
 
     static SoundEvent of(String id) {

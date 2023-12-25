@@ -39,6 +39,7 @@ public class MouseMixin {
         if (boatEntity.getFirstPassenger() == null || !boatEntity.getFirstPassenger().equals(player)) return;
         Optional<BoatEngineEntity> boatEngineEntity = ((BoatEngineCoupler)boatEntity).boatism$getBoatEngineEntity();
         if (boatEngineEntity.isEmpty()) return;
+        if (!boatEngineEntity.get().getEngineHandler().engineIsRunning()) return;
 
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeDouble(delta);

@@ -4,6 +4,9 @@ import net.shirojr.boatism.util.SoundInstanceHelper;
 
 import java.util.List;
 
+/**
+ * Check out {@linkplain net.shirojr.boatism.sound.SoundManager SoundManager} for more information.
+ */
 public interface SoundInstanceState {
     /**
      * Main sounds will stop other main sounds, when started.<br>
@@ -11,7 +14,11 @@ public interface SoundInstanceState {
      */
     boolean isMainSound();
 
-    default List<SoundInstanceHelper> unsupportedSoundLines() {
+    /**
+     * Manually specify, which other SoundInstances should be stopped, when activated
+     * @return List of unsupported SoundInstanceHelper objects
+     */
+    default List<SoundInstanceHelper> unsupportedInstances() {
         return List.of();
     }
 }

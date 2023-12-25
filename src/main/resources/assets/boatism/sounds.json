@@ -64,5 +64,11 @@
     "sounds": [
       "boatism:boat_engine_stop"
     ]
+  },
+  "boat_engine_pour": {
+    "subtitle": "sound.boatism.boat_engine.pour",
+    "sounds": [
+      "boatism:boat_engine_pour"
+    ]
   }
 }

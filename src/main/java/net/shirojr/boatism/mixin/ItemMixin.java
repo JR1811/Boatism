@@ -29,7 +29,7 @@ public class ItemMixin {
                                            CallbackInfoReturnable<ActionResult> cir) {
         World world = user.getWorld();
         Item usedItem = stack.getItem();
-        if (!(entity instanceof BoatEngineEntity boatEngineEntity)) return;
+        if (world.isClient() || !(entity instanceof BoatEngineEntity boatEngineEntity)) return;
 
         if (usedItem.equals(Items.STICK)) {
             if (user.isSneaking()) {
@@ -48,16 +48,19 @@ public class ItemMixin {
                 cir.setReturnValue(ActionResult.SUCCESS);
             }
         }
+
+        BoatEngineHandler engineHandler = boatEngineEntity.getEngineHandler();
+
         if (usedItem.equals(Items.FLINT)) {
-            boatEngineEntity.getEngineHandler().fillUpFuel(BoatEngineHandler.MAX_FUEL);
+            engineHandler.fillUpFuel(BoatEngineHandler.MAX_FUEL);
         }
         if (usedItem.equals(Items.AMETHYST_SHARD)) {
-            if (boatEngineEntity.getEngineHandler().engineIsRunning()) {
-                boatEngineEntity.getEngineHandler().stopEngine();
+            if (engineHandler.engineIsRunning()) {
+                engineHandler.stopEngine();
             } else {
-                boatEngineEntity.getEngineHandler().startEngine();
+                engineHandler.startEngine();
             }
-            LoggerUtil.devLogger(String.format("Engine is running: %s", boatEngineEntity.getEngineHandler().engineIsRunning()));
+            LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
         }
     }
 }

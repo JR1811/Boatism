@@ -17,7 +17,7 @@ public class EngineSubmergedSoundInstance extends BoatismSoundInstance implement
     @Override
     public void tick() {
         super.tick();
-
+        defaultSoundHandling(this);
     }
 
     @Override

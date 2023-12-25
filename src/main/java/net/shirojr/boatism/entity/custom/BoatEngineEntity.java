@@ -134,8 +134,9 @@ public class BoatEngineEntity extends LivingEntity {
         this.setNoGravity(true);
         if (this.getWorld().isClient()) return;
 
-        this.engineHandler.incrementTick();
         this.engineHandler.setSubmerged(this.submergedInWater);
+        this.engineHandler.incrementTick();
+
     }
 
     public void updateEnginePosition(BoatEngineEntity passenger, PositionUpdater positionUpdater) {
@@ -210,6 +211,7 @@ public class BoatEngineEntity extends LivingEntity {
 
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeIdentifier(stateIdentifier);
+        buf.writeVarInt(this.getId());
         ServerPlayNetworking.send(player, BoatismS2C.CUSTOM_SOUND_INSTANCE_PACKET, buf);
         super.onStartedTrackingBy(player);
     }
