@@ -136,13 +136,13 @@ public class BoatEngineEntity extends LivingEntity {
 
         this.engineHandler.setSubmerged(this.submergedInWater);
         this.engineHandler.incrementTick();
-
     }
 
     public void updateEnginePosition(BoatEngineEntity passenger, PositionUpdater positionUpdater) {
         getHookedBoatEntity().ifPresent(boatEntity -> {
             Vec3d enginePos = enginePosition(boatEntity);
             positionUpdater.accept(passenger, enginePos.x, enginePos.y, enginePos.z);
+            passenger.setYaw(boatEntity.getYaw());
         });
     }
 
