@@ -3,10 +3,13 @@ package net.shirojr.boatism.sound;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.util.Identifier;
+import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
 import net.shirojr.boatism.util.SoundInstanceHelper;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SoundManager {
     private final MinecraftClient client = MinecraftClient.getInstance();
@@ -24,8 +27,9 @@ public class SoundManager {
      *     <li>if new SoundInstance is a main sound, it will stop all other currently running main sounds</li>
      *     <li>if new SoundInstance is manually excluding other sounds, those will be stopped as well</li>
      * </ul>
+     *
      * @param soundInstanceHelper The identifying enum of the SoundInstance
-     * @param soundInstance the actual object, which will be passed to the client SoundManager
+     * @param soundInstance       the actual object, which will be passed to the client SoundManager
      */
     public void start(SoundInstanceHelper soundInstanceHelper, SoundInstance soundInstance) {
         this.activeSoundInstances.put(soundInstanceHelper, soundInstance);
@@ -45,5 +49,12 @@ public class SoundManager {
         Identifier soundInstanceIdentifier = this.activeSoundInstances.get(soundInstanceHelper).getId();
         this.client.getSoundManager().stopSounds(soundInstanceIdentifier, soundInstanceHelper.getCategory());
         this.activeSoundInstances.remove(soundInstanceHelper);
+    }
+
+    public void stopAllBoatismSoundInstances() {
+        for (var entry : this.activeSoundInstances.entrySet()) {
+            client.getSoundManager().stop(entry.getValue());
+        }
+        this.activeSoundInstances.clear();
     }
 }
