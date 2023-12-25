@@ -8,7 +8,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.RotationAxis;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
@@ -32,10 +31,10 @@ public class BoatEngineEntityRenderer extends LivingEntityRenderer<BoatEngineEnt
 
         if (livingEntity.getHookedBoatEntity().isPresent()) {
             BoatEntity boat = livingEntity.getHookedBoatEntity().get();
-            matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-(boat.getYaw())));
+            //matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-(boat.getYaw())));
 
         }
-        if (livingEntity.isResting()) {
+        if (livingEntity.isLocked()) {
             float rotationOffsetX = 0.0f;
             float rotationOffsetY = 0.43f;
             float rotationOffsetZ = 0.5f;

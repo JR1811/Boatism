@@ -8,6 +8,8 @@
   "sound.boatism.boat_engine.power_up": "Sound of increased Boat Engine power",
   "sound.boatism.boat_engine.power_down": "Sound of decreased Boat Engine power",
   "sound.boatism.boat_engine.start": "Sound of starting Boat Engine",
+  "sound.boatism.boat_engine.start.fail": "Sound of Boat Engine not starting",
   "sound.boatism.boat_engine.stop": "Sound of stopping Boat Engine",
-  "sound.boatism.boat_engine.heat": "Sound of overheating Boat Engine"
+  "sound.boatism.boat_engine.heat": "Sound of overheating Boat Engine",
+  "sound.boatism.boat_engine.pour": "Sound of fuel being poured"
 }

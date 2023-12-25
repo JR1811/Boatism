@@ -4,6 +4,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.entity.vehicle.VehicleEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.util.BoatEngineCoupler;
@@ -27,6 +29,7 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
 
     @Override
     public void boatism$setBoatEngineEntity(BoatEngineEntity boatEngineEntity) {
+
         this.boatEngineEntity = boatEngineEntity;
     }
 
@@ -52,5 +55,18 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
         if (other instanceof BoatEngineEntity) {
             cir.setReturnValue(false);
         }
+    }
+
+    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
+    private void boatism$readBoatEngineEntry(NbtCompound nbt, CallbackInfo ci) {
+        BoatEntity boatEntity = (BoatEntity) (Object) this;
+        if (!nbt.contains("BoatEngineUuid") || !(boatEntity.getWorld() instanceof ServerWorld serverWorld)) return;
+        ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity((BoatEngineEntity) serverWorld.getEntity(nbt.getUuid("BoatEngineUuid")));
+    }
+
+    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
+    private void boatism$writeBoatEngineEntry(NbtCompound nbt, CallbackInfo ci) {
+        BoatEntity boatEntity = (BoatEntity) (Object) this;
+        ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntity().ifPresent(boatEngine -> nbt.putUuid("BoatEngineUuid", boatEngine.getUuid()));
     }
 }

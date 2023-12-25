@@ -7,7 +7,6 @@ import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.SwordItem;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
@@ -33,8 +32,7 @@ public class ItemMixin {
 
         if (usedItem.equals(Items.STICK)) {
             if (user.isSneaking()) {
-                boolean isResting = boatEngineEntity.isResting();
-                boatEngineEntity.setResting(!isResting);
+                boatEngineEntity.setLocked(!boatEngineEntity.isLocked());
             }
             int boxSize = 5;
             Box box = new Box(user.getX() - boxSize, user.getY() - boxSize, user.getZ() - boxSize,

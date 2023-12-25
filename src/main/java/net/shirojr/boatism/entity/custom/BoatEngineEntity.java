@@ -43,13 +43,14 @@ import java.util.UUID;
 public class BoatEngineEntity extends LivingEntity {
     private final DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2, ItemStack.EMPTY);
     private final DefaultedList<ItemStack> armorItems = DefaultedList.ofSize(4, ItemStack.EMPTY);
-    private static final TrackedData<Integer> POWER_OUTPUT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER); // implement power steps which are controllable with mouse wheel
+    private static final TrackedData<Integer> POWER_LEVEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER); // implement power steps which are controllable with mouse wheel
     private static final TrackedData<EulerAngle> ARM_ROTATION = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.ROTATION);
-    private static final TrackedData<Boolean> IS_SUBMERGED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Boolean> SUBMERGED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Boolean> RUNNING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> HAS_LOW_FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Boolean> ENGINE_IS_RESTING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN); // angle upwards (immunity on land)
+    private static final TrackedData<Boolean> LOCKED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN); // angle upwards (immunity on land)
     @Nullable
-    private BoatEntity hookedBoatEntity;
+    private UUID hookedBoatEntityUuid;
     @NotNull
     private final BoatEngineHandler engineHandler;
     private int lerpTicks;
@@ -79,11 +80,12 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     protected void initDataTracker() {
         super.initDataTracker();
-        this.dataTracker.startTracking(POWER_OUTPUT, 0);
+        this.dataTracker.startTracking(POWER_LEVEL, 0);
         this.dataTracker.startTracking(ARM_ROTATION, new EulerAngle(0.0f, 5.0f, 0.0f));
-        this.dataTracker.startTracking(IS_SUBMERGED, false);
+        this.dataTracker.startTracking(SUBMERGED, false);
         this.dataTracker.startTracking(HAS_LOW_FUEL, false);
-        this.dataTracker.startTracking(ENGINE_IS_RESTING, false);
+        this.dataTracker.startTracking(LOCKED, false);
+        this.dataTracker.startTracking(RUNNING, false);
     }
 
     public static DefaultAttributeContainer.Builder setAttributes() {
@@ -94,16 +96,14 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
-        if (getHookedBoatEntity().isPresent()) {
-            nbt.putUuid("HookedEntity", getHookedBoatEntity().get().getUuid());
-        }
+        getHookedBoatEntityUuid().ifPresent(hookedBoatEntityUuid -> nbt.putUuid("HookedEntity", hookedBoatEntityUuid));
         BoatEngineNbtHelper.writeItemStacksToNbt(this.armorItems, "ArmorItems", nbt);
         BoatEngineNbtHelper.writeItemStacksToNbt(this.heldItems, "HandItems", nbt);
-        nbt.putInt("PowerOutput", this.getPowerOutput());
+        nbt.putInt("PowerOutput", this.getPowerLevel());
         nbt.put("ArmRotation", this.getArmRotation().toNbt());
         nbt.putBoolean("IsSubmerged", this.isSubmerged());
         nbt.putBoolean("HasLowFuel", this.hasLowFuel());
-        nbt.putBoolean("EngineIsResting", this.isResting());
+        nbt.putBoolean("IsLocked", this.isLocked());
     }
 
     @Override
@@ -114,11 +114,11 @@ public class BoatEngineEntity extends LivingEntity {
         }
         DefaultedList<ItemStack> armorList = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "ArmorItems");
         DefaultedList<ItemStack> handList = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "HandItems");
-        this.setPowerOutput(nbt.getInt("PowerOutput"));
+        this.setPowerLevel(nbt.getInt("PowerOutput"));
         this.setArmRotation(new EulerAngle(nbt.getList("ArmRotation", NbtElement.FLOAT_TYPE)));
         this.setSubmerged(nbt.getBoolean("IsSubmerged"));
         this.setLowFuel(nbt.getBoolean("HasLowFuel"));
-        this.setResting(nbt.getBoolean("EngineIsResting"));
+        this.setLocked(nbt.getBoolean("IsLocked"));
     }
 
     @Override
@@ -218,23 +218,18 @@ public class BoatEngineEntity extends LivingEntity {
 
     //region getter & setter
     public Optional<BoatEntity> getHookedBoatEntity() {
-        return Optional.ofNullable(this.hookedBoatEntity);
+        if (!(this.getWorld() instanceof ServerWorld serverWorld)) return Optional.empty();
+        Entity entity = serverWorld.getEntity(this.hookedBoatEntityUuid);
+        if (!(entity instanceof BoatEntity boatEntity)) return Optional.empty();
+        return Optional.of(boatEntity);
     }
 
-    /**
-     * @param uuid Boat entity to bind the engine on
-     * @return true, if entity has been successfully bound (can be ignored)
-     */
-    @SuppressWarnings("UnusedReturnValue")
-    public boolean setHookedBoatEntity(UUID uuid) {
-        if (this.getWorld() instanceof ServerWorld serverWorld) {
-            Entity entity = serverWorld.getEntity(uuid);
-            if (entity instanceof BoatEntity boatEntity) {
-                this.hookedBoatEntity = boatEntity;
-                return true;
-            }
-        }
-        return false;
+    public Optional<UUID> getHookedBoatEntityUuid() {
+        return Optional.ofNullable(this.hookedBoatEntityUuid);
+    }
+
+    public void setHookedBoatEntity(UUID uuid) {
+        this.hookedBoatEntityUuid = uuid;
     }
 
     @Override
@@ -280,7 +275,7 @@ public class BoatEngineEntity extends LivingEntity {
 
     public void hookOntoBoatEntity(BoatEntity boatEntity) {
         ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(this);
-        this.hookedBoatEntity = boatEntity;
+        this.hookedBoatEntityUuid = boatEntity.getUuid();
     }
 
     public float getMaxThrust() {
@@ -332,12 +327,12 @@ public class BoatEngineEntity extends LivingEntity {
         return this.engineHandler;
     }
 
-    public int getPowerOutput() {
-        return this.dataTracker.get(POWER_OUTPUT);
+    public int getPowerLevel() {
+        return this.dataTracker.get(POWER_LEVEL);
     }
 
-    public void setPowerOutput(int level) {
-        this.dataTracker.set(POWER_OUTPUT, level);
+    public void setPowerLevel(int level) {
+        this.dataTracker.set(POWER_LEVEL, level);
     }
 
     public EulerAngle getArmRotation() {
@@ -349,19 +344,27 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     public boolean isSubmerged() {
-        return this.dataTracker.get(IS_SUBMERGED);
+        return this.dataTracker.get(SUBMERGED);
     }
 
     public void setSubmerged(boolean isSubmerged) {
-        this.dataTracker.set(IS_SUBMERGED, isSubmerged);
+        this.dataTracker.set(SUBMERGED, isSubmerged);
     }
 
-    public boolean isResting() {
-        return this.dataTracker.get(ENGINE_IS_RESTING);
+    public boolean isRunning() {
+        return this.dataTracker.get(RUNNING);
     }
 
-    public void setResting(boolean resting) {
-        this.dataTracker.set(ENGINE_IS_RESTING, resting);
+    public void setIsRunning(boolean shouldRun) {
+        this.dataTracker.set(RUNNING, shouldRun);
+    }
+
+    public boolean isLocked() {
+        return this.dataTracker.get(LOCKED);
+    }
+
+    public void setLocked(boolean resting) {
+        this.dataTracker.set(LOCKED, resting);
     }
 
     public boolean hasLowFuel() {

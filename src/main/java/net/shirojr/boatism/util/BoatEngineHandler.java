@@ -20,36 +20,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BoatEngineHandler {
-    public static final int MAX_FUEL = 2000, MAX_POWER_LEVEL = 9, MAX_OVERHEAT_TICKS = 80;
+    public static final int MAX_FUEL = 150, MAX_POWER_LEVEL = 9, MAX_OVERHEAT_TICKS = 80;
 
-    private BoatEngineEntity boatEngine;
+    private final BoatEngineEntity boatEngine;
     private final DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2);
     private final DefaultedList<ItemStack> armorItems = DefaultedList.ofSize(4);
     private float fuel;
-    private int powerLevel;
-    private boolean isSubmerged;
-    private final boolean hasLowFuel;
-    private final boolean isResting;
-    private boolean isRunning;
     private int overHeatTicks;
 
-    private BoatEngineHandler(BoatEngineEntity boatEngine, List<ItemStack> heldItems, List<ItemStack> armorItems, float fuel, int powerLevel,
-                              boolean isSubmerged, boolean hasLowFuel, boolean isResting, boolean isRunning) {
+    private BoatEngineHandler(BoatEngineEntity boatEngine, List<ItemStack> heldItems, List<ItemStack> armorItems, float fuel) {
         this.boatEngine = boatEngine;
         this.heldItems.addAll(heldItems);
         this.armorItems.addAll(armorItems);
         this.fuel = fuel;
-        this.powerLevel = powerLevel;
-        this.isSubmerged = isSubmerged;
-        this.hasLowFuel = hasLowFuel;
-        this.isResting = isResting;
-        this.isRunning = isRunning;
         this.overHeatTicks = 0;
     }
 
     public static BoatEngineHandler create(BoatEngineEntity boatEngine, List<ItemStack> heldItems, List<ItemStack> armorItems) {
-        BoatEngineHandler engineHandler = new BoatEngineHandler(boatEngine, heldItems, armorItems,0.0f, 0,
-                false, true, false, false);
+        BoatEngineHandler engineHandler = new BoatEngineHandler(boatEngine, heldItems, armorItems, 0.0f);
         engineHandler.initiateSoundStateChange();
         return engineHandler;
     }
@@ -68,7 +56,7 @@ public class BoatEngineHandler {
 
         if (!engineIsRunning()) return;
 
-        consumeFuel(0.5f);
+        consumeFuel(1.0f);
 
         LoggerUtil.devLogger(String.format("Fuel: %s | OverheatTicks: %s", getFuel(), overHeatTicks));
     }
@@ -77,7 +65,8 @@ public class BoatEngineHandler {
         if (this.fuel < 5.0f) return false;
         if (isSubmerged() && breaksWhenSubmerged()) return false;
         if (isOverheating()) return false;
-        return !this.isRunning;
+        if (this.boatEngine.isLocked()) return false;
+        return !this.boatEngine.isRunning();
     }
 
     public float getFuel() {
@@ -90,9 +79,10 @@ public class BoatEngineHandler {
      */
     @SuppressWarnings("UnusedReturnValue")
     public float fillUpFuel(float fuel) {
-        if (fuel < 0) return 0;
-        playSoundEvent(BoatismSounds.BOAT_ENGINE_FILL_UP);
         float newFuelValue = getFuel() + fuel;
+        if (fuel <= 0) return 0;
+        if (newFuelValue == MAX_FUEL + fuel) return fuel;
+        playSoundEvent(BoatismSounds.BOAT_ENGINE_FILL_UP);
         if (newFuelValue > MAX_FUEL) {
             this.fuel = MAX_FUEL;
             return newFuelValue - MAX_FUEL;
@@ -101,8 +91,8 @@ public class BoatEngineHandler {
         return fuel;
     }
 
-    public void consumeFuel(float baseFuelAmount) {
-        float consumedFuel = baseFuelAmount + additionalConsumedFuel();
+    public void consumeFuel(float baseFuelConsumption) {
+        float consumedFuel = baseFuelConsumption + additionalConsumedFuel();
         this.fuel = Math.max(getFuel() - consumedFuel, 0);
     }
 
@@ -122,11 +112,13 @@ public class BoatEngineHandler {
     }
 
     public int getPowerLevel() {
-        return this.powerLevel;
+        return this.boatEngine.getPowerLevel();
     }
 
     public void setPowerLevel(int powerLevel) {
-        this.powerLevel = powerLevel;
+        powerLevel = Math.max(powerLevel, 0);
+        powerLevel = Math.min(powerLevel, MAX_POWER_LEVEL);
+        this.boatEngine.setPowerLevel(powerLevel);
     }
 
     public int getOverheatTicks() {
@@ -148,12 +140,12 @@ public class BoatEngineHandler {
     }
 
     public boolean isSubmerged() {
-        return this.isSubmerged;
+        return this.boatEngine.isSubmerged();
     }
 
     public void setSubmerged(boolean isSubmerged) {
-        if (isSubmerged == this.isSubmerged) return;
-        this.isSubmerged = isSubmerged;
+        if (isSubmerged == this.isSubmerged()) return;
+        this.boatEngine.setSubmerged(isSubmerged);
         soundStateChange(SoundInstanceHelper.ENGINE_RUNNING_UNDERWATER);
     }
 
@@ -172,19 +164,19 @@ public class BoatEngineHandler {
             return;
         }
         playSoundEvent(BoatismSounds.BOAT_ENGINE_START);
-        this.isRunning = true;
+        this.boatEngine.setIsRunning(true);
         soundStateChange(SoundInstanceHelper.ENGINE_RUNNING);
     }
 
     public void stopEngine() {
         if (!engineIsRunning()) return;
-        playSoundEvent(BoatismSounds.BOAT_ENGINE_STOP);
-        this.powerLevel = 0;
-        this.isRunning = false;
+        playSoundEvent(BoatismSounds.BOAT_ENGINE_STOP, 0.7f, 1.0f);
+        setPowerLevel(0);
+        this.boatEngine.setIsRunning(false);
     }
 
     public boolean engineIsRunning() {
-        return this.isRunning;
+        return this.boatEngine.isRunning();
     }
 
     public float calculateMaxThrust(BoatEntity hookedBoatEntity) {
@@ -253,8 +245,13 @@ public class BoatEngineHandler {
     }
 
     private void playSoundEvent(SoundEvent soundEvent) {
+        playSoundEvent(soundEvent, 1.0f, 1.0f);
+    }
+
+
+    private void playSoundEvent(SoundEvent soundEvent, float volume, float pitch) {
         if (this.boatEngine.getWorld().isClient()) return;
         this.boatEngine.getWorld().playSound(null, boatEngine.getBlockPos(),
-                BoatismSounds.BOAT_ENGINE_STOP, SoundCategory.NEUTRAL, 1.0f, 1.0f);
+                soundEvent, SoundCategory.NEUTRAL, volume, pitch);
     }
 }
