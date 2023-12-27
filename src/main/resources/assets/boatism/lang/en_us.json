@@ -3,13 +3,13 @@
 
   "mouse.boatism.power_level": "Power Level: §a%s§r",
 
-  "sound.boatism.boat_engine.default": "Sound of running Engine",
-  "sound.boatism.boat_engine.underwater": "Sound of running Engine under water",
-  "sound.boatism.boat_engine.power_up": "Sound of increased Boat Engine power",
-  "sound.boatism.boat_engine.power_down": "Sound of decreased Boat Engine power",
-  "sound.boatism.boat_engine.start": "Sound of starting Boat Engine",
-  "sound.boatism.boat_engine.start.fail": "Sound of Boat Engine not starting",
-  "sound.boatism.boat_engine.stop": "Sound of stopping Boat Engine",
-  "sound.boatism.boat_engine.heat": "Sound of overheating Boat Engine",
-  "sound.boatism.boat_engine.pour": "Sound of fuel being poured"
+  "sound.boatism.boat_engine.default": "Running Engine",
+  "sound.boatism.boat_engine.underwater": "Running submerged Engine",
+  "sound.boatism.boat_engine.power_up": "Increased Boat Engine power click",
+  "sound.boatism.boat_engine.power_down": "Decreased Boat Engine power click",
+  "sound.boatism.boat_engine.start": "Starting Boat Engine",
+  "sound.boatism.boat_engine.start.fail": "Failed start of a Boat Engine",
+  "sound.boatism.boat_engine.stop": "Stopping Boat Engine",
+  "sound.boatism.boat_engine.heat": "Overheating Boat Engine",
+  "sound.boatism.boat_engine.pour": "Fuel being poured"
 }
