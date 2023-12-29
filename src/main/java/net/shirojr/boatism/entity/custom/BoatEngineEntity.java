@@ -239,6 +239,7 @@ public class BoatEngineEntity extends LivingEntity {
     public void hookOntoBoatEntity(BoatEntity boatEntity) {
         ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(this.getUuid());
         this.hookedBoatEntityUuid = boatEntity.getUuid();
+        this.startRiding(boatEntity, true);
     }
 
     @Override
