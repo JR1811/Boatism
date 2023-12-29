@@ -6,7 +6,7 @@ import net.shirojr.boatism.Boatism;
 
 import java.util.Optional;
 
-public enum SoundInstanceHelper {
+public enum SoundInstanceIdentifier {
     ENGINE_RUNNING("engine_running"),
     ENGINE_RUNNING_UNDERWATER("engine_underwater"),
     ENGINE_LOW_FUEL("engine_low_fuel"),
@@ -17,12 +17,12 @@ public enum SoundInstanceHelper {
     private final Identifier identifier;
     private final SoundCategory category;
 
-    SoundInstanceHelper(String soundInstanceName, SoundCategory category) {
+    SoundInstanceIdentifier(String soundInstanceName, SoundCategory category) {
         this.identifier = new Identifier(Boatism.MODID, soundInstanceName);
         this.category = category;
     }
 
-    SoundInstanceHelper(String soundInstanceName) {
+    SoundInstanceIdentifier(String soundInstanceName) {
         this(soundInstanceName, SoundCategory.NEUTRAL);
     }
 
@@ -34,8 +34,8 @@ public enum SoundInstanceHelper {
         return this.category;
     }
 
-    public static Optional<SoundInstanceHelper> fromIdentifier(Identifier identifier) {
-        for (SoundInstanceHelper instance : SoundInstanceHelper.values()) {
+    public static Optional<SoundInstanceIdentifier> fromIdentifier(Identifier identifier) {
+        for (SoundInstanceIdentifier instance : SoundInstanceIdentifier.values()) {
             if (instance.identifier.equals(identifier)) return Optional.of(instance);
         }
         return Optional.empty();

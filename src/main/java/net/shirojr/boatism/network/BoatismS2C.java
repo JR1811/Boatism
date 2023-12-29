@@ -12,7 +12,7 @@ import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.instance.custom.*;
 import net.shirojr.boatism.util.LoggerUtil;
-import net.shirojr.boatism.util.SoundInstanceHelper;
+import net.shirojr.boatism.util.SoundInstanceIdentifier;
 
 public class BoatismS2C {
     public static final Identifier CUSTOM_SOUND_INSTANCE_PACKET = new Identifier(Boatism.MODID, "custom_sound_instance");
@@ -27,7 +27,7 @@ public class BoatismS2C {
         Identifier soundInstanceId = clientBuf.readIdentifier();
         int entityId = clientBuf.readVarInt();
 
-        client.execute(() -> SoundInstanceHelper.fromIdentifier(soundInstanceId).ifPresent(soundInstanceHelper -> {
+        client.execute(() -> SoundInstanceIdentifier.fromIdentifier(soundInstanceId).ifPresent(soundInstanceHelper -> {
             if (client.world == null) return;
             if (!(client.world.getEntityById(entityId) instanceof BoatEngineEntity boatEngineEntity)) return;
             SoundInstance soundInstance;
@@ -43,7 +43,6 @@ public class BoatismS2C {
                 }
             }
 
-            // client.getSoundManager().play(soundInstance);
             BoatismClient.soundManager.start(soundInstanceHelper, soundInstance);
         }));
     }

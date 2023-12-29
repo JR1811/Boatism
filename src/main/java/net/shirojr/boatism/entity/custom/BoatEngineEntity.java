@@ -47,22 +47,17 @@ public class BoatEngineEntity extends LivingEntity {
     private static final TrackedData<EulerAngle> ARM_ROTATION = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.ROTATION);
     private static final TrackedData<Boolean> SUBMERGED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> RUNNING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Boolean> HAS_LOW_FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Float> FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private static final TrackedData<Boolean> LOCKED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN); // angle upwards (immunity on land)
     @Nullable
     private UUID hookedBoatEntityUuid;
     @NotNull
     private final BoatEngineHandler engineHandler;
-    private int lerpTicks;
-    private double x, y, z;
-    private double boatYaw, boatPitch;
 
     public BoatEngineEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
         this.engineHandler = BoatEngineHandler.create(this, this.heldItems, this.armorItems);
         this.setNoGravity(true);
-        //this.setVelocity(Vec3d.ZERO);
-        //this.velocityModified = true;
         this.setStepHeight(0.0f);
     }
 
@@ -83,7 +78,7 @@ public class BoatEngineEntity extends LivingEntity {
         this.dataTracker.startTracking(POWER_LEVEL, 0);
         this.dataTracker.startTracking(ARM_ROTATION, new EulerAngle(0.0f, 5.0f, 0.0f));
         this.dataTracker.startTracking(SUBMERGED, false);
-        this.dataTracker.startTracking(HAS_LOW_FUEL, false);
+        this.dataTracker.startTracking(FUEL, 0.0f);
         this.dataTracker.startTracking(LOCKED, false);
         this.dataTracker.startTracking(RUNNING, false);
     }
@@ -102,7 +97,7 @@ public class BoatEngineEntity extends LivingEntity {
         nbt.putInt("PowerOutput", this.getPowerLevel());
         nbt.put("ArmRotation", this.getArmRotation().toNbt());
         nbt.putBoolean("IsSubmerged", this.isSubmerged());
-        nbt.putBoolean("HasLowFuel", this.hasLowFuel());
+        nbt.putFloat("Fuel", this.getFuel());
         nbt.putBoolean("IsLocked", this.isLocked());
     }
 
@@ -117,7 +112,7 @@ public class BoatEngineEntity extends LivingEntity {
         this.setPowerLevel(nbt.getInt("PowerOutput"));
         this.setArmRotation(new EulerAngle(nbt.getList("ArmRotation", NbtElement.FLOAT_TYPE)));
         this.setSubmerged(nbt.getBoolean("IsSubmerged"));
-        this.setLowFuel(nbt.getBoolean("HasLowFuel"));
+        this.setFuel(nbt.getFloat("Fuel"));
         this.setLocked(nbt.getBoolean("IsLocked"));
     }
 
@@ -126,12 +121,26 @@ public class BoatEngineEntity extends LivingEntity {
         super.fall(heightDifference, onGround, state, landedPosition);
     }
 
-    //entity.refreshPositionAndAngles(x, y, z, entity.getYaw(), entity.getPitch())
-
     @Override
     public void tick() {
         super.tick();
         this.setNoGravity(true);
+        //this.setVelocity(Vec3d.ZERO);
+/*        this.updateEnginePosition(this, (entity, x, y, z) -> entity.refreshPositionAndAngles(x, y, z, 0, 0));
+        this.updatePositionAndRotation();*/
+
+        if (isRunning()) {
+            this.getHookedBoatEntity().ifPresent(boatEntity -> {
+                Vec3d originalVelocity = boatEntity.getVelocity();
+                if (originalVelocity.length() <= 0 && boatEntity.getControllingPassenger() != null) {
+                    originalVelocity = boatEntity.getControllingPassenger().getVelocity();
+                }
+                Vec3d newVelocity = boatEntity.getRotationVector().multiply(1.0, 0.0, 1.0).normalize().multiply(getPowerLevel() * 0.1);
+                boatEntity.setVelocity(newVelocity/* originalVelocity.multiply(newVelocity)*/);
+                boatEntity.velocityModified = true;
+            });
+        }
+
         if (this.getWorld().isClient()) return;
 
         this.engineHandler.setSubmerged(this.submergedInWater);
@@ -147,54 +156,8 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     private Vec3d enginePosition(BoatEntity boatEntity) {
-        Vector3f attachmentPos = new Vector3f(0.0f, 0.2f, -1.0f);
+        Vector3f attachmentPos = new Vector3f(0.0f, 0.2f, -1.3f);
         return new Vec3d(attachmentPos.rotateY(-boatEntity.getYaw() * ((float) Math.PI / 180))).add(boatEntity.getPos());
-    }
-
-    public void updatePositionAndRotation() {
-        getHookedBoatEntity().ifPresent(boatEntity -> {
-            if (this.isLogicalSideForUpdatingMovement()) {
-                this.lerpTicks = 0;
-                this.updateTrackedPosition(this.getX(), this.getY(), this.getZ());
-            }
-            if (this.lerpTicks <= 0) {
-                return;
-            }
-            this.lerpPosAndRotation(this.lerpTicks, this.x, this.y, this.z, this.boatYaw, this.boatPitch);
-            --this.lerpTicks;
-        });
-    }
-
-    @Override
-    public double getLerpTargetX() {
-        return this.lerpTicks > 0 ? this.x : this.getX();
-    }
-
-    @Override
-    public double getLerpTargetY() {
-        return this.lerpTicks > 0 ? this.y : this.getY();
-    }
-
-    @Override
-    public double getLerpTargetZ() {
-        return this.lerpTicks > 0 ? this.z : this.getZ();
-    }
-
-    @Override
-    public float getLerpTargetPitch() {
-        return this.lerpTicks > 0 ? (float) this.boatPitch : this.getPitch();
-    }
-
-    @Override
-    public float getLerpTargetYaw() {
-        return this.lerpTicks > 0 ? (float) this.boatYaw : this.getYaw();
-    }
-
-
-    @Override
-    public void travel(Vec3d movementInput) {
-        super.travel(movementInput);
-
     }
 
     @Override
@@ -203,10 +166,10 @@ public class BoatEngineEntity extends LivingEntity {
 
         Identifier stateIdentifier = null;
         if (this.getEngineHandler().engineIsRunning())
-            stateIdentifier = SoundInstanceHelper.ENGINE_RUNNING.getIdentifier();
-        if (this.hasLowFuel()) stateIdentifier = SoundInstanceHelper.ENGINE_LOW_FUEL.getIdentifier();
-        if (this.hasLowHealth()) stateIdentifier = SoundInstanceHelper.ENGINE_LOW_HEALTH.getIdentifier();
-        if (this.isSubmerged()) stateIdentifier = SoundInstanceHelper.ENGINE_RUNNING_UNDERWATER.getIdentifier();
+            stateIdentifier = SoundInstanceIdentifier.ENGINE_RUNNING.getIdentifier();
+        if (this.engineHandler.isLowOnFuel()) stateIdentifier = SoundInstanceIdentifier.ENGINE_LOW_FUEL.getIdentifier();
+        if (this.hasLowHealth()) stateIdentifier = SoundInstanceIdentifier.ENGINE_LOW_HEALTH.getIdentifier();
+        if (this.isSubmerged()) stateIdentifier = SoundInstanceIdentifier.ENGINE_RUNNING_UNDERWATER.getIdentifier();
         if (stateIdentifier == null) return;
 
         PacketByteBuf buf = PacketByteBufs.create();
@@ -274,12 +237,8 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     public void hookOntoBoatEntity(BoatEntity boatEntity) {
-        ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(this);
+        ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(this.getUuid());
         this.hookedBoatEntityUuid = boatEntity.getUuid();
-    }
-
-    public float getMaxThrust() {
-        return this.engineHandler.calculateMaxThrust(getHookedBoatEntity().orElse(null));
     }
 
     @Override
@@ -367,16 +326,27 @@ public class BoatEngineEntity extends LivingEntity {
         this.dataTracker.set(LOCKED, resting);
     }
 
-    public boolean hasLowFuel() {
-        return this.dataTracker.get(HAS_LOW_FUEL);
+    public float getFuel() {
+        return this.dataTracker.get(FUEL);
     }
 
-    public void setLowFuel(boolean hasLowFuel) {
-        this.dataTracker.set(HAS_LOW_FUEL, hasLowFuel);
+    public void setFuel(float fuel) {
+        this.dataTracker.set(FUEL, fuel);
     }
 
     public boolean hasLowHealth() {
         return this.getHealth() <= Boatism.CONFIG.boatValues.getLowHealthValue();
+    }
+
+    public void onOverheated() {
+        if (!this.getEngineHandler().isOverheating()) return;
+
+    }
+
+    public static void removeBoatEngineEntry(Entity entity) {
+        if (!(entity instanceof BoatEntity boatEntity)) return;
+        ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().ifPresent(boatEngineEntity ->
+                ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
     }
 
     @Override

@@ -3,13 +3,10 @@ package net.shirojr.boatism.sound.instance.custom;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
-import net.shirojr.boatism.util.SoundInstanceHelper;
-
-import java.util.List;
 
 public class EngineLowHealthSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     public EngineLowHealthSoundInstance(BoatEngineEntity entity) {
-        super(entity, BoatismSounds.BOAT_ENGINE_LOW_HEALTH);
+        super(entity, BoatismSounds.BOAT_ENGINE_LOW_HEALTH, 100, 80);
     }
 
     @Override

@@ -6,7 +6,7 @@ import net.shirojr.boatism.sound.instance.SoundInstanceState;
 
 public class EngineSubmergedSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     public EngineSubmergedSoundInstance(BoatEngineEntity boatEngineEntity) {
-        super(boatEngineEntity, BoatismSounds.BOAT_ENGINE_UNDERWATER);
+        super(boatEngineEntity, BoatismSounds.BOAT_ENGINE_UNDERWATER, 100, 80);
     }
 
     @Override

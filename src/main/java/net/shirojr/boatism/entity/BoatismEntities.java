@@ -18,7 +18,7 @@ public class BoatismEntities {
     public static final EntityType<BoatEngineEntity> BOAT_ENGINE = register("boat_engine",
             FabricEntityTypeBuilder.<BoatEngineEntity>create(SpawnGroup.MISC, BoatEngineEntity::new)
                     .dimensions(EntityDimensions.changing(0.7f, 0.7f))
-                    .spawnableFarFromPlayer().build());
+                    .trackedUpdateRate(1).spawnableFarFromPlayer().build());
 
     private static <E extends Entity, T extends EntityType<E>> T register(@NotNull String name, @NotNull T entityType) {
         return Registry.register(Registries.ENTITY_TYPE, new Identifier(Boatism.MODID, name), entityType);

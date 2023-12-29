@@ -1,11 +1,12 @@
 package net.shirojr.boatism.sound.instance;
 
-import net.shirojr.boatism.util.SoundInstanceHelper;
+import net.shirojr.boatism.sound.BoatismSoundManager;
+import net.shirojr.boatism.util.SoundInstanceIdentifier;
 
 import java.util.List;
 
 /**
- * Check out {@linkplain net.shirojr.boatism.sound.SoundManager SoundManager} for more information.
+ * Check out {@linkplain BoatismSoundManager BoatismSoundManager} for more information.
  */
 public interface SoundInstanceState {
     /**
@@ -16,9 +17,9 @@ public interface SoundInstanceState {
 
     /**
      * Manually specify, which other SoundInstances should be stopped, when activated
-     * @return List of unsupported SoundInstanceHelper objects
+     * @return List of unsupported SoundInstanceIdentifier objects
      */
-    default List<SoundInstanceHelper> unsupportedInstances() {
+    default List<SoundInstanceIdentifier> unsupportedInstances() {
         return List.of();
     }
 }

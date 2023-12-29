@@ -12,17 +12,21 @@ import net.shirojr.boatism.util.LoggerUtil;
 public class BoatismSoundInstance extends MovingSoundInstance {
     protected BoatEngineEntity boatEngineEntity;
     protected BoatEngineHandler engineHandler;
-    private static final int START_TRANSITION_TICKS = 100, END_TRANSITION_TICKS = 80;
-    private TransitionState transitionState = TransitionState.STARTING;
+    private final int startTransitionTicks;
+    private final int endTransitionTicks;
+    private TransitionState transitionState;
     private int currentTick = 0, transitionTick = 0;
     private float distance = 0.0f;
 
-    public BoatismSoundInstance(BoatEngineEntity boatEngineEntity, SoundEvent soundEvent) {
+    public BoatismSoundInstance(BoatEngineEntity boatEngineEntity, SoundEvent soundEvent, int startTransitionTicks, int endTransitionTicks) {
         super(soundEvent, SoundCategory.NEUTRAL, SoundInstance.createRandom());
         this.boatEngineEntity = boatEngineEntity;
         this.engineHandler = boatEngineEntity.getEngineHandler();
         this.repeat = true;
         this.repeatDelay = 0;
+        this.startTransitionTicks = startTransitionTicks;
+        this.endTransitionTicks = endTransitionTicks;
+        this.transitionState = TransitionState.STARTING;
         this.volume = 0.0f;
         this.x = boatEngineEntity.getX();
         this.y = boatEngineEntity.getY();
@@ -37,24 +41,22 @@ public class BoatismSoundInstance extends MovingSoundInstance {
             this.setDone();
             return;
         }
-
         if (this.engineHandler.engineIsRunning()) {
             if (this.transitionState.equals(TransitionState.STARTING)) {
                 transitionTick++;
-                if (this.transitionTick >= START_TRANSITION_TICKS) {
+                if (this.transitionTick >= startTransitionTicks) {
                     this.transitionState = TransitionState.IDLE;
                     this.transitionTick = 0;
                 }
             }
         } else {
             this.transitionState = TransitionState.FINISHING;
-            if (this.transitionTick >= END_TRANSITION_TICKS) {
+            if (this.transitionTick < endTransitionTicks) this.transitionTick++;
+            else {
                 this.transitionState = TransitionState.STARTING;
                 this.transitionTick = 0;
                 this.setDone();
                 return;
-            } else {
-                this.transitionTick++;
             }
         }
 
@@ -88,16 +90,15 @@ public class BoatismSoundInstance extends MovingSoundInstance {
             soundInstance.volume = 0.0f;
             soundInstance.pitch = 1.0f;
         } else {
-            modelSoundForDistance(soundInstance);
+            transformSoundForDistance(soundInstance);
             transformSoundForTransition(soundInstance.volume, soundInstance.pitch, soundInstance);
 
         }
     }
 
-    private static void modelSoundForDistance(BoatismSoundInstance soundInstance) {
+    protected static void transformSoundForDistance(BoatismSoundInstance soundInstance) {
         soundInstance.boatEngineEntity.getHookedBoatEntity().ifPresentOrElse(boatEntity -> {
             double horizontalVelocity = soundInstance.boatEngineEntity.getVelocity().horizontalLength();
-
             soundInstance.distance = MathHelper.clamp(soundInstance.distance + 0.0025f, 0.0f, 1.0f);
             float velocityClamp = (float) MathHelper.clamp(horizontalVelocity, 0.0f, 0.5f);
             soundInstance.volume = MathHelper.lerp(velocityClamp, 0.0f, 0.7f);
@@ -108,9 +109,9 @@ public class BoatismSoundInstance extends MovingSoundInstance {
         });
     }
 
-    private static void transformSoundForTransition(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance) {
-        float normalizedStartTransitionTick = (float) soundInstance.transitionTick / START_TRANSITION_TICKS;
-        float normalizedEndTransitionTick = (float) soundInstance.transitionTick / END_TRANSITION_TICKS;
+    protected static void transformSoundForTransition(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance) {
+        float normalizedStartTransitionTick = (float) soundInstance.transitionTick / soundInstance.startTransitionTicks;
+        float normalizedEndTransitionTick = (float) soundInstance.transitionTick / soundInstance.endTransitionTicks;
         switch (soundInstance.transitionState) {
             case STARTING -> {
                 soundInstance.volume = MathHelper.lerp(normalizedStartTransitionTick, 0.0f, originalVolume);
@@ -123,10 +124,11 @@ public class BoatismSoundInstance extends MovingSoundInstance {
         }
     }
 
-    private static void transformSoundForEnginePerformance(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance) {
-        float normalizedPowerLevel = soundInstance.boatEngineEntity.getPowerLevel();
+    protected static void transformSoundForEngineLoad(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance) {
+        BoatEngineHandler boatEngineHandler = soundInstance.engineHandler;
 
     }
+
 
     protected enum TransitionState {
         STARTING, FINISHING, IDLE;
