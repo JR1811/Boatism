@@ -55,28 +55,25 @@ public class BoatEngineEntityModel<T extends BoatEngineEntity> extends SinglePar
         return TexturedModelData.of(modelData, 64, 64);
     }
 
-    // @Override
-    // public void setAngles(T boatEngineEntity, float limbAngle, float
-    // limbDistance, float animationProgress,
-    // float headYaw,
-    // float headPitch) {
-    // if (boatEngineEntity.isLocked()) {
-    // this.root.pitch = 0.7f;
-    // } else {
-    // this.root.pitch = 0.0f;
-    // }
-    // if (boatEngineEntity.isRunning()) {
-    // this.propeller.roll = animationProgress;
-    // }
     @Override
     public void setAngles(BoatEngineEntity entity, float limbAngle, float limbDistance, float animationProgress,
-            float headYaw, float headPitch) {
-        this.root.traverse().forEach(ModelPart::resetTransform);
+                    float headYaw, float headPitch) {
+            this.root.traverse().forEach(ModelPart::resetTransform);
 
-        float baseSpinSpeed = 3f;
-        float powerLevelMultiplier = entity.getPowerLevel() * 0.2f;
-        this.updateAnimation(entity.leftSpinAnimationState, BoatismAnimation.SPIN_LEFT,
-                animationProgress, baseSpinSpeed * powerLevelMultiplier);
+            float baseSpinSpeed = 3f;
+            float powerLevelMultiplier = entity.getPowerLevel() * 0.2f;
+            this.updateAnimation(entity.leftSpinAnimationState, BoatismAnimation.SPIN_LEFT,
+                            animationProgress, baseSpinSpeed * powerLevelMultiplier);
+
+            if (entity.isLocked()) {
+                    this.root.pitch = 0.7f;
+            } else {
+                    this.root.pitch = 0.0f;
+            }
+            // Can be used instead of a fancy animation
+            // if (boatEngineEntity.isRunning()) {
+            // this.propeller.roll = animationProgress;
+            // }
     }
 
     @Override
