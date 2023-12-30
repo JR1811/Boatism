@@ -10,6 +10,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.collection.DefaultedList;
+import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.mixin.BoatEntityInvoker;
 import net.shirojr.boatism.network.BoatismS2C;
@@ -20,7 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BoatEngineHandler {
-    public static final int MAX_FUEL = 300, MAX_POWER_LEVEL = 9, MAX_OVERHEAT_TICKS = 100;
+    public static final int MAX_POWER_LEVEL = 9;
+    public static final int MAX_FUEL = Boatism.CONFIG.maxFuel;
+    public static final int MAX_OVERHEAT_TICKS = Boatism.CONFIG.maxOverheat;
 
     private final BoatEngineEntity boatEngine;
     private final DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2);
@@ -51,6 +54,10 @@ public class BoatEngineHandler {
         } else if (this.overHeatTicks > 0) {
             this.overHeatTicks--;
         }
+        if (isOverheating()) {
+            this.boatEngine.onOverheated();
+        }
+
         if (!engineIsRunning()) return;
         consumeFuel(1.0f);
 

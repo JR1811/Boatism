@@ -7,11 +7,14 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
+import net.shirojr.boatism.item.custom.BaseEngineItem;
 import net.shirojr.boatism.item.custom.BoatismArmor;
 import net.shirojr.boatism.item.material.BoatismArmorMaterial;
 import net.shirojr.boatism.util.LoggerUtil;
 
 public class BoatismItems {
+    public static BaseEngineItem BASE_ENGINE = register("base_engine",
+            new BaseEngineItem(new FabricItemSettings().maxCount(1).fireproof()));
     public static BoatismArmor EXHAUST_V1 = register("exhaust_v1",
             new BoatismArmor(BoatismArmorMaterial.BOAT_EXHAUST_V1, ArmorItem.Type.BOOTS,
                     new FabricItemSettings().maxCount(1)));

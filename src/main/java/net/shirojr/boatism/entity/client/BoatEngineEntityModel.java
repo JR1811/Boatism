@@ -3,14 +3,15 @@ package net.shirojr.boatism.entity.client;
 import net.minecraft.client.model.*;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.entity.model.CompositeEntityModel;
+import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
+import net.shirojr.boatism.entity.animation.BoatismAnimation;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BoatEngineEntityModel<T extends BoatEngineEntity> extends CompositeEntityModel<T> {
+public class BoatEngineEntityModel<T extends BoatEngineEntity> extends SinglePartEntityModel<T> {
     private final List<ModelPart> parts = new ArrayList<>();
     private final ModelPart root;
     private final ModelPart top;
@@ -54,18 +55,28 @@ public class BoatEngineEntityModel<T extends BoatEngineEntity> extends Composite
         return TexturedModelData.of(modelData, 64, 64);
     }
 
+    // @Override
+    // public void setAngles(T boatEngineEntity, float limbAngle, float
+    // limbDistance, float animationProgress,
+    // float headYaw,
+    // float headPitch) {
+    // if (boatEngineEntity.isLocked()) {
+    // this.root.pitch = 0.7f;
+    // } else {
+    // this.root.pitch = 0.0f;
+    // }
+    // if (boatEngineEntity.isRunning()) {
+    // this.propeller.roll = animationProgress;
+    // }
     @Override
-    public void setAngles(T boatEngineEntity, float limbAngle, float limbDistance, float animationProgress,
-            float headYaw,
-            float headPitch) {
-        if (boatEngineEntity.isLocked()) {
-            this.root.pitch = 0.7f;
-        } else {
-            this.root.pitch = 0.0f;
-        }
-        if (boatEngineEntity.isRunning()) {
-            this.propeller.roll = animationProgress;
-        }
+    public void setAngles(BoatEngineEntity entity, float limbAngle, float limbDistance, float animationProgress,
+            float headYaw, float headPitch) {
+        this.root.traverse().forEach(ModelPart::resetTransform);
+
+        float baseSpinSpeed = 3f;
+        float powerLevelMultiplier = entity.getPowerLevel() * 0.2f;
+        this.updateAnimation(entity.leftSpinAnimationState, BoatismAnimation.SPIN_LEFT,
+                animationProgress, baseSpinSpeed * powerLevelMultiplier);
     }
 
     @Override
@@ -79,7 +90,13 @@ public class BoatEngineEntityModel<T extends BoatEngineEntity> extends Composite
     }
 
     @Override
-    public Iterable<ModelPart> getParts() {
-        return this.parts;
+    public ModelPart getPart() {
+        return this.root;
     }
+    /*
+     * @Override
+     * public Iterable<ModelPart> getParts() {
+     * return this.parts;
+     * }
+     */
 }

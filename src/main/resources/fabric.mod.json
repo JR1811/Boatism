@@ -3,14 +3,19 @@
 	"id": "boatism",
 	"version": "${version}",
 	"name": "Boatism",
-	"description": "A Fabric mod created for the ModFest 1.20 event, which adds boats and boat utility!",
+	"description": "A Fabric mod created for the ModFest 1.20 event, which adds boat engines and other boat utility!",
 	"authors": [
-		"ShiroJR - Dev",
-		"ShiroJR - Artist"
+		"Ideas - ShiroJR",
+		"Ideas - Globox1997",
+		"Ideas - JoeMama",
+		"Ideas - Apfelrunder",
+		"Dev - ShiroJR",
+		"Dev - Globox1997",
+		"Art - ShiroJR"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/JR1811",
+		"sources": "https://github.com/JR1811/Boatism"
 	},
 	"license": "MIT",
 	"icon": "assets/boatism/icon.png",
