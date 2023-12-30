@@ -1,4 +1,5 @@
 {
+  "item.boatism.base_engine": "Boat Engine",
   "entity.boatism.boat_engine": "Boat Engine",
 
   "mouse.boatism.power_level": "Power Level: §a%s§r",
@@ -10,6 +11,17 @@
   "sound.boatism.boat_engine.start": "Starting Boat Engine",
   "sound.boatism.boat_engine.start.fail": "Failed start of a Boat Engine",
   "sound.boatism.boat_engine.stop": "Stopping Boat Engine",
+  "sound.boatism.boat_engine.low_fuel": "Low fuel in Boat Engine",
+  "sound.boatism.boat_engine.low_health": "Damaged Boat Engine",
   "sound.boatism.boat_engine.heat": "Overheating Boat Engine",
-  "sound.boatism.boat_engine.pour": "Fuel being poured"
+  "sound.boatism.boat_engine.pour": "Fuel being poured",
+
+  "text.autoconfig.boatism.title": "Boatism configurations",
+
+  "text.autoconfig.boatism.category.general_engine_data": "Boat Engine Settings",
+
+  "text.autoconfig.boatism.option.health": "Base health",
+  "text.autoconfig.boatism.option.lowHealth": "Low health warning",
+  "text.autoconfig.boatism.option.lowFuel": "Low fuel warning",
+  "text.autoconfig.boatism.option.maxOverheat": "Base overheat mitigation"
 }

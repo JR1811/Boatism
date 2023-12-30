@@ -105,5 +105,4 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     public BoatEntity.Type getVariant() {
         return null;
     }
-
 }

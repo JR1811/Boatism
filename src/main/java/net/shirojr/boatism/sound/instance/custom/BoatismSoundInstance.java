@@ -79,7 +79,6 @@ public class BoatismSoundInstance extends MovingSoundInstance {
     }
 
     protected static void defaultSoundHandling(BoatismSoundInstance soundInstance) {
-        //TODO: lerp for start of instance (low current tick)
         if (soundInstance.boatEngineEntity.isRemoved()) {
             soundInstance.setDone();
             return;

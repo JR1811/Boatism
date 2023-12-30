@@ -23,13 +23,13 @@ public class BoatEngineNbtHelper {
         nbt.put(name, nbtList);
     }
 
-    public static DefaultedList<ItemStack> readItemStacksFromNbt(NbtCompound nbt, String name) {
+    public static DefaultedList<ItemStack> readItemStacksFromNbt(NbtCompound nbt, String name, int size) {
         NbtList nbtList;
-        DefaultedList<ItemStack> stacks = DefaultedList.of();
+        DefaultedList<ItemStack> stacks = DefaultedList.ofSize(size);
         if (nbt.contains(name, NbtElement.LIST_TYPE)) {
             nbtList = nbt.getList(name, NbtElement.COMPOUND_TYPE);
             stacks = DefaultedList.ofSize(nbtList.size());
-            for (int i = 0; i < stacks.size(); i++) {
+            for (int i = 0; i < size; i++) {
                 stacks.set(i, ItemStack.fromNbt(nbtList.getCompound(i)));
                 //this.armorItems.set(i, ItemStack.fromNbt(nbtList.getCompound(i)));
             }

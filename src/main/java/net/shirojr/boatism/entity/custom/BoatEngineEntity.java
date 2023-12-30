@@ -2,34 +2,35 @@ package net.shirojr.boatism.entity.custom;
 
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.EulerAngle;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.explosion.Explosion;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.entity.BoatismEntities;
+import net.shirojr.boatism.entity.animation.BoatismAnimation;
 import net.shirojr.boatism.network.BoatismS2C;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.*;
@@ -41,18 +42,24 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class BoatEngineEntity extends LivingEntity {
-    private final DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2, ItemStack.EMPTY);
-    private final DefaultedList<ItemStack> armorItems = DefaultedList.ofSize(4, ItemStack.EMPTY);
-    private static final TrackedData<Integer> POWER_LEVEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER); // implement power steps which are controllable with mouse wheel
+    private DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2, ItemStack.EMPTY);
+    private DefaultedList<ItemStack> armorItems = DefaultedList.ofSize(4, ItemStack.EMPTY);
+    private static final TrackedData<Integer> POWER_LEVEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<EulerAngle> ARM_ROTATION = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.ROTATION);
     private static final TrackedData<Boolean> SUBMERGED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> RUNNING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Float> FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
-    private static final TrackedData<Boolean> LOCKED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN); // angle upwards (immunity on land)
+    private static final TrackedData<Boolean> LOCKED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+
+    public final AnimationState rightSpinAnimationState = new AnimationState();
+    public final AnimationState leftSpinAnimationState = new AnimationState();
+    public float spinAnimationTimeout = 0;
+
     @Nullable
     private UUID hookedBoatEntityUuid;
     @NotNull
     private final BoatEngineHandler engineHandler;
+    private int previousPowerLevel = 0;
 
     public BoatEngineEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -84,8 +91,21 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     public static DefaultAttributeContainer.Builder setAttributes() {
-        return LivingEntity.createLivingAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 40)
+        return LivingEntity.createLivingAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, Boatism.CONFIG.health)
                 .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0f);
+    }
+
+    private void updateAnimationStates() {
+        if (getPowerLevel() > 0) {
+            if (spinAnimationTimeout <= 0) {
+                this.spinAnimationTimeout = (BoatismAnimation.SPIN_DURATION_IN_SEC) * 20;
+                this.leftSpinAnimationState.start(this.age);
+            }
+            --this.spinAnimationTimeout;
+        }
+        else {
+            this.leftSpinAnimationState.stop();
+        }
     }
 
     @Override
@@ -107,8 +127,12 @@ public class BoatEngineEntity extends LivingEntity {
         if (nbt.contains("HookedEntity")) {
             this.setHookedBoatEntity(nbt.getUuid("HookedEntity"));
         }
-        DefaultedList<ItemStack> armorList = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "ArmorItems");
-        DefaultedList<ItemStack> handList = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "HandItems");
+        if (nbt.contains("ArmorItems")) {
+            this.armorItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "ArmorItems", 4);
+        }
+        if (nbt.contains("HandItems")) {
+            this.heldItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "HandItems", 2);
+        }
         this.setPowerLevel(nbt.getInt("PowerOutput"));
         this.setArmRotation(new EulerAngle(nbt.getList("ArmRotation", NbtElement.FLOAT_TYPE)));
         this.setSubmerged(nbt.getBoolean("IsSubmerged"));
@@ -117,31 +141,27 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     @Override
-    protected void fall(double heightDifference, boolean onGround, BlockState state, BlockPos landedPosition) {
-        super.fall(heightDifference, onGround, state, landedPosition);
-    }
-
-    @Override
     public void tick() {
         super.tick();
         this.setNoGravity(true);
-        //this.setVelocity(Vec3d.ZERO);
-/*        this.updateEnginePosition(this, (entity, x, y, z) -> entity.refreshPositionAndAngles(x, y, z, 0, 0));
-        this.updatePositionAndRotation();*/
-
+        if (this.getWorld().isClient()) {
+            this.updateAnimationStates();
+            return;
+        }
         if (isRunning()) {
             this.getHookedBoatEntity().ifPresent(boatEntity -> {
                 Vec3d originalVelocity = boatEntity.getVelocity();
                 if (originalVelocity.length() <= 0 && boatEntity.getControllingPassenger() != null) {
                     originalVelocity = boatEntity.getControllingPassenger().getVelocity();
                 }
-                Vec3d newVelocity = boatEntity.getRotationVector().multiply(1.0, 0.0, 1.0).normalize().multiply(getPowerLevel() * 0.1);
-                boatEntity.setVelocity(newVelocity/* originalVelocity.multiply(newVelocity)*/);
-                boatEntity.velocityModified = true;
+                if (previousPowerLevel >= getPowerLevel()) {
+                    Vec3d newVelocity = boatEntity.getRotationVector().multiply(1.0, 0.0, 1.0).normalize().multiply(getPowerLevel() * 0.1);
+                    boatEntity.setVelocity(newVelocity/* originalVelocity.multiply(newVelocity)*/);
+                    boatEntity.velocityModified = true;
+                }
+                previousPowerLevel = getPowerLevel();
             });
         }
-
-        if (this.getWorld().isClient()) return;
 
         this.engineHandler.setSubmerged(this.submergedInWater);
         this.engineHandler.incrementTick();
@@ -336,12 +356,23 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     public boolean hasLowHealth() {
-        return this.getHealth() <= Boatism.CONFIG.boatValues.getLowHealthValue();
+        return this.getHealth() <= Boatism.CONFIG.lowHealth;
     }
 
     public void onOverheated() {
-        if (!this.getEngineHandler().isOverheating()) return;
-
+        if (!(this.getWorld() instanceof ServerWorld serverWorld)) return;
+        this.getHookedBoatEntity().ifPresent(boatEntity -> boatEntity.getPassengerList().forEach(entity -> {
+            if (entity instanceof LivingEntity livingEntity) {
+                livingEntity.addStatusEffect(new StatusEffectInstance(
+                        StatusEffects.NAUSEA, 120, 1, false, false, true));
+                livingEntity.addStatusEffect(new StatusEffectInstance(
+                        StatusEffects.WITHER, 40, 1, false, false, true));
+            }
+        }));
+        serverWorld.createExplosion(this, Explosion.createDamageSource(serverWorld, this), null,
+                this.getX(), this.getY(), this.getZ(), 4.0f, true, World.ExplosionSourceType.NONE,
+                ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.ENTITY_GENERIC_EXPLODE);
+        this.kill();
     }
 
     public static void removeBoatEngineEntry(Entity entity) {
