@@ -45,6 +45,7 @@ public class BoatEngineEntity extends LivingEntity {
     private DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2, ItemStack.EMPTY);
     private DefaultedList<ItemStack> armorItems = DefaultedList.ofSize(4, ItemStack.EMPTY);
     private static final TrackedData<Integer> POWER_LEVEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Integer> OVERHEAT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<EulerAngle> ARM_ROTATION = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.ROTATION);
     private static final TrackedData<Boolean> SUBMERGED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> RUNNING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -83,6 +84,7 @@ public class BoatEngineEntity extends LivingEntity {
     protected void initDataTracker() {
         super.initDataTracker();
         this.dataTracker.startTracking(POWER_LEVEL, 0);
+        this.dataTracker.startTracking(OVERHEAT, 0);
         this.dataTracker.startTracking(ARM_ROTATION, new EulerAngle(0.0f, 5.0f, 0.0f));
         this.dataTracker.startTracking(SUBMERGED, false);
         this.dataTracker.startTracking(FUEL, 0.0f);
@@ -115,6 +117,7 @@ public class BoatEngineEntity extends LivingEntity {
         BoatEngineNbtHelper.writeItemStacksToNbt(this.armorItems, "ArmorItems", nbt);
         BoatEngineNbtHelper.writeItemStacksToNbt(this.heldItems, "HandItems", nbt);
         nbt.putInt("PowerOutput", this.getPowerLevel());
+        nbt.putInt("Overheat", this.getOverheat());
         nbt.put("ArmRotation", this.getArmRotation().toNbt());
         nbt.putBoolean("IsSubmerged", this.isSubmerged());
         nbt.putFloat("Fuel", this.getFuel());
@@ -134,6 +137,7 @@ public class BoatEngineEntity extends LivingEntity {
             this.heldItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "HandItems", 2);
         }
         this.setPowerLevel(nbt.getInt("PowerOutput"));
+        this.setOverheat(nbt.getInt("Overheat"));
         this.setArmRotation(new EulerAngle(nbt.getList("ArmRotation", NbtElement.FLOAT_TYPE)));
         this.setSubmerged(nbt.getBoolean("IsSubmerged"));
         this.setFuel(nbt.getFloat("Fuel"));
@@ -155,11 +159,17 @@ public class BoatEngineEntity extends LivingEntity {
                     originalVelocity = boatEntity.getControllingPassenger().getVelocity();
                 }
                 if (previousPowerLevel >= getPowerLevel()) {
-                    Vec3d newVelocity = boatEntity.getRotationVector().multiply(1.0, 0.0, 1.0).normalize().multiply(getPowerLevel() * 0.1);
-                    boatEntity.setVelocity(newVelocity/* originalVelocity.multiply(newVelocity)*/);
+                    if (!boatEntity.isOnGround()) {
+                        Vec3d newVelocity = boatEntity.getRotationVector().multiply(1.0, 0.0, 1.0).normalize()
+                                .multiply(getPowerLevel() * 0.1).multiply(engineHandler.calculateThrustModifier(boatEntity));
+                        boatEntity.setVelocity(newVelocity/* originalVelocity.multiply(newVelocity)*/);
+                    } else {
+                        setOverheat(getOverheat() + 4);
+                    }
                     boatEntity.velocityModified = true;
                 }
                 previousPowerLevel = getPowerLevel();
+                LoggerUtil.devLogger("velocity horizontal length: " + boatEntity.getVelocity().horizontalLength());
             });
         }
 
@@ -313,6 +323,14 @@ public class BoatEngineEntity extends LivingEntity {
 
     public void setPowerLevel(int level) {
         this.dataTracker.set(POWER_LEVEL, level);
+    }
+
+    public int getOverheat() {
+        return this.dataTracker.get(OVERHEAT);
+    }
+
+    public void setOverheat(int overheat) {
+        this.dataTracker.set(OVERHEAT, overheat);
     }
 
     public EulerAngle getArmRotation() {

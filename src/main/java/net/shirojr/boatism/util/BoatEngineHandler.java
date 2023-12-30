@@ -10,6 +10,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.MathHelper;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.mixin.BoatEntityInvoker;
@@ -28,13 +29,13 @@ public class BoatEngineHandler {
     private final BoatEngineEntity boatEngine;
     private final DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2);
     private final DefaultedList<ItemStack> armorItems = DefaultedList.ofSize(4);
-    private int overHeatTicks;
+
+    private boolean canPlayOverheat = true;
 
     private BoatEngineHandler(BoatEngineEntity boatEngine, List<ItemStack> heldItems, List<ItemStack> armorItems) {
         this.boatEngine = boatEngine;
         this.heldItems.addAll(heldItems);
         this.armorItems.addAll(armorItems);
-        this.overHeatTicks = 0;
     }
 
     public static BoatEngineHandler create(BoatEngineEntity boatEngine, List<ItemStack> heldItems, List<ItemStack> armorItems) {
@@ -50,18 +51,28 @@ public class BoatEngineHandler {
         if (isOverheating()) stopEngine();
 
         if (isExperiencingHeavyLoad()) {
-            this.overHeatTicks = this.overHeatTicks + 2;
-        } else if (this.overHeatTicks > 0) {
-            this.overHeatTicks--;
+            setOverheat(getOverheat() + 2);
+        } else if (getOverheat() > 0) {
+            setOverheat(getOverheat() - 1);
+        }
+        if (!canPlayOverheat && getOverheat() <= 0) {
+            canPlayOverheat = true;
+        }
+        if (isHeatingUp()) {
+            if (canPlayOverheat) {
+                soundStateChange(SoundInstanceIdentifier.ENGINE_OVERHEATING);
+                canPlayOverheat = false;
+            }
         }
         if (isOverheating()) {
             this.boatEngine.onOverheated();
+            return;
         }
 
         if (!engineIsRunning()) return;
         consumeFuel(1.0f);
 
-        LoggerUtil.devLogger(String.format("Fuel: %s | OverheatTicks: %s", getFuel(), overHeatTicks));
+        LoggerUtil.devLogger(String.format("Fuel: %s | OverheatTicks: %s", getFuel(), getOverheat()));
     }
 
     public void startEngine() {
@@ -153,16 +164,19 @@ public class BoatEngineHandler {
         this.boatEngine.setPowerLevel(powerLevel);
     }
 
-    public int getOverheatTicks() {
-        return this.overHeatTicks;
+    public boolean isHeatingUp() {
+        return getOverheat() > 0;
+    }
+    public int getOverheat() {
+        return this.boatEngine.getOverheat();
+    }
+
+    public void setOverheat(int overheat) {
+        this.boatEngine.setOverheat(overheat);
     }
 
     public boolean isOverheating() {
-        if (getOverheatTicks() > MAX_OVERHEAT_TICKS) {
-            soundStateChange(SoundInstanceIdentifier.ENGINE_OVERHEATING);
-            return true;
-        }
-        return false;
+        return getOverheat() > MAX_OVERHEAT_TICKS;
     }
 
     public boolean isExperiencingHeavyLoad() {
@@ -186,16 +200,15 @@ public class BoatEngineHandler {
                 stack.getItem() instanceof BoatComponent component && component.waterProofesEngine());
         boolean hasWaterProofedEquippedStacks = this.heldItems.stream().anyMatch(stack ->
                 stack.getItem() instanceof BoatComponent component && component.waterProofesEngine());
-
         return !hasWaterProofedArmorStacks && !hasWaterProofedEquippedStacks;
     }
 
-    public float calculateMaxThrust(BoatEntity hookedBoatEntity) {
+    public float calculateThrustModifier(BoatEntity hookedBoatEntity) {
         if (hookedBoatEntity == null) return 0.0f;
         List<ItemStack> boatComponentStacks = new ArrayList<>();
-        int passengerCount = hookedBoatEntity.getPassengerList().size();
+        int passengerCount = hookedBoatEntity.getPassengerList().size() - 1;    // engine is passenger too
         int maxPassenger = ((BoatEntityInvoker) hookedBoatEntity).invokeGetMaxPassenger();
-        int thrust = 0;
+        int thrust = 1;
 
         this.armorItems.forEach(stack -> {
             if (stack.getItem() instanceof BoatComponent component && component.getThrust() > 0.0f) {
@@ -210,7 +223,8 @@ public class BoatEngineHandler {
         for (ItemStack thrustModifierStack : boatComponentStacks) {
             thrust += ((BoatComponent) thrustModifierStack.getItem()).getThrust();
         }
-        return thrust * ((maxPassenger - passengerCount) * 0.1f); //TODO: implement better balancing
+        float passengerDeficit = (float) passengerCount / maxPassenger;
+        return thrust * MathHelper.lerp(passengerDeficit, 1.0f, 0.7f);
     }
 
     public boolean canEquipPart(ItemStack stack) {
@@ -259,6 +273,7 @@ public class BoatEngineHandler {
     }
 
 
+    @SuppressWarnings("SameParameterValue")
     private void playSoundEvent(SoundEvent soundEvent, float volume, float pitch) {
         if (this.boatEngine.getWorld().isClient()) return;
         this.boatEngine.getWorld().playSound(null, boatEngine.getBlockPos(),

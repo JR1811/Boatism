@@ -3,6 +3,7 @@ package net.shirojr.boatism.sound.instance.custom;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
+import net.shirojr.boatism.util.BoatEngineHandler;
 
 public class EngineRunningSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     public EngineRunningSoundInstance(BoatEngineEntity entity) {
@@ -17,11 +18,19 @@ public class EngineRunningSoundInstance extends BoatismSoundInstance implements 
     @Override
     public void tick() {
         super.tick();
-        if (/*boatEngineEntity.getEngineHandler().isLowOnFuel() ||*/ boatEngineEntity.isSubmerged() || boatEngineEntity.hasLowHealth()) {
+        if (boatEngineEntity.isSubmerged() || boatEngineEntity.hasLowHealth()) {
             this.setDone();
             return;
         }
         BoatismSoundInstance.defaultSoundHandling(this);
+        BoatismSoundInstance.transformSoundForTransition(this.volume, this.pitch, this);
+        transformSoundForEngineLoad(this.volume, this.pitch, this);
+    }
+
+    protected static void transformSoundForEngineLoad(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance) {
+        BoatEngineHandler boatEngineHandler = soundInstance.engineHandler;
+        int powerLevel = boatEngineHandler.getPowerLevel();
+
     }
 
     @Override

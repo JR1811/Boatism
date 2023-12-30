@@ -30,7 +30,7 @@ public class BoatismS2C {
         client.execute(() -> SoundInstanceIdentifier.fromIdentifier(soundInstanceId).ifPresent(soundInstanceHelper -> {
             if (client.world == null) return;
             if (!(client.world.getEntityById(entityId) instanceof BoatEngineEntity boatEngineEntity)) return;
-            SoundInstance soundInstance;
+            BoatismSoundInstance soundInstance;
             switch (soundInstanceHelper) {
                 case ENGINE_RUNNING -> soundInstance = new EngineRunningSoundInstance(boatEngineEntity);
                 case ENGINE_RUNNING_UNDERWATER -> soundInstance = new EngineSubmergedSoundInstance(boatEngineEntity);

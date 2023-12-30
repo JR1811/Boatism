@@ -6,7 +6,6 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.collection.DefaultedList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BoatEngineNbtHelper {
@@ -31,7 +30,6 @@ public class BoatEngineNbtHelper {
             stacks = DefaultedList.ofSize(nbtList.size());
             for (int i = 0; i < size; i++) {
                 stacks.set(i, ItemStack.fromNbt(nbtList.getCompound(i)));
-                //this.armorItems.set(i, ItemStack.fromNbt(nbtList.getCompound(i)));
             }
         }
         return stacks;

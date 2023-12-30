@@ -90,8 +90,6 @@ public class BoatismSoundInstance extends MovingSoundInstance {
             soundInstance.pitch = 1.0f;
         } else {
             transformSoundForDistance(soundInstance);
-            transformSoundForTransition(soundInstance.volume, soundInstance.pitch, soundInstance);
-
         }
     }
 
@@ -123,11 +121,9 @@ public class BoatismSoundInstance extends MovingSoundInstance {
         }
     }
 
-    protected static void transformSoundForEngineLoad(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance) {
-        BoatEngineHandler boatEngineHandler = soundInstance.engineHandler;
-
+    public BoatEngineEntity getBoatEngineEntity() {
+        return this.boatEngineEntity;
     }
-
 
     protected enum TransitionState {
         STARTING, FINISHING, IDLE;

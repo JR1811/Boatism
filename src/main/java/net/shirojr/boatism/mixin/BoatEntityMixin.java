@@ -11,7 +11,9 @@ import net.minecraft.entity.vehicle.VehicleEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.util.CustomBoatEngineAttachment;
 import net.shirojr.boatism.util.BoatEngineCoupler;
+import net.shirojr.boatism.util.LoggerUtil;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,7 +28,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Mixin(BoatEntity.class)
-public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngineCoupler {
+public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngineCoupler, CustomBoatEngineAttachment {
     @Unique
     private static final TrackedData<Optional<UUID>> BOAT_ENGINE_UUID = DataTracker.registerData(BoatEntityMixin.class,
             TrackedDataHandlerRegistry.OPTIONAL_UUID);
@@ -72,37 +74,32 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
                 .ifPresent(uuid -> nbt.putUuid("BoatEngineUuid", uuid));
     }
 
-    // @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/BoatEntity;handleBubbleColumn()V", shift = At.Shift.AFTER))
-    // private void boatism$test(CallbackInfo ci) {
-    //     if (!(this.getWorld() instanceof ServerWorld serverWorld))
-    //         return;
-    //     boatism$getBoatEngineEntityUuid().ifPresent(uuid -> {
-    //         if (!(serverWorld.getEntity(uuid) instanceof BoatEngineEntity boatEngine))
-    //             return;
-    //         boatEngine.updateEnginePosition(boatEngine, Entity::setPos);
-    //     });
-    // }
-
     @Inject(method = "getPassengerAttachmentPos", at = @At("HEAD"), cancellable = true)
     protected void getPassengerAttachmentPosMixin(Entity passenger, EntityDimensions dimensions, float scaleFactor,
             CallbackInfoReturnable<Vector3f> info) {
         if (passenger instanceof BoatEngineEntity) {
-            info.setReturnValue(
-                    new Vector3f(0.0f, this.getVariant() == BoatEntity.Type.BAMBOO ? dimensions.height * 0.8888889f
-                            : dimensions.height / 3.0f, -1.32f));
+            info.setReturnValue(boatism$attachmentPos(dimensions));
         }
     }
 
     @Inject(method = "canAddPassenger", at = @At("HEAD"), cancellable = true)
     protected void canAddPassengerMixin(Entity passenger, CallbackInfoReturnable<Boolean> info) {
         if (this.getPassengerList().size() < 3
-                && ((BoatEngineCoupler) (Object) this).boatism$getBoatEngineEntityUuid().isPresent()) {
+                && ((BoatEngineCoupler) this).boatism$getBoatEngineEntityUuid().isPresent()) {
                     info.setReturnValue(true);
         }
     }
 
-    @Shadow
-    public BoatEntity.Type getVariant() {
-        return null;
+    @Override
+    public Vector3f boatism$attachmentPos(EntityDimensions dimensions) {
+        if (this.getVariant() == BoatEntity.Type.BAMBOO) {
+            LoggerUtil.devLogger("bamboo dimension " + this.getVariant().asString());
+            return new Vector3f(0.0f, dimensions.height * 0.7f, -1.2f);
+        }
+        LoggerUtil.devLogger("default dimension " + this.getVariant().toString());
+        return new Vector3f(0.0f, dimensions.height / 3.0f, -1.32f);
     }
+
+    @Shadow
+    public abstract BoatEntity.Type getVariant();
 }
