@@ -5,7 +5,6 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.CompositeEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Vec3d;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 
 import java.util.ArrayList;
@@ -17,7 +16,6 @@ public class BoatEngineEntityModel<T extends BoatEngineEntity> extends Composite
     private final ModelPart top;
     private final ModelPart rod;
     private final ModelPart propeller;
-
 
     public BoatEngineEntityModel(ModelPart base) {
         super(RenderLayer::getEntityCutoutNoCull);
@@ -57,11 +55,22 @@ public class BoatEngineEntityModel<T extends BoatEngineEntity> extends Composite
     }
 
     @Override
-    public void setAngles(T entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
+    public void setAngles(T boatEngineEntity, float limbAngle, float limbDistance, float animationProgress,
+            float headYaw,
+            float headPitch) {
+        if (boatEngineEntity.isLocked()) {
+            this.root.pitch = 0.7f;
+        } else {
+            this.root.pitch = 0.0f;
+        }
+        if (boatEngineEntity.isRunning()) {
+            this.propeller.roll = animationProgress;
+        }
     }
 
     @Override
-    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
+    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green,
+            float blue, float alpha) {
         float scaleFactor = 1.0f;
 
         matrices.translate(0.0f, 0.0f, 0.1f);
