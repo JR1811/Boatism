@@ -65,8 +65,8 @@ Thank you to...
     alt="Supported on Fabric"
     width="200"
 ></a>
-<a href="https://modfest.net/1.20"><img
+<a href="https://github.com/JR1811/Boatism/issues"><img
     src="external/promo/badges/work_in_progress.png"
-    alt="Supported on Fabric"
+    alt="Work in Progress"
     width="200"
 ></a>
