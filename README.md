@@ -41,8 +41,8 @@ with our cutting-edge boat engine feature.
 
 Thank you to...
 
-- @Globox1997 (dev and ideas)
-- @0xJoeMama (dev and ideas)
+- [@Globox1997](https://github.com/Globox1997) (dev and ideas)
+- [@0xJoeMama](https://github.com/0xJoeMama) (dev and ideas)
 - Apfelrunder (ideas)
 
 ... and many more for your help!
