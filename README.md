@@ -22,7 +22,7 @@ with our cutting-edge boat engine feature.
 
 <br>
 <a href="https://github.com/JR1811/boatism"><img
-    src="external/promo/base_engine.png"
+    src="external/promo/base_engine_alt.png"
     alt="Boatism Engine"
     width="300"
 ></a>
