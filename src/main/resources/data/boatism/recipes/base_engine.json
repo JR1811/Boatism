@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "BDD",
+    "ZI ",
+    "i  "
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:blast_furnace"
+    },
+    "D": {
+      "item": "minecraft:polished_deepslate_slab"
+    },
+    "i": {
+      "item": "minecraft:iron_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "Z": {
+      "item": "minecraft:blaze_rod"
+    }
+  },
+  "result": {
+    "item": "boatism:base_engine"
+  }
+}

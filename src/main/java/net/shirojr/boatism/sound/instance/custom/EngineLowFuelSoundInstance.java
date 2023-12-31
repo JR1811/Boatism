@@ -17,8 +17,8 @@ public class EngineLowFuelSoundInstance extends BoatismSoundInstance implements 
     @Override
     public void tick() {
         super.tick();
-        if (!boatEngineEntity.getEngineHandler().isLowOnFuel()) {
-            this.setDone();
+        if (!boatEngineEntity.getEngineHandler().isLowOnFuel() && !transitionState.equals(TransitionState.FINISHING)) {
+            this.finishSoundInstance();
             return;
         }
         BoatismSoundInstance.defaultSoundHandling(this);

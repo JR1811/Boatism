@@ -13,7 +13,8 @@
   "tooltip.boatism.base_engine_1": "To hook, place the engine on a BoatEntity",
   "tooltip.boatism.base_engine_2": "Fill up with a fuel bucket",
   "tooltip.boatism.base_engine_3": "§3[Sneak]§r and §3[Interact]§r to start",
-  "tooltip.boatism.base_engine_4": "§4Don't overheat and have fun!§r",
+  "tooltip.boatism.base_engine_4": "Use §3[Mouse Wheel]§r while sitting in a running boat to adjust Power Level",
+  "tooltip.boatism.base_engine_5": "§4Don't overheat and have fun!§r",
 
   "mouse.boatism.power_level": "Power Level: §a%s§r",
 
@@ -36,6 +37,7 @@
 
   "text.autoconfig.boatism.option.health": "Base health",
   "text.autoconfig.boatism.option.lowHealth": "Low health warning",
+  "text.autoconfig.boatism.option.maxFuel": "Maximum base fuel capacity",
   "text.autoconfig.boatism.option.lowFuel": "Low fuel warning",
   "text.autoconfig.boatism.option.maxOverheat": "Base overheat mitigation"
 }

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "pi ",
+    "ibi",
+    " i "
+  ],
+  "key": {
+    "i": {
+      "item": "minecraft:iron_ingot"
+    },
+    "p": {
+      "item": "minecraft:potion"
+    },
+    "b": {
+      "tag": "minecraft:barrel"
+    }
+  },
+  "result": {
+    "item": "boatism:component_canister"
+  }
+}

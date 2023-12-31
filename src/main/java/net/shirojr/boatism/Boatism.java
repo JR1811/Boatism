@@ -8,6 +8,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.shirojr.boatism.config.BoatismConfig;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.BoatismEntityAttributes;
+import net.shirojr.boatism.event.BoatismEvents;
 import net.shirojr.boatism.item.BoatismItems;
 import net.shirojr.boatism.network.BoatismC2S;
 import net.shirojr.boatism.sound.BoatismSounds;
@@ -23,6 +24,7 @@ public class Boatism implements ModInitializer {
 		BoatismItems.initialize();
 		BoatismEntities.initialize();
 		BoatismEntityAttributes.initialize();
+		BoatismEvents.registerEvents();
 		BoatismSounds.initializeSounds();
 		BoatismC2S.registerServerReceivers();
 

@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
@@ -15,15 +14,16 @@ import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.SoundInstanceIdentifier;
 
 public class BoatismS2C {
-    public static final Identifier CUSTOM_SOUND_INSTANCE_PACKET = new Identifier(Boatism.MODID, "custom_sound_instance");
+    public static final Identifier CUSTOM_SOUND_INSTANCE_START_PACKET = new Identifier(Boatism.MODID, "custom_sound_start_instance");
+    public static final Identifier CUSTOM_SOUND_INSTANCE_CLEAR_ALL_PACKET = new Identifier(Boatism.MODID, "custom_sound_stop_instance");
 
     public static void registerClientReceivers() {
-        ClientPlayNetworking.registerGlobalReceiver(CUSTOM_SOUND_INSTANCE_PACKET, BoatismS2C::handleSoundInstancePackets);
-
+        ClientPlayNetworking.registerGlobalReceiver(CUSTOM_SOUND_INSTANCE_START_PACKET, BoatismS2C::handleSoundInstanceStartPackets);
+        ClientPlayNetworking.registerGlobalReceiver(CUSTOM_SOUND_INSTANCE_CLEAR_ALL_PACKET, BoatismS2C::handleClearAllSoundInstancesPackets);
     }
 
-    private static void handleSoundInstancePackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
-                                                   PacketByteBuf clientBuf, PacketSender packetSender) {
+    private static void handleSoundInstanceStartPackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
+                                                        PacketByteBuf clientBuf, PacketSender packetSender) {
         Identifier soundInstanceId = clientBuf.readIdentifier();
         int entityId = clientBuf.readVarInt();
 
@@ -45,5 +45,12 @@ public class BoatismS2C {
 
             BoatismClient.soundManager.start(soundInstanceHelper, soundInstance);
         }));
+    }
+
+    private static void handleClearAllSoundInstancesPackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
+                                                            PacketByteBuf clientBuf, PacketSender packetSender) {
+        client.execute(() -> {
+            BoatismClient.soundManager.stopAllSoundInstances();
+        });
     }
 }

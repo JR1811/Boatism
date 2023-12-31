@@ -1,6 +1,7 @@
 package net.shirojr.boatism.sound;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
@@ -40,14 +41,22 @@ public class BoatismSoundManager {
         //FIXME: don't use map, entries should be possible to play multiple times for multiple entities
         if (!(soundInstance instanceof SoundInstanceState state)) return;
         List<SoundInstanceEntry> unsupportedSoundInstances = new ArrayList<>();
-
         for (var activeInstance : this.activeSoundInstances) {
             if (!(activeInstance.instance instanceof SoundInstanceState activeInstanceState)) continue;
-            if (state.isMainSound() && activeInstanceState.isMainSound())
-                unsupportedSoundInstances.add(activeInstance);
-            for (SoundInstanceIdentifier unsupportedInstance : state.unsupportedInstances()) {
-                if (activeInstance.identifier.equals(unsupportedInstance))
+            if (soundInstance.getBoatEngineEntity().equals(activeInstance.instance.getBoatEngineEntity())) {
+                if (soundInstanceIdentifier.equals(activeInstance.identifier)) {
                     unsupportedSoundInstances.add(activeInstance);
+                }
+                if (state.isMainSound() && activeInstanceState.isMainSound()) {
+                    unsupportedSoundInstances.add(activeInstance);
+                }
+                for (SoundInstanceIdentifier unsupportedInstance : state.unsupportedInstances()) {
+                    if (activeInstance.identifier.equals(unsupportedInstance))
+                        unsupportedSoundInstances.add(activeInstance);
+                }
+            }
+            if (activeInstance.instance.isFinished()) {
+                unsupportedSoundInstances.add(activeInstance);
             }
         }
         unsupportedSoundInstances.forEach(this::stop);
@@ -56,6 +65,7 @@ public class BoatismSoundManager {
         this.client.getSoundManager().play(soundInstance);
         List<SoundInstanceEntry> soundInstances = BoatismClient.soundManager.getActiveSoundInstances();
         for (var entry : soundInstances) {
+            if (!entry.identifier.equals(SoundInstanceIdentifier.ENGINE_OVERHEATING)) continue;
             LoggerUtil.devLogger(entry.instance().getBoatEngineEntity() + " | " + entry.identifier().toString());
         }
     }
@@ -65,7 +75,7 @@ public class BoatismSoundManager {
             if (soundInstanceEntry.identifier != entry.identifier) continue;
             Identifier identifier = soundInstanceEntry.instance.getId();
             //this.client.getSoundManager().stopSounds(identifier, soundInstanceEntry.identifier.getCategory());
-            this.client.getSoundManager().stop(soundInstanceEntry.instance);
+            soundInstanceEntry.instance.finishSoundInstance();
         }
         removeEntriesFromList(List.of(soundInstanceEntry));
     }
@@ -74,6 +84,16 @@ public class BoatismSoundManager {
         for (var entry : this.activeSoundInstances) {
             if (!entry.instance.getBoatEngineEntity().equals(boatEngine)) continue;
             client.getSoundManager().stop(entry.instance);
+        }
+        this.activeSoundInstances.clear();
+    }
+
+    public void stopAllSoundInstances() {
+        for (var entry : this.activeSoundInstances) {
+            client.getSoundManager().stop(entry.instance);
+            if (client.player != null) client.player.sendMessage(
+                    Text.literal("removed " + entry.identifier + " for: " +
+                            entry.instance.getBoatEngineEntity().toString()));
         }
         this.activeSoundInstances.clear();
     }

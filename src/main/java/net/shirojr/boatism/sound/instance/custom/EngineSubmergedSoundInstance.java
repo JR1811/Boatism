@@ -17,6 +17,10 @@ public class EngineSubmergedSoundInstance extends BoatismSoundInstance implement
     @Override
     public void tick() {
         super.tick();
+        if (!boatEngineEntity.isSubmerged() && !transitionState.equals(TransitionState.FINISHING)) {
+            this.finishSoundInstance();
+            return;
+        }
         defaultSoundHandling(this);
     }
 

@@ -7,36 +7,32 @@ import net.shirojr.boatism.sound.BoatismSoundManager;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
 import net.shirojr.boatism.util.BoatEngineHandler;
+import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.SoundInstanceIdentifier;
 
 public class EngineOverheatingSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     public EngineOverheatingSoundInstance(BoatEngineEntity boatEngineEntity) {
         super(boatEngineEntity, BoatismSounds.BOAT_ENGINE_HEAT, 60, 60);
+        transitionState = TransitionState.STARTING;
     }
 
     @Override
     public boolean canPlay() {
-        return super.canPlay();
+        return super.canPlay() && engineHandler.getOverheat() > 0;
     }
 
     @Override
     public void tick() {
         super.tick();
-        BoatismSoundInstance.defaultSoundHandling(this);
-        BoatEngineHandler boatEngineHandler = this.engineHandler;
-        float normalizedOverheatTicks = (float) boatEngineHandler.getOverheat() / BoatEngineHandler.MAX_OVERHEAT;
-
-        if (boatEngineHandler.getOverheat() <= 0 || boatEngineHandler.isOverheating()) {
-            this.setDone();
+        float normalizedOverheatTicks = (float) engineHandler.getOverheat() / BoatEngineHandler.MAX_OVERHEAT;
+        boolean isCool = !engineHandler.isHeatingUp();
+        LoggerUtil.devLogger("overheat: " + engineHandler.getOverheat());
+        if (isCool && !transitionState.equals(TransitionState.FINISHING)) {
+            this.finishSoundInstance();
             return;
         }
+        BoatismSoundInstance.defaultSoundHandling(this);
         this.volume = MathHelper.lerp(normalizedOverheatTicks, 0.0f, 0.7f);
-    }
-
-    @Override
-    public boolean isDone() {
-        BoatismClient.soundManager.stop(new BoatismSoundManager.SoundInstanceEntry(SoundInstanceIdentifier.ENGINE_OVERHEATING, this));
-        return super.isDone();
     }
 
     @Override

@@ -13,11 +13,12 @@ import net.shirojr.boatism.util.LoggerUtil;
 public class BoatismSoundInstance extends MovingSoundInstance {
     protected BoatEngineEntity boatEngineEntity;
     protected BoatEngineHandler engineHandler;
-    private final int startTransitionTicks;
-    private final int endTransitionTicks;
-    private TransitionState transitionState;
-    private int currentTick = 0, transitionTick = 0;
-    private float distance = 0.0f;
+    protected final int startTransitionTicks;
+    protected final int endTransitionTicks;
+    protected TransitionState transitionState;
+    protected int currentTick = 0, transitionTick = 0;
+    protected float distance = 0.0f;
+    protected boolean isFinished = false;
 
     public BoatismSoundInstance(BoatEngineEntity boatEngineEntity, SoundEvent soundEvent, int startTransitionTicks, int endTransitionTicks) {
         super(soundEvent, SoundCategory.NEUTRAL, SoundInstance.createRandom());
@@ -38,34 +39,38 @@ public class BoatismSoundInstance extends MovingSoundInstance {
     public void tick() {
         if (boatEngineEntity.getWorld().getTickManager().shouldTick()) this.currentTick++;
         else return;
-        if (this.boatEngineEntity.isRemoved()) {
-            this.setDone();
-            return;
-        }
-        if (this.engineHandler.engineIsRunning()) {
-            if (this.transitionState.equals(TransitionState.STARTING)) {
-                transitionTick++;
-                if (this.transitionTick >= startTransitionTicks) {
-                    this.transitionState = TransitionState.IDLE;
-                    this.transitionTick = 0;
-                }
-            }
-        } else {
-            this.transitionState = TransitionState.FINISHING;
-            if (this.transitionTick < endTransitionTicks) this.transitionTick++;
-            else {
-                this.transitionState = TransitionState.STARTING;
-                this.transitionTick = 0;
-                this.setDone();
-                return;
-            }
+        if (this.boatEngineEntity.isRemoved() || boatEngineEntity.isDead()) {
+            this.finishSoundInstance();
         }
 
-        // LoggerUtil.devLogger(String.format("currentTick: %s | transitionTick: %s | transitionState: %s", currentTick, transitionTick, transitionState));
+        if (this.transitionState.equals(TransitionState.STARTING)) {
+            transitionTick++;
+            if (this.transitionTick >= startTransitionTicks) {
+                this.transitionState = TransitionState.IDLE;
+                this.transitionTick = 0;
+            }
+        }
+        if (transitionState.equals(TransitionState.FINISHING)) {
+            if (this.transitionTick < endTransitionTicks) this.transitionTick++;
+            else {
+                this.isFinished = true;
+            }
+        }
+        if (this instanceof EngineOverheatingSoundInstance) {
+            LoggerUtil.devLogger(String.format("Instance: %s | currentTick: %s | transitionTick: %s | transitionState: %s", this.id, currentTick, transitionTick, transitionState));
+        }
 
         this.x = this.boatEngineEntity.getX();
         this.y = this.boatEngineEntity.getY();
         this.z = this.boatEngineEntity.getZ();
+
+        if (isFinished()) {
+            this.transitionState = TransitionState.STARTING;
+            this.currentTick = 0;
+            this.transitionTick = 0;
+            this.setDone();
+        }
+
     }
 
     @Override
@@ -79,10 +84,6 @@ public class BoatismSoundInstance extends MovingSoundInstance {
     }
 
     protected static void defaultSoundHandling(BoatismSoundInstance soundInstance) {
-        if (soundInstance.boatEngineEntity.isRemoved()) {
-            soundInstance.setDone();
-            return;
-        }
         boolean shouldTick = soundInstance.boatEngineEntity.getWorld().getTickManager().shouldTick();
         if (!shouldTick) {
             soundInstance.distance = 0.0f;
@@ -120,14 +121,22 @@ public class BoatismSoundInstance extends MovingSoundInstance {
             }
         }
     }
+
     protected static void transformSoundForEngineLoad(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance) {
         BoatEngineHandler boatEngineHandler = soundInstance.engineHandler;
         float normalizedPowerLevel = boatEngineHandler.getPowerLevel() * 0.1f;
 
         soundInstance.volume = MathHelper.lerp(normalizedPowerLevel, originalVolume - 0.1f, originalVolume);
-        soundInstance.pitch = MathHelper.lerp(normalizedPowerLevel, originalPitch - 0.1f, originalPitch + 0.1f);
+        soundInstance.pitch = MathHelper.lerp(normalizedPowerLevel, originalPitch - 0.2f, originalPitch + 0.1f);
     }
 
+    public void finishSoundInstance() {
+        this.transitionState = TransitionState.FINISHING;
+    }
+
+    public boolean isFinished() {
+        return this.isFinished;
+    }
 
     public BoatEngineEntity getBoatEngineEntity() {
         return this.boatEngineEntity;

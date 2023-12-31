@@ -140,7 +140,7 @@ public class BoatEngineEntity extends LivingEntity {
         if (nbt.contains("HandItems")) {
             this.heldItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "HandItems", 2);
         }
-        this.setPowerLevel(nbt.getInt("PowerOutput"));
+        this.setPowerLevel(Math.min(nbt.getInt("PowerOutput"), BoatEngineHandler.MAX_POWER_LEVEL / 2));
         this.setOverheat(nbt.getInt("Overheat"));
         this.setArmRotation(new EulerAngle(nbt.getList("ArmRotation", NbtElement.FLOAT_TYPE)));
         this.setSubmerged(nbt.getBoolean("IsSubmerged"));
@@ -159,20 +159,24 @@ public class BoatEngineEntity extends LivingEntity {
         if (isRunning()) {
             this.getHookedBoatEntity().ifPresent(boatEntity -> {
                 double actualSpeed = Math.max(0, this.previousLocation.distanceTo(this.getPos()));
-                if (previousPowerLevel >= getPowerLevel()) {
+                if (isLogicalSideForUpdatingMovement()) {
                     if (!boatEntity.isOnGround()) {
                         Vec3d newVelocity = boatEntity.getRotationVector().multiply(1.0, 0.0, 1.0).normalize()
                                 .multiply(getPowerLevel() * 0.1).multiply(engineHandler.calculateThrustModifier(boatEntity));
-                        boatEntity.setVelocity(newVelocity/* originalVelocity.multiply(newVelocity)*/);
+                        if (boatEntity.getVelocity().horizontalLength() < newVelocity.horizontalLength()) {
+                            boatEntity.addVelocity(newVelocity/* originalVelocity.multiply(newVelocity)*/);
+                        }
+                        // boatEntity.setVelocity(newVelocity/* originalVelocity.multiply(newVelocity)*/);
                     } else {
                         setOverheat(getOverheat() + 4);
                     }
                     boatEntity.velocityModified = true;
-                    if (getPowerLevel() > 3 && actualSpeed < 0.1) {
-                        setOverheat(getOverheat() + 2);
-                    }
+                    boatEntity.velocityDirty = true;
                 }
-                previousPowerLevel = getPowerLevel();
+
+                if (getPowerLevel() > 3 && actualSpeed < 0.1) {
+                    setOverheat(getOverheat() + 2);
+                }
             });
             this.previousLocation = this.getPos();
         }
@@ -209,7 +213,7 @@ public class BoatEngineEntity extends LivingEntity {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeIdentifier(stateIdentifier);
         buf.writeVarInt(this.getId());
-        ServerPlayNetworking.send(player, BoatismS2C.CUSTOM_SOUND_INSTANCE_PACKET, buf);
+        ServerPlayNetworking.send(player, BoatismS2C.CUSTOM_SOUND_INSTANCE_START_PACKET, buf);
         super.onStartedTrackingBy(player);
     }
 
@@ -413,5 +417,11 @@ public class BoatEngineEntity extends LivingEntity {
     public void onRemoved() {
         getHookedBoatEntity().ifPresent(boatEntity -> ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
         super.onRemoved();
+    }
+
+    @Override
+    public void onDeath(DamageSource damageSource) {
+        getHookedBoatEntity().ifPresent(boatEntity -> ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
+        super.onDeath(damageSource);
     }
 }

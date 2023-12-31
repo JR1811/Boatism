@@ -22,19 +22,13 @@ public class EngineRunningSoundInstance extends BoatismSoundInstance implements 
     @Override
     public void tick() {
         super.tick();
-        if (boatEngineEntity.isSubmerged() || boatEngineEntity.hasLowHealth()) {
-            this.setDone();
+        if (!boatEngineEntity.isRunning() && !transitionState.equals(TransitionState.FINISHING)) {
+            this.finishSoundInstance();
             return;
         }
         BoatismSoundInstance.defaultSoundHandling(this);
         BoatismSoundInstance.transformSoundForTransition(this.volume, this.pitch, this);
         BoatismSoundInstance.transformSoundForEngineLoad(this.volume, this.pitch, this);
-    }
-
-    @Override
-    public boolean isDone() {
-        // BoatismClient.soundManager.stop(new BoatismSoundManager.SoundInstanceEntry(SoundInstanceIdentifier.ENGINE_RUNNING, this));
-        return super.isDone();
     }
 
     @Override

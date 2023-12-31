@@ -17,11 +17,12 @@ public class EngineLowHealthSoundInstance extends BoatismSoundInstance implement
     @Override
     public void tick() {
         super.tick();
-        if (boatEngineEntity.hasLowHealth()) {
-            this.setDone();
+        if (boatEngineEntity.hasLowHealth() && !transitionState.equals(TransitionState.FINISHING)) {
+            this.finishSoundInstance();
             return;
         }
         BoatismSoundInstance.defaultSoundHandling(this);
+        BoatismSoundInstance.transformSoundForTransition(this.volume, this.pitch, this);
     }
 
     @Override

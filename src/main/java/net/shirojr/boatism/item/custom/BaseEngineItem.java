@@ -21,6 +21,7 @@ public class BaseEngineItem extends Item {
         tooltip.add(Text.translatable("tooltip.boatism.base_engine_2"));
         tooltip.add(Text.translatable("tooltip.boatism.base_engine_3"));
         tooltip.add(Text.translatable("tooltip.boatism.base_engine_4"));
+        tooltip.add(Text.translatable("tooltip.boatism.base_engine_5"));
         super.appendTooltip(stack, world, tooltip, context);
     }
 }

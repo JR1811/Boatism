@@ -27,7 +27,7 @@ public class BoatEngineNbtHelper {
         DefaultedList<ItemStack> stacks = DefaultedList.ofSize(size);
         if (nbt.contains(name, NbtElement.LIST_TYPE)) {
             nbtList = nbt.getList(name, NbtElement.COMPOUND_TYPE);
-            stacks = DefaultedList.ofSize(nbtList.size());
+            stacks = DefaultedList.ofSize(nbtList.size(), ItemStack.EMPTY);
             for (int i = 0; i < nbtList.size(); i++) {
                 stacks.set(i, ItemStack.fromNbt(nbtList.getCompound(i)));
             }

@@ -38,12 +38,13 @@ public class ItemMixin {
         if (world.isClient()) {
             return;
         }
-        if (usedItem.equals(Items.STICK)) {
+        if (usedItem.equals(Items.STICK) && user.isSneaking()) {
             cir.setReturnValue(boatism$engineCoupling(user, boatEngineEntity, world));
+            return;
         }
         if (usedItem.equals(BoatismItems.FUEL_BUCKET)) {
             float leftOver = engineHandler.fillUpFuel(BoatEngineHandler.MAX_BASE_FUEL);
-            world.playSound(null, user.getBlockPos(), SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.NEUTRAL,
+            world.playSound(null, boatEngineEntity.getBlockPos(), SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.NEUTRAL,
                     0.6f, 0.75f);
             if (!user.isCreative()) {
                 stack.decrement(1);

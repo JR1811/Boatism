@@ -31,7 +31,7 @@ public class BoatEngineHandler {
     private final DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2);
     private final DefaultedList<ItemStack> armorItems = DefaultedList.ofSize(4);
 
-    private boolean canPlayOverheat = true;
+    private boolean canPlayOverheat = true, canPlayLowFuel = true;
 
     private BoatEngineHandler(BoatEngineEntity boatEngine, List<ItemStack> heldItems, List<ItemStack> armorItems) {
         this.boatEngine = boatEngine;
@@ -56,15 +56,24 @@ public class BoatEngineHandler {
         } else if (getOverheat() > 0) {
             setOverheat(getOverheat() - 1);
         }
-        if (!canPlayOverheat && getOverheat() <= 0) {
-            canPlayOverheat = true;
+
+        if (isLowOnFuel()) {
+            if (canPlayLowFuel) {
+                soundStateChange(SoundInstanceIdentifier.ENGINE_LOW_FUEL);
+                canPlayLowFuel = false;
+            }
+        } else {
+            if (!canPlayLowFuel) canPlayLowFuel = true;
         }
         if (isHeatingUp()) {
             if (canPlayOverheat) {
                 soundStateChange(SoundInstanceIdentifier.ENGINE_OVERHEATING);
                 canPlayOverheat = false;
             }
+        } else {
+            if (!canPlayOverheat) canPlayOverheat = true;
         }
+
         if (isOverheating()) {
             this.boatEngine.onOverheated();
             return;
@@ -281,7 +290,7 @@ public class BoatEngineHandler {
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeIdentifier(soundInstance.getIdentifier());
             buf.writeVarInt(this.boatEngine.getId());
-            ServerPlayNetworking.send(player, BoatismS2C.CUSTOM_SOUND_INSTANCE_PACKET, buf);
+            ServerPlayNetworking.send(player, BoatismS2C.CUSTOM_SOUND_INSTANCE_START_PACKET, buf);
         });
     }
 
