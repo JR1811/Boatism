@@ -1,6 +1,19 @@
 {
+  "itemgroup.boatism.boatism": "Boatism",
+
   "item.boatism.base_engine": "Boat Engine",
+  "item.boatism.fuel_bucket": "Fuel Bucket",
+  "item.boatism.component_exhaust": "Custom Exhaust",
+  "item.boatism.component_canister": "Fuel Canister",
+  "item.boatism.component_canister_strapped": "Fuel Canister Strapped",
+  "item.boatism.component_plates": "Custom Plating",
+
   "entity.boatism.boat_engine": "Boat Engine",
+
+  "tooltip.boatism.base_engine_1": "To hook, place the engine on a BoatEntity",
+  "tooltip.boatism.base_engine_2": "Fill up with a fuel bucket",
+  "tooltip.boatism.base_engine_3": "§3[Sneak]§r and §3[Interact]§r to start",
+  "tooltip.boatism.base_engine_4": "§4Don't overheat and have fun!§r",
 
   "mouse.boatism.power_level": "Power Level: §a%s§r",
 
@@ -15,6 +28,7 @@
   "sound.boatism.boat_engine.low_health": "Damaged Boat Engine",
   "sound.boatism.boat_engine.heat": "Overheating Boat Engine",
   "sound.boatism.boat_engine.pour": "Fuel being poured",
+  "sound.boatism.boat_engine.equip": "Mechanical noise",
 
   "text.autoconfig.boatism.title": "Boatism configurations",
 

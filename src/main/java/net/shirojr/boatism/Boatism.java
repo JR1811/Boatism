@@ -4,6 +4,7 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.shirojr.boatism.config.BoatismConfig;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.BoatismEntityAttributes;
@@ -32,5 +33,9 @@ public class Boatism implements ModInitializer {
 	private static void initConfig() {
 		AutoConfig.register(BoatismConfig.class, JanksonConfigSerializer::new);
 		CONFIG = AutoConfig.getConfigHolder(BoatismConfig.class).getConfig();
+	}
+
+	public static boolean isDevEnvironment() {
+		return FabricLoader.getInstance().isDevelopmentEnvironment();
 	}
 }

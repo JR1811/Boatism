@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
@@ -23,8 +24,8 @@ import java.util.List;
 
 public class BoatEngineHandler {
     public static final int MAX_POWER_LEVEL = 9;
-    public static final int MAX_FUEL = Boatism.CONFIG.maxFuel;
-    public static final int MAX_OVERHEAT_TICKS = Boatism.CONFIG.maxOverheat;
+    public static final int MAX_BASE_FUEL = Boatism.CONFIG.maxFuel;
+    public static final int MAX_OVERHEAT = Boatism.CONFIG.maxOverheat;
 
     private final BoatEngineEntity boatEngine;
     private final DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2);
@@ -68,11 +69,10 @@ public class BoatEngineHandler {
             this.boatEngine.onOverheated();
             return;
         }
-
         if (!engineIsRunning()) return;
         consumeFuel(1.0f);
 
-        LoggerUtil.devLogger(String.format("Fuel: %s | OverheatTicks: %s", getFuel(), getOverheat()));
+        // LoggerUtil.devLogger(String.format("Fuel: %s | OverheatTicks: %s", getFuel(), getOverheat()));
     }
 
     public void startEngine() {
@@ -112,6 +112,20 @@ public class BoatEngineHandler {
         this.boatEngine.setFuel(fuel);
     }
 
+    public float getMaxFuelCapacity() {
+        float maxCapacity = MAX_BASE_FUEL;
+
+        for (ItemStack stack : armorItems) {
+            if (!(stack.getItem() instanceof BoatComponent component)) continue;
+            maxCapacity += component.addedFuelCapacity();
+        }
+        for (ItemStack stack : heldItems) {
+            if (!(stack.getItem() instanceof BoatComponent component)) continue;
+            maxCapacity += component.addedFuelCapacity();
+        }
+        return maxCapacity;
+    }
+
     /**
      * @param fuel amount of introduced fuel
      * @return left over fuel (bigger than 0 if engine has been filled up)
@@ -120,11 +134,11 @@ public class BoatEngineHandler {
     public float fillUpFuel(float fuel) {
         float newFuelValue = getFuel() + fuel;
         if (fuel <= 0) return 0;
-        if (newFuelValue == MAX_FUEL + fuel) return fuel;
+        if (newFuelValue == MAX_BASE_FUEL + fuel) return fuel;
         playSoundEvent(BoatismSounds.BOAT_ENGINE_FILL_UP);
-        if (newFuelValue > MAX_FUEL) {
-            setFuel(MAX_FUEL);
-            return newFuelValue - MAX_FUEL;
+        if (newFuelValue > MAX_BASE_FUEL) {
+            setFuel(MAX_BASE_FUEL);
+            return newFuelValue - MAX_BASE_FUEL;
         }
         setFuel(fuel);
         return fuel;
@@ -138,20 +152,20 @@ public class BoatEngineHandler {
     private float additionalConsumedFuel() {
         float fuelPerTick = 0;
         for (ItemStack entry : this.armorItems) {
-            if (entry.getItem() instanceof BoatComponent component && component.consumedFuelPerTick() > 0.0f) {
-                fuelPerTick += component.consumedFuelPerTick();
+            if (entry.getItem() instanceof BoatComponent component && component.addedConsumedFuel() > 0.0f) {
+                fuelPerTick += component.addedConsumedFuel();
             }
         }
         for (ItemStack entry : this.heldItems) {
-            if (entry.getItem() instanceof BoatComponent component && component.consumedFuelPerTick() > 0.0f) {
-                fuelPerTick += component.consumedFuelPerTick();
+            if (entry.getItem() instanceof BoatComponent component && component.addedConsumedFuel() > 0.0f) {
+                fuelPerTick += component.addedConsumedFuel();
             }
         }
         return fuelPerTick;
     }
 
     public boolean isLowOnFuel() {
-        return getFuel() < MAX_FUEL * 0.2;
+        return getFuel() < MAX_BASE_FUEL * 0.2;
     }
 
     public int getPowerLevel() {
@@ -165,7 +179,7 @@ public class BoatEngineHandler {
     }
 
     public boolean isHeatingUp() {
-        return getOverheat() > 0;
+        return getOverheat() > 10;
     }
     public int getOverheat() {
         return this.boatEngine.getOverheat();
@@ -176,11 +190,14 @@ public class BoatEngineHandler {
     }
 
     public boolean isOverheating() {
-        return getOverheat() > MAX_OVERHEAT_TICKS;
+        return getOverheat() > MAX_OVERHEAT;
     }
 
     public boolean isExperiencingHeavyLoad() {
         if (!engineIsRunning()) return false;
+        if (this.getPowerLevel() > 3) {
+            if (this.getPowerLevel() * 0.1 < boatEngine.getVelocity().horizontalLength()) return true;
+        }
         return this.getPowerLevel() >= MAX_POWER_LEVEL - 2;
         //TODO: add heavy load, if boat goes too slow for power level
     }
@@ -211,17 +228,17 @@ public class BoatEngineHandler {
         int thrust = 1;
 
         this.armorItems.forEach(stack -> {
-            if (stack.getItem() instanceof BoatComponent component && component.getThrust() > 0.0f) {
+            if (stack.getItem() instanceof BoatComponent component && component.addedThrust() > 0.0f) {
                 boatComponentStacks.add(stack);
             }
         });
         this.heldItems.forEach(stack -> {
-            if (stack.getItem() instanceof BoatComponent component && component.getThrust() > 0.0f) {
+            if (stack.getItem() instanceof BoatComponent component && component.addedThrust() > 0.0f) {
                 boatComponentStacks.add(stack);
             }
         });
         for (ItemStack thrustModifierStack : boatComponentStacks) {
-            thrust += ((BoatComponent) thrustModifierStack.getItem()).getThrust();
+            thrust += ((BoatComponent) thrustModifierStack.getItem()).addedThrust();
         }
         float passengerDeficit = (float) passengerCount / maxPassenger;
         return thrust * MathHelper.lerp(passengerDeficit, 1.0f, 0.7f);
@@ -229,7 +246,7 @@ public class BoatEngineHandler {
 
     public boolean canEquipPart(ItemStack stack) {
         if (!(stack.getItem() instanceof BoatComponent)) return false;
-        List<ItemStack> flaggedParts = new ArrayList<>();
+        List<Item> flaggedParts = new ArrayList<>();
         for (ItemStack entry : this.armorItems) {
             if (entry.getItem() instanceof BoatComponent component) {
                 flaggedParts.addAll(component.getConflictingParts());
@@ -240,7 +257,7 @@ public class BoatEngineHandler {
                 flaggedParts.addAll(component.getConflictingParts());
             }
         }
-        return flaggedParts.contains(stack);
+        return !flaggedParts.contains(stack.getItem());
     }
 
     public void initiateSoundStateChange() {

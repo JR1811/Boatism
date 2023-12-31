@@ -7,11 +7,14 @@ import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.item.BoatismItems;
 import net.shirojr.boatism.util.BoatEngineHandler;
 import net.shirojr.boatism.util.LoggerUtil;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,18 +35,24 @@ public class ItemMixin {
         if (!(entity instanceof BoatEngineEntity boatEngineEntity)) return;
         BoatEngineHandler engineHandler = boatEngineEntity.getEngineHandler();
 
-        if (world.isClient()) return;
+        if (world.isClient()) {
+            return;
+        }
         if (usedItem.equals(Items.STICK)) {
             cir.setReturnValue(boatism$engineCoupling(user, boatEngineEntity, world));
         }
-        if (usedItem.equals(Items.FLINT)) {
-            float leftOver = engineHandler.fillUpFuel(BoatEngineHandler.MAX_FUEL);
+        if (usedItem.equals(BoatismItems.FUEL_BUCKET)) {
+            float leftOver = engineHandler.fillUpFuel(BoatEngineHandler.MAX_BASE_FUEL);
+            world.playSound(null, user.getBlockPos(), SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.NEUTRAL,
+                    0.6f, 0.75f);
+            if (!user.isCreative()) {
+                stack.decrement(1);
+                user.getInventory().offerOrDrop(Items.BUCKET.getDefaultStack());
+                boolean containsBucket = user.getInventory().contains(Items.BUCKET.getDefaultStack());
+                LoggerUtil.devLogger("contains rest item: " + containsBucket);
+            }
             LoggerUtil.devLogger(String.format("Filled up fuel. %s was left over", leftOver));
-        }
-        if (usedItem.equals(Items.AMETHYST_SHARD)) {
-            if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
-            else engineHandler.stopEngine();
-            LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
+            cir.setReturnValue(ActionResult.SUCCESS);
         }
     }
 

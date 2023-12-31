@@ -6,13 +6,20 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.entity.vehicle.VehicleEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.util.CustomBoatEngineAttachment;
+import net.shirojr.boatism.item.custom.BaseEngineItem;
+import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.BoatEngineCoupler;
+import net.shirojr.boatism.util.CustomBoatEngineAttachment;
 import net.shirojr.boatism.util.LoggerUtil;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -52,12 +59,33 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
         return this.dataTracker.get(BOAT_ENGINE_UUID);
     }
 
+    @Inject(method = "interact", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/entity/player/PlayerEntity;startRiding(Lnet/minecraft/entity/Entity;)Z",
+            shift = At.Shift.BEFORE),
+            cancellable = true)
+    private void boatism$equipEngineEntity(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
+        ItemStack stack = player.getStackInHand(hand);
+        BoatEntity boatEntity = (BoatEntity) (Object) this;
+        if (((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().isPresent()) return;
+        if (stack.getItem() instanceof BaseEngineItem engineItem) {
+            if (!this.getWorld().isClient()) {
+                BoatEngineEntity engineEntity = new BoatEngineEntity(this.getWorld(), boatEntity);
+                this.getWorld().spawnEntity(engineEntity);
+                this.getWorld().playSound(null, boatEntity.getX(), boatEntity.getY(), boatEntity.getZ(),
+                        BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.9f, 1.0f);
+                stack.decrement(1);
+            }
+            cir.setReturnValue(ActionResult.SUCCESS);
+        }
+    }
+
     @Inject(method = "canCollide", at = @At("HEAD"), cancellable = true)
     private static void boatism$boatEngineCollision(Entity entity, Entity other, CallbackInfoReturnable<Boolean> cir) {
         if (other instanceof BoatEngineEntity) {
             cir.setReturnValue(false);
         }
     }
+
 
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void boatism$readBoatEngineEntry(NbtCompound nbt, CallbackInfo ci) {
@@ -76,7 +104,7 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
 
     @Inject(method = "getPassengerAttachmentPos", at = @At("HEAD"), cancellable = true)
     protected void getPassengerAttachmentPosMixin(Entity passenger, EntityDimensions dimensions, float scaleFactor,
-            CallbackInfoReturnable<Vector3f> info) {
+                                                  CallbackInfoReturnable<Vector3f> info) {
         if (passenger instanceof BoatEngineEntity) {
             info.setReturnValue(boatism$attachmentPos(dimensions));
         }
@@ -86,17 +114,15 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     protected void canAddPassengerMixin(Entity passenger, CallbackInfoReturnable<Boolean> info) {
         if (this.getPassengerList().size() < 3
                 && ((BoatEngineCoupler) this).boatism$getBoatEngineEntityUuid().isPresent()) {
-                    info.setReturnValue(true);
+            info.setReturnValue(true);
         }
     }
 
     @Override
     public Vector3f boatism$attachmentPos(EntityDimensions dimensions) {
         if (this.getVariant() == BoatEntity.Type.BAMBOO) {
-            LoggerUtil.devLogger("bamboo dimension " + this.getVariant().asString());
             return new Vector3f(0.0f, dimensions.height * 0.7f, -1.2f);
         }
-        LoggerUtil.devLogger("default dimension " + this.getVariant().toString());
         return new Vector3f(0.0f, dimensions.height / 3.0f, -1.32f);
     }
 

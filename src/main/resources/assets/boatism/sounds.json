@@ -70,5 +70,11 @@
     "sounds": [
       "boatism:boat_engine_pour"
     ]
+  },
+  "boat_engine_equip": {
+    "subtitle": "sound.boatism.boat_engine.equip",
+    "sounds": [
+      "boatism:boat_engine_equip"
+    ]
   }
 }

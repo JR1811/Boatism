@@ -11,6 +11,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -21,7 +22,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.EulerAngle;
@@ -31,12 +34,12 @@ import net.minecraft.world.explosion.Explosion;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
+import net.shirojr.boatism.item.BoatismItems;
 import net.shirojr.boatism.network.BoatismS2C;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -61,6 +64,7 @@ public class BoatEngineEntity extends LivingEntity {
     @NotNull
     private final BoatEngineHandler engineHandler;
     private int previousPowerLevel = 0;
+    private Vec3d previousLocation = Vec3d.ZERO;
 
     public BoatEngineEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -78,6 +82,7 @@ public class BoatEngineEntity extends LivingEntity {
         this(BoatismEntities.BOAT_ENGINE, world);
         this.setPos(hookedBoatEntity.getX(), hookedBoatEntity.getY(), hookedBoatEntity.getZ());
         this.hookOntoBoatEntity(hookedBoatEntity);
+        this.previousLocation = hookedBoatEntity.getPos();
     }
 
     @Override
@@ -104,8 +109,7 @@ public class BoatEngineEntity extends LivingEntity {
                 this.leftSpinAnimationState.start(this.age);
             }
             --this.spinAnimationTimeout;
-        }
-        else {
+        } else {
             this.leftSpinAnimationState.stop();
         }
     }
@@ -154,10 +158,7 @@ public class BoatEngineEntity extends LivingEntity {
         }
         if (isRunning()) {
             this.getHookedBoatEntity().ifPresent(boatEntity -> {
-                Vec3d originalVelocity = boatEntity.getVelocity();
-                if (originalVelocity.length() <= 0 && boatEntity.getControllingPassenger() != null) {
-                    originalVelocity = boatEntity.getControllingPassenger().getVelocity();
-                }
+                double actualSpeed = Math.max(0, this.previousLocation.distanceTo(this.getPos()));
                 if (previousPowerLevel >= getPowerLevel()) {
                     if (!boatEntity.isOnGround()) {
                         Vec3d newVelocity = boatEntity.getRotationVector().multiply(1.0, 0.0, 1.0).normalize()
@@ -167,27 +168,30 @@ public class BoatEngineEntity extends LivingEntity {
                         setOverheat(getOverheat() + 4);
                     }
                     boatEntity.velocityModified = true;
+                    if (getPowerLevel() > 3 && actualSpeed < 0.1) {
+                        setOverheat(getOverheat() + 2);
+                    }
                 }
                 previousPowerLevel = getPowerLevel();
-                LoggerUtil.devLogger("velocity horizontal length: " + boatEntity.getVelocity().horizontalLength());
             });
+            this.previousLocation = this.getPos();
         }
 
         this.engineHandler.setSubmerged(this.submergedInWater);
         this.engineHandler.incrementTick();
     }
 
-    public void updateEnginePosition(BoatEngineEntity passenger, PositionUpdater positionUpdater) {
-        getHookedBoatEntity().ifPresent(boatEntity -> {
-            Vec3d enginePos = enginePosition(boatEntity);
-            positionUpdater.accept(passenger, enginePos.x, enginePos.y, enginePos.z);
-            passenger.setYaw(boatEntity.getYaw());
-        });
-    }
-
-    private Vec3d enginePosition(BoatEntity boatEntity) {
-        Vector3f attachmentPos = new Vector3f(0.0f, 0.2f, -1.3f);
-        return new Vec3d(attachmentPos.rotateY(-boatEntity.getYaw() * ((float) Math.PI / 180))).add(boatEntity.getPos());
+    @Override
+    public ActionResult interact(PlayerEntity player, Hand hand) {
+        if (player.getStackInHand(hand).isEmpty() && player.isSneaking()) {
+            if (!this.getWorld().isClient()) {
+                if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
+                else engineHandler.stopEngine();
+                LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
+            }
+            return ActionResult.SUCCESS;
+        }
+        return super.interact(player, hand);
     }
 
     @Override
@@ -228,6 +232,10 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public Iterable<ItemStack> getArmorItems() {
         return this.armorItems;
+    }
+
+    public Iterable<ItemStack> getHeldItems() {
+        return this.heldItems;
     }
 
     @Override
@@ -393,10 +401,12 @@ public class BoatEngineEntity extends LivingEntity {
         this.kill();
     }
 
-    public static void removeBoatEngineEntry(Entity entity) {
-        if (!(entity instanceof BoatEntity boatEntity)) return;
+    public ItemStack removeBoatEngine(Entity entity) {
+        if (!(entity instanceof BoatEntity boatEntity)) return ItemStack.EMPTY;
         ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().ifPresent(boatEngineEntity ->
                 ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
+        this.discard();
+        return BoatismItems.BASE_ENGINE.getDefaultStack();  //TODO: add nbt entries for custom values?
     }
 
     @Override

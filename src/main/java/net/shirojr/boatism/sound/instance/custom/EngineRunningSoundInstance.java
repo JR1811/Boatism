@@ -1,9 +1,13 @@
 package net.shirojr.boatism.sound.instance.custom;
 
+import net.minecraft.util.math.MathHelper;
+import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.sound.BoatismSoundManager;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
 import net.shirojr.boatism.util.BoatEngineHandler;
+import net.shirojr.boatism.util.SoundInstanceIdentifier;
 
 public class EngineRunningSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     public EngineRunningSoundInstance(BoatEngineEntity entity) {
@@ -24,13 +28,13 @@ public class EngineRunningSoundInstance extends BoatismSoundInstance implements 
         }
         BoatismSoundInstance.defaultSoundHandling(this);
         BoatismSoundInstance.transformSoundForTransition(this.volume, this.pitch, this);
-        transformSoundForEngineLoad(this.volume, this.pitch, this);
+        BoatismSoundInstance.transformSoundForEngineLoad(this.volume, this.pitch, this);
     }
 
-    protected static void transformSoundForEngineLoad(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance) {
-        BoatEngineHandler boatEngineHandler = soundInstance.engineHandler;
-        int powerLevel = boatEngineHandler.getPowerLevel();
-
+    @Override
+    public boolean isDone() {
+        // BoatismClient.soundManager.stop(new BoatismSoundManager.SoundInstanceEntry(SoundInstanceIdentifier.ENGINE_RUNNING, this));
+        return super.isDone();
     }
 
     @Override

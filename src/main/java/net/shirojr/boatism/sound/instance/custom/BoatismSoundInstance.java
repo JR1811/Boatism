@@ -5,6 +5,7 @@ import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.MathHelper;
+import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.util.BoatEngineHandler;
 import net.shirojr.boatism.util.LoggerUtil;
@@ -60,8 +61,7 @@ public class BoatismSoundInstance extends MovingSoundInstance {
             }
         }
 
-        LoggerUtil.devLogger(String.format("currentTick: %s | transitionTick: %s | transitionState: %s",
-                currentTick, transitionTick, transitionState));
+        // LoggerUtil.devLogger(String.format("currentTick: %s | transitionTick: %s | transitionState: %s", currentTick, transitionTick, transitionState));
 
         this.x = this.boatEngineEntity.getX();
         this.y = this.boatEngineEntity.getY();
@@ -120,6 +120,14 @@ public class BoatismSoundInstance extends MovingSoundInstance {
             }
         }
     }
+    protected static void transformSoundForEngineLoad(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance) {
+        BoatEngineHandler boatEngineHandler = soundInstance.engineHandler;
+        float normalizedPowerLevel = boatEngineHandler.getPowerLevel() * 0.1f;
+
+        soundInstance.volume = MathHelper.lerp(normalizedPowerLevel, originalVolume - 0.1f, originalVolume);
+        soundInstance.pitch = MathHelper.lerp(normalizedPowerLevel, originalPitch - 0.1f, originalPitch + 0.1f);
+    }
+
 
     public BoatEngineEntity getBoatEngineEntity() {
         return this.boatEngineEntity;

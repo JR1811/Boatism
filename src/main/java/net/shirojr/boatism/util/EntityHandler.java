@@ -1,5 +1,10 @@
 package net.shirojr.boatism.util;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.ItemScatterer;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -22,6 +27,18 @@ public class EntityHandler {
                 boatEngine -> boatEngine.getUuid().equals(uuid));
         if (possibleEntities.size() < 1) return Optional.empty();
         return Optional.ofNullable(possibleEntities.get(0));
+    }
 
+    public static void removePossibleBoatEngineEntry(Entity entity) {
+        if (!(entity instanceof BoatEntity boatEntity)) return;
+        ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid()
+                .flatMap(uuid -> EntityHandler.getBoatEngineEntityFromUuid(uuid, boatEntity.getWorld(),
+                        boatEntity.getPos(), 10))
+                .ifPresent(boatEngineEntity -> {
+                    ItemStack boatEngineItemStack = boatEngineEntity.removeBoatEngine(boatEntity);
+                    if (!(boatEngineEntity.getWorld() instanceof ServerWorld serverWorld)) return;
+                    Vec3d pos = boatEngineEntity.getBlockPos().toCenterPos();
+                    ItemScatterer.spawn(serverWorld, pos.getX(), pos.getY(), pos.getZ(), boatEngineItemStack);
+                });
     }
 }

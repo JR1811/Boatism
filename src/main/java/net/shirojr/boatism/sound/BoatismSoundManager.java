@@ -2,9 +2,11 @@ package net.shirojr.boatism.sound;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
+import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
 import net.shirojr.boatism.sound.instance.custom.BoatismSoundInstance;
+import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.SoundInstanceIdentifier;
 
 import java.util.ArrayList;
@@ -52,6 +54,10 @@ public class BoatismSoundManager {
 
         this.activeSoundInstances.add(new SoundInstanceEntry(soundInstanceIdentifier, soundInstance));
         this.client.getSoundManager().play(soundInstance);
+        List<SoundInstanceEntry> soundInstances = BoatismClient.soundManager.getActiveSoundInstances();
+        for (var entry : soundInstances) {
+            LoggerUtil.devLogger(entry.instance().getBoatEngineEntity() + " | " + entry.identifier().toString());
+        }
     }
 
     public void stop(SoundInstanceEntry soundInstanceEntry) {
@@ -78,6 +84,6 @@ public class BoatismSoundManager {
         }
     }
 
-    private record SoundInstanceEntry(SoundInstanceIdentifier identifier, BoatismSoundInstance instance) {
+    public record SoundInstanceEntry(SoundInstanceIdentifier identifier, BoatismSoundInstance instance) {
     }
 }

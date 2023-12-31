@@ -8,10 +8,17 @@ import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.shirojr.boatism.sound.BoatismSounds;
 
 public enum BoatismArmorMaterial implements ArmorMaterial {
-    BOAT_EXHAUST_V1("exhaust_v1", 16, new int[]{2, 5, 7, 2}, 28,
-            SoundEvents.ITEM_ARMOR_EQUIP_IRON, 0.0f, 0.0f,
+    BOAT_EXHAUST("exhaust_v1", 16, new int[]{2, 5, 7, 2}, 28,
+            0.0f, 0.0f,
+            () -> Ingredient.ofItems(Items.GOLD_INGOT, Items.IRON_INGOT)),
+    BOAT_CANISTER("canister", 16, new int[]{2, 5, 7, 2}, 28,
+            0.0f, 0.0f,
+            () -> Ingredient.ofItems(Items.GOLD_INGOT, Items.IRON_INGOT)),
+    BOAT_PLATES("plates", 16, new int[]{2, 5, 7, 2}, 28,
+            0.0f, 0.0f,
             () -> Ingredient.ofItems(Items.GOLD_INGOT, Items.IRON_INGOT));
 
     private static final int[] BASE_DURABILITY;
@@ -24,12 +31,12 @@ public enum BoatismArmorMaterial implements ArmorMaterial {
     private final float knockbackResistance;
     private final Supplier<Ingredient> repairIngredientSupplier;
 
-    BoatismArmorMaterial(String name, int durabilityMultiplier, int[] protectionAmounts, int enchantability, SoundEvent equipSound, float toughness, float knockbackResistance, Supplier<Ingredient> repairIngredientSupplier) {
+    BoatismArmorMaterial(String name, int durabilityMultiplier, int[] protectionAmounts, int enchantability, float toughness, float knockbackResistance, Supplier<Ingredient> repairIngredientSupplier) {
         this.name = name;
         this.durabilityMultiplier = durabilityMultiplier;
         this.protectionAmounts = protectionAmounts;
         this.enchantability = enchantability;
-        this.equipSound = equipSound;
+        this.equipSound = BoatismSounds.BOAT_ENGINE_EQUIP;
         this.toughness = toughness;
         this.knockbackResistance = knockbackResistance;
         this.repairIngredientSupplier = Suppliers.memoize(repairIngredientSupplier);
