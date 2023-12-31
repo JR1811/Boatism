@@ -37,6 +37,16 @@ with our cutting-edge boat engine feature.
     - Is your engine overheating too fast? How about some better cooling options?
     - Your engine can't take a beating? Put on some plating, and it will tank any fall!
 
+### Contributors
+
+Thank you to...
+
+- @Globox1997 (dev and ideas)
+- @0xJoeMama (dev and ideas)
+- Apfelrunder (ideas)
+
+... and many more for your help!
+
 <br>
 <a href="https://fabricmc.net/"><img
     src="external/promo/fabric_supported.png"
