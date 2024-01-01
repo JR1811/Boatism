@@ -222,9 +222,9 @@ public class BoatEngineHandler {
     }
 
     public boolean breaksWhenSubmerged() {
-        boolean hasWaterProofedArmorStacks = this.armorItems.stream().anyMatch(stack ->
+        boolean hasWaterProofedArmorStacks = this.armorItems.stream().allMatch(stack ->
                 stack.getItem() instanceof BoatEngineComponent component && component.waterProofsEngine());
-        boolean hasWaterProofedEquippedStacks = this.heldItems.stream().anyMatch(stack ->
+        boolean hasWaterProofedEquippedStacks = this.heldItems.stream().allMatch(stack ->
                 stack.getItem() instanceof BoatEngineComponent component && component.waterProofsEngine());
         return !hasWaterProofedArmorStacks && !hasWaterProofedEquippedStacks;
     }

@@ -50,6 +50,18 @@ Due to a tight schedule, a lot of balancing and bug testing still has to be done
 possible issues
 or feature requests in the [GitHub issues](https://github.com/JR1811/Boatism/issues).
 
+## For Developers
+
+Boatism strives to improve compatibility with other mods!
+
+For now every Entity, which extends from the BoatEntity class, is eligible
+to hook up the engine and should need no extra implementations to work as intended.
+
+If your boat has a different size, compared to the default boats, you might want
+to adjust the relative engine position. 
+Check out the [API package](https://github.com/JR1811/Boatism/tree/master/src/main/java/net/shirojr/boatism/api)
+for that,
+
 ## Contributors
 
 Thank you to...
@@ -57,6 +69,7 @@ Thank you to...
 - [@Globox1997](https://github.com/Globox1997) (dev and ideas)
 - [@0xJoeMama](https://github.com/0xJoeMama) (dev and ideas)
 - Apfelrunder (ideas)
+- the people from ModFest 1.20
 
 ... and many more for your help!
 
