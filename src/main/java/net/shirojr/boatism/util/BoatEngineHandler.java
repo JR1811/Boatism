@@ -13,11 +13,11 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.MathHelper;
 import net.shirojr.boatism.Boatism;
+import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.mixin.BoatEntityInvoker;
-import net.shirojr.boatism.network.BoatismS2C;
+import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class BoatEngineHandler {
 
     public static BoatEngineHandler create(BoatEngineEntity boatEngine, List<ItemStack> heldItems, List<ItemStack> armorItems) {
         BoatEngineHandler engineHandler = new BoatEngineHandler(boatEngine, heldItems, armorItems);
-        engineHandler.initiateSoundStateChange();
+        engineHandler.soundStateChange();
         return engineHandler;
     }
 
@@ -59,7 +59,7 @@ public class BoatEngineHandler {
 
         if (isLowOnFuel()) {
             if (canPlayLowFuel) {
-                soundStateChange(SoundInstanceIdentifier.ENGINE_LOW_FUEL);
+                soundStateChange();
                 canPlayLowFuel = false;
             }
         } else {
@@ -67,7 +67,7 @@ public class BoatEngineHandler {
         }
         if (isHeatingUp()) {
             if (canPlayOverheat) {
-                soundStateChange(SoundInstanceIdentifier.ENGINE_OVERHEATING);
+                soundStateChange();
                 canPlayOverheat = false;
             }
         } else {
@@ -91,7 +91,7 @@ public class BoatEngineHandler {
         }
         playSoundEvent(BoatismSounds.BOAT_ENGINE_START);
         this.boatEngine.setIsRunning(true);
-        soundStateChange(SoundInstanceIdentifier.ENGINE_RUNNING);
+        soundStateChange();
     }
 
     public void stopEngine() {
@@ -125,11 +125,11 @@ public class BoatEngineHandler {
         float maxCapacity = MAX_BASE_FUEL;
 
         for (ItemStack stack : armorItems) {
-            if (!(stack.getItem() instanceof BoatComponent component)) continue;
+            if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
             maxCapacity += component.addedFuelCapacity();
         }
         for (ItemStack stack : heldItems) {
-            if (!(stack.getItem() instanceof BoatComponent component)) continue;
+            if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
             maxCapacity += component.addedFuelCapacity();
         }
         return maxCapacity;
@@ -161,12 +161,12 @@ public class BoatEngineHandler {
     private float additionalConsumedFuel() {
         float fuelPerTick = 0;
         for (ItemStack entry : this.armorItems) {
-            if (entry.getItem() instanceof BoatComponent component && component.addedConsumedFuel() > 0.0f) {
+            if (entry.getItem() instanceof BoatEngineComponent component && component.addedConsumedFuel() > 0.0f) {
                 fuelPerTick += component.addedConsumedFuel();
             }
         }
         for (ItemStack entry : this.heldItems) {
-            if (entry.getItem() instanceof BoatComponent component && component.addedConsumedFuel() > 0.0f) {
+            if (entry.getItem() instanceof BoatEngineComponent component && component.addedConsumedFuel() > 0.0f) {
                 fuelPerTick += component.addedConsumedFuel();
             }
         }
@@ -218,14 +218,14 @@ public class BoatEngineHandler {
     public void setSubmerged(boolean isSubmerged) {
         if (isSubmerged == this.isSubmerged()) return;
         this.boatEngine.setSubmerged(isSubmerged);
-        soundStateChange(SoundInstanceIdentifier.ENGINE_RUNNING_UNDERWATER);
+        soundStateChange();
     }
 
     public boolean breaksWhenSubmerged() {
         boolean hasWaterProofedArmorStacks = this.armorItems.stream().anyMatch(stack ->
-                stack.getItem() instanceof BoatComponent component && component.waterProofesEngine());
+                stack.getItem() instanceof BoatEngineComponent component && component.waterProofsEngine());
         boolean hasWaterProofedEquippedStacks = this.heldItems.stream().anyMatch(stack ->
-                stack.getItem() instanceof BoatComponent component && component.waterProofesEngine());
+                stack.getItem() instanceof BoatEngineComponent component && component.waterProofsEngine());
         return !hasWaterProofedArmorStacks && !hasWaterProofedEquippedStacks;
     }
 
@@ -237,67 +237,51 @@ public class BoatEngineHandler {
         int thrust = 1;
 
         this.armorItems.forEach(stack -> {
-            if (stack.getItem() instanceof BoatComponent component && component.addedThrust() > 0.0f) {
+            if (stack.getItem() instanceof BoatEngineComponent component && component.addedThrust() > 0.0f) {
                 boatComponentStacks.add(stack);
             }
         });
         this.heldItems.forEach(stack -> {
-            if (stack.getItem() instanceof BoatComponent component && component.addedThrust() > 0.0f) {
+            if (stack.getItem() instanceof BoatEngineComponent component && component.addedThrust() > 0.0f) {
                 boatComponentStacks.add(stack);
             }
         });
         for (ItemStack thrustModifierStack : boatComponentStacks) {
-            thrust += ((BoatComponent) thrustModifierStack.getItem()).addedThrust();
+            thrust += ((BoatEngineComponent) thrustModifierStack.getItem()).addedThrust();
         }
         float passengerDeficit = (float) passengerCount / maxPassenger;
         return thrust * MathHelper.lerp(passengerDeficit, 1.0f, 0.7f);
     }
 
     public boolean canEquipPart(ItemStack stack) {
-        if (!(stack.getItem() instanceof BoatComponent)) return false;
+        if (!(stack.getItem() instanceof BoatEngineComponent)) return false;
         List<Item> flaggedParts = new ArrayList<>();
         for (ItemStack entry : this.armorItems) {
-            if (entry.getItem() instanceof BoatComponent component) {
+            if (entry.getItem() instanceof BoatEngineComponent component) {
                 flaggedParts.addAll(component.getConflictingParts());
             }
         }
         for (ItemStack entry : this.heldItems) {
-            if (entry.getItem() instanceof BoatComponent component) {
+            if (entry.getItem() instanceof BoatEngineComponent component) {
                 flaggedParts.addAll(component.getConflictingParts());
             }
         }
         return !flaggedParts.contains(stack.getItem());
     }
 
-    public void initiateSoundStateChange() {
-        List<SoundInstanceIdentifier> instances = new ArrayList<>();
-        if (engineIsRunning()) instances.add(SoundInstanceIdentifier.ENGINE_RUNNING);
-        if (isOverheating()) instances.add(SoundInstanceIdentifier.ENGINE_OVERHEATING);
-        if (isSubmerged()) {
-            instances.add(SoundInstanceIdentifier.ENGINE_RUNNING_UNDERWATER);
-            instances.remove(SoundInstanceIdentifier.ENGINE_RUNNING);
-            instances.remove(SoundInstanceIdentifier.ENGINE_OVERHEATING);
-        }
-
-        for (SoundInstanceIdentifier entry : instances) {
-            soundStateChange(entry);
-        }
-    }
-
-    private void soundStateChange(@NotNull SoundInstanceIdentifier soundInstance) {
+    public void soundStateChange() {
         if (!(boatEngine.getWorld() instanceof ServerWorld serverWorld)) return;
         PlayerLookup.around(serverWorld, boatEngine.getPos(), 20).forEach(player -> {
             PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeIdentifier(soundInstance.getIdentifier());
             buf.writeVarInt(this.boatEngine.getId());
-            ServerPlayNetworking.send(player, BoatismS2C.CUSTOM_SOUND_INSTANCE_START_PACKET, buf);
+            LoggerUtil.devLogger("server is about to send soundinstance change packet");
+            ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_START.getPacketIdentifier(), buf);
         });
     }
 
     private void playSoundEvent(SoundEvent soundEvent) {
         playSoundEvent(soundEvent, 1.0f, 1.0f);
     }
-
 
     @SuppressWarnings("SameParameterValue")
     private void playSoundEvent(SoundEvent soundEvent, float volume, float pitch) {

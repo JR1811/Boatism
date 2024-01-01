@@ -3,11 +3,11 @@ package net.shirojr.boatism.item.custom;
 import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.Item;
 import net.shirojr.boatism.item.BoatismItems;
-import net.shirojr.boatism.util.BoatComponent;
+import net.shirojr.boatism.api.BoatEngineComponent;
 
 import java.util.List;
 
-public class CanisterItem extends BoatismArmorItem implements BoatComponent {
+public class CanisterItem extends BoatismArmorItem implements BoatEngineComponent {
     public CanisterItem(ArmorMaterial material, Type type, Settings settings) {
         super(material, type, settings);
     }

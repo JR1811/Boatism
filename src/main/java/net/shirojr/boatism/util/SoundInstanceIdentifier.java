@@ -1,11 +1,14 @@
 package net.shirojr.boatism.util;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
 
 import java.util.Optional;
 
+@Environment(EnvType.CLIENT)
 public enum SoundInstanceIdentifier {
     ENGINE_RUNNING("engine_running"),
     ENGINE_RUNNING_UNDERWATER("engine_underwater"),

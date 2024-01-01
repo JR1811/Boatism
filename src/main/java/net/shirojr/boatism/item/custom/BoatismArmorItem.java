@@ -8,9 +8,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
-import net.shirojr.boatism.util.BoatComponent;
+import net.shirojr.boatism.api.BoatEngineComponent;
 
-public class BoatismArmorItem extends ArmorItem implements BoatComponent {
+public class BoatismArmorItem extends ArmorItem implements BoatEngineComponent {
     public BoatismArmorItem(ArmorMaterial material, Type type, Settings settings) {
         super(material, type, settings);
     }

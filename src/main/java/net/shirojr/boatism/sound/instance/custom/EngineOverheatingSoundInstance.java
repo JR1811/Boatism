@@ -1,15 +1,15 @@
 package net.shirojr.boatism.sound.instance.custom;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.util.math.MathHelper;
-import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.sound.BoatismSoundManager;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
 import net.shirojr.boatism.util.BoatEngineHandler;
 import net.shirojr.boatism.util.LoggerUtil;
-import net.shirojr.boatism.util.SoundInstanceIdentifier;
 
+@Environment(EnvType.CLIENT)
 public class EngineOverheatingSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     public EngineOverheatingSoundInstance(BoatEngineEntity boatEngineEntity) {
         super(boatEngineEntity, BoatismSounds.BOAT_ENGINE_HEAT, 60, 60);

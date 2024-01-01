@@ -1,5 +1,7 @@
 package net.shirojr.boatism.sound;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -12,7 +14,7 @@ import net.shirojr.boatism.util.SoundInstanceIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;
-
+@Environment(EnvType.CLIENT)
 public class BoatismSoundManager {
     private final MinecraftClient client = MinecraftClient.getInstance();
     private final List<SoundInstanceEntry> activeSoundInstances = new ArrayList<>();
@@ -45,6 +47,7 @@ public class BoatismSoundManager {
             if (!(activeInstance.instance instanceof SoundInstanceState activeInstanceState)) continue;
             if (soundInstance.getBoatEngineEntity().equals(activeInstance.instance.getBoatEngineEntity())) {
                 if (soundInstanceIdentifier.equals(activeInstance.identifier)) {
+                    //return;
                     unsupportedSoundInstances.add(activeInstance);
                 }
                 if (state.isMainSound() && activeInstanceState.isMainSound()) {

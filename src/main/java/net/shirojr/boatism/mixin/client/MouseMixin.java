@@ -9,7 +9,7 @@ import net.minecraft.client.option.GameOptions;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.network.BoatismC2S;
+import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.util.BoatEngineCoupler;
 import net.shirojr.boatism.util.EntityHandler;
 import org.spongepowered.asm.mixin.Final;
@@ -46,7 +46,7 @@ public class MouseMixin {
 
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeDouble(delta);
-            ClientPlayNetworking.send(BoatismC2S.SCROLL_PACKET, buf);
+            ClientPlayNetworking.send(BoatismNetworkIdentifiers.SCROLLED.getPacketIdentifier(), buf);
             ci.cancel();
         });
     }

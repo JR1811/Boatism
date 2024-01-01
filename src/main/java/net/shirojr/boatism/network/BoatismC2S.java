@@ -21,10 +21,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class BoatismC2S {
-    public static final Identifier SCROLL_PACKET = new Identifier(Boatism.MODID, "scrolled");
-
     public static void registerServerReceivers() {
-        ServerPlayNetworking.registerGlobalReceiver(SCROLL_PACKET, BoatismC2S::handleScrollPackets);
+        ServerPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SCROLLED.getPacketIdentifier(),
+                BoatismC2S::handleScrollPackets);
     }
 
     private static void handleScrollPackets(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,

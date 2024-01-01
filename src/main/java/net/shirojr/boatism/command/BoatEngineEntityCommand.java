@@ -15,7 +15,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.entity.BoatismEntities;
-import net.shirojr.boatism.network.BoatismS2C;
+import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.util.BoatEngineCoupler;
 
 public class BoatEngineEntityCommand {
@@ -26,7 +26,7 @@ public class BoatEngineEntityCommand {
                 .then(CommandManager.literal("sound")
                         .then(CommandManager.literal("stop")
                                 .executes(BoatEngineEntityCommand::stopAllSoundInstances)))
-                .then(CommandManager.literal("entities")
+                .then(CommandManager.literal("entities").requires(serverCommandSource -> serverCommandSource.hasPermissionLevel(2))
                         .then(CommandManager.literal("remove")
                                 .executes(BoatEngineEntityCommand::removeBoatEngineEntities))));
         // .then(CommandManager.argument("entity", EntityArgumentType.entities()))
@@ -36,7 +36,7 @@ public class BoatEngineEntityCommand {
         PacketByteBuf buf = PacketByteBufs.create();
         ServerPlayerEntity serverPlayerEntity = context.getSource().getPlayer();
         if (serverPlayerEntity == null) return 0;
-        ServerPlayNetworking.send(serverPlayerEntity, BoatismS2C.CUSTOM_SOUND_INSTANCE_CLEAR_ALL_PACKET, buf);
+        ServerPlayNetworking.send(serverPlayerEntity, BoatismNetworkIdentifiers.SOUND_END_ALL.getPacketIdentifier(), buf);
         return 1;
     }
 

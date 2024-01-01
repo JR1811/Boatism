@@ -1,14 +1,12 @@
 package net.shirojr.boatism.sound.instance.custom;
 
-import net.minecraft.util.math.MathHelper;
-import net.shirojr.boatism.BoatismClient;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.sound.BoatismSoundManager;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
-import net.shirojr.boatism.util.BoatEngineHandler;
-import net.shirojr.boatism.util.SoundInstanceIdentifier;
 
+@Environment(EnvType.CLIENT)
 public class EngineRunningSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     public EngineRunningSoundInstance(BoatEngineEntity entity) {
         super(entity, BoatismSounds.BOAT_ENGINE_DEFAULT, 100, 80);

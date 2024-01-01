@@ -19,8 +19,7 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.item.custom.BaseEngineItem;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.BoatEngineCoupler;
-import net.shirojr.boatism.util.CustomBoatEngineAttachment;
-import net.shirojr.boatism.util.LoggerUtil;
+import net.shirojr.boatism.api.CustomBoatEngineAttachment;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -103,15 +102,15 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     }
 
     @Inject(method = "getPassengerAttachmentPos", at = @At("HEAD"), cancellable = true)
-    protected void getPassengerAttachmentPosMixin(Entity passenger, EntityDimensions dimensions, float scaleFactor,
-                                                  CallbackInfoReturnable<Vector3f> info) {
+    protected void boatism$getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor,
+                                                     CallbackInfoReturnable<Vector3f> info) {
         if (passenger instanceof BoatEngineEntity) {
             info.setReturnValue(boatism$attachmentPos(dimensions));
         }
     }
 
     @Inject(method = "canAddPassenger", at = @At("HEAD"), cancellable = true)
-    protected void canAddPassengerMixin(Entity passenger, CallbackInfoReturnable<Boolean> info) {
+    protected void boatism$canAddPassenger(Entity passenger, CallbackInfoReturnable<Boolean> info) {
         if (this.getPassengerList().size() < 3
                 && ((BoatEngineCoupler) this).boatism$getBoatEngineEntityUuid().isPresent()) {
             info.setReturnValue(true);

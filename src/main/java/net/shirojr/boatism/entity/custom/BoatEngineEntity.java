@@ -1,7 +1,5 @@
 package net.shirojr.boatism.entity.custom;
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -16,7 +14,6 @@ import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -25,17 +22,16 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.EulerAngle;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.shirojr.boatism.Boatism;
+import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
 import net.shirojr.boatism.item.BoatismItems;
-import net.shirojr.boatism.network.BoatismS2C;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.*;
 import org.jetbrains.annotations.NotNull;
@@ -200,20 +196,7 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
-        this.engineHandler.initiateSoundStateChange();
-
-        Identifier stateIdentifier = null;
-        if (this.getEngineHandler().engineIsRunning())
-            stateIdentifier = SoundInstanceIdentifier.ENGINE_RUNNING.getIdentifier();
-        if (this.engineHandler.isLowOnFuel()) stateIdentifier = SoundInstanceIdentifier.ENGINE_LOW_FUEL.getIdentifier();
-        if (this.hasLowHealth()) stateIdentifier = SoundInstanceIdentifier.ENGINE_LOW_HEALTH.getIdentifier();
-        if (this.isSubmerged()) stateIdentifier = SoundInstanceIdentifier.ENGINE_RUNNING_UNDERWATER.getIdentifier();
-        if (stateIdentifier == null) return;
-
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeIdentifier(stateIdentifier);
-        buf.writeVarInt(this.getId());
-        ServerPlayNetworking.send(player, BoatismS2C.CUSTOM_SOUND_INSTANCE_START_PACKET, buf);
+        this.engineHandler.soundStateChange();
         super.onStartedTrackingBy(player);
     }
 
@@ -286,7 +269,7 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public boolean canEquip(ItemStack stack) {
-        return stack.getItem() instanceof BoatComponent;
+        return stack.getItem() instanceof BoatEngineComponent;
     }
 
     @Override
