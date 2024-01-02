@@ -61,7 +61,7 @@ public interface BoatEngineComponent {
     }
 
     /**
-     * Enabling your part to make the engine waterproof, will let the engine stay alive underwater.
+     * This value will enable your part to make the engine waterproof.
      * An engine needs all parts to be waterproof, to keep running underwater!
      */
     default boolean waterProofsEngine() {

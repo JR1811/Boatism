@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.client.BoatEngineEntityModel;
 import net.shirojr.boatism.entity.client.BoatEngineEntityRenderer;
+import net.shirojr.boatism.event.BoatismEvents;
 import net.shirojr.boatism.network.BoatismS2C;
 import net.shirojr.boatism.sound.BoatismSoundManager;
 
@@ -19,6 +20,7 @@ public class BoatismClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         BoatismS2C.registerClientReceivers();
+        BoatismEvents.registerClientEvents();
         soundManager = new BoatismSoundManager();
 
         EntityRendererRegistry.register(BoatismEntities.BOAT_ENGINE, BoatEngineEntityRenderer::new);
