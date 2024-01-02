@@ -40,10 +40,10 @@ public class BoatismSoundManager {
      * @param soundInstance           the actual object, which will be passed to the client BoatismSoundManager
      */
     public void start(SoundInstanceIdentifier soundInstanceIdentifier, BoatismSoundInstance soundInstance) {
-        //FIXME: don't use map, entries should be possible to play multiple times for multiple entities
         if (!(soundInstance instanceof SoundInstanceState state)) return;
         List<SoundInstanceEntry> unsupportedSoundInstances = new ArrayList<>();
         for (var activeInstance : this.activeSoundInstances) {
+            LoggerUtil.devLogger(activeInstance.instance.toString());
             if (!(activeInstance.instance instanceof SoundInstanceState activeInstanceState)) continue;
             if (soundInstance.getBoatEngineEntity().equals(activeInstance.instance.getBoatEngineEntity())) {
                 if (soundInstanceIdentifier.equals(activeInstance.identifier)) {
@@ -77,7 +77,6 @@ public class BoatismSoundManager {
         for (SoundInstanceEntry entry : this.activeSoundInstances) {
             if (soundInstanceEntry.identifier != entry.identifier) continue;
             Identifier identifier = soundInstanceEntry.instance.getId();
-            //this.client.getSoundManager().stopSounds(identifier, soundInstanceEntry.identifier.getCategory());
             soundInstanceEntry.instance.finishSoundInstance();
         }
         removeEntriesFromList(List.of(soundInstanceEntry));

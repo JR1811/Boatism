@@ -30,7 +30,6 @@ public class BoatEngineHandler {
     private final BoatEngineEntity boatEngine;
     private final DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2);
     private final DefaultedList<ItemStack> armorItems = DefaultedList.ofSize(4);
-
     private boolean canPlayOverheat = true, canPlayLowFuel = true;
 
     private BoatEngineHandler(BoatEngineEntity boatEngine, List<ItemStack> heldItems, List<ItemStack> armorItems) {
@@ -46,17 +45,15 @@ public class BoatEngineHandler {
     }
 
     public void incrementTick() {
-        if (this.boatEngine.getWorld().isClient()) return;
         if (breaksWhenSubmerged() && isSubmerged()) stopEngine();
-        if (getFuel() <= 0) stopEngine();
-        if (isOverheating()) stopEngine();
+        if (handleFuel()) return;
+        if (handleOverheating()) return;
 
-        if (isExperiencingHeavyLoad()) {
-            setOverheat(getOverheat() + 2);
-        } else if (getOverheat() > 0) {
-            setOverheat(getOverheat() - 1);
-        }
+        LoggerUtil.devLogger(String.format("Fuel: %s | OverheatTicks: %s", getFuel(), getOverheat()));
+    }
 
+
+    private boolean handleFuel() {
         if (isLowOnFuel()) {
             if (canPlayLowFuel) {
                 soundStateChange();
@@ -64,6 +61,24 @@ public class BoatEngineHandler {
             }
         } else {
             if (!canPlayLowFuel) canPlayLowFuel = true;
+        }
+        if (!this.boatEngine.getWorld().isClient()) {
+            consumeFuel(1.0f);
+        }
+        if (getFuel() <= 0) {
+            stopEngine();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleOverheating() {
+        if (!this.boatEngine.getWorld().isClient()) {
+            if (isExperiencingHeavyLoad()) {
+                setOverheat(getOverheat() + 2);
+            } else if (getOverheat() > 0) {
+                setOverheat(getOverheat() - 1);
+            }
         }
         if (isHeatingUp()) {
             if (canPlayOverheat) {
@@ -73,16 +88,14 @@ public class BoatEngineHandler {
         } else {
             if (!canPlayOverheat) canPlayOverheat = true;
         }
-
         if (isOverheating()) {
+            stopEngine();
             this.boatEngine.onOverheated();
-            return;
+            return true;
         }
-        if (!engineIsRunning()) return;
-        consumeFuel(1.0f);
-
-        // LoggerUtil.devLogger(String.format("Fuel: %s | OverheatTicks: %s", getFuel(), getOverheat()));
+        return false;
     }
+
 
     public void startEngine() {
         if (!engineCanStart()) {
@@ -118,6 +131,7 @@ public class BoatEngineHandler {
     }
 
     public void setFuel(float fuel) {
+        fuel = Math.min(getMaxFuelCapacity(), fuel);
         this.boatEngine.setFuel(fuel);
     }
 
@@ -145,6 +159,7 @@ public class BoatEngineHandler {
         if (fuel <= 0) return 0;
         if (newFuelValue == MAX_BASE_FUEL + fuel) return fuel;
         playSoundEvent(BoatismSounds.BOAT_ENGINE_FILL_UP);
+        soundStateChange();
         if (newFuelValue > MAX_BASE_FUEL) {
             setFuel(MAX_BASE_FUEL);
             return newFuelValue - MAX_BASE_FUEL;
@@ -190,6 +205,7 @@ public class BoatEngineHandler {
     public boolean isHeatingUp() {
         return getOverheat() > 10;
     }
+
     public int getOverheat() {
         return this.boatEngine.getOverheat();
     }
@@ -208,7 +224,6 @@ public class BoatEngineHandler {
             if (this.getPowerLevel() * 0.1 < boatEngine.getVelocity().horizontalLength()) return true;
         }
         return this.getPowerLevel() >= MAX_POWER_LEVEL - 2;
-        //TODO: add heavy load, if boat goes too slow for power level
     }
 
     public boolean isSubmerged() {
@@ -271,7 +286,7 @@ public class BoatEngineHandler {
 
     public void soundStateChange() {
         if (!(boatEngine.getWorld() instanceof ServerWorld serverWorld)) return;
-        PlayerLookup.around(serverWorld, boatEngine.getPos(), 20).forEach(player -> {
+        PlayerLookup.around(serverWorld, boatEngine.getPos(), 30).forEach(player -> {
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeVarInt(this.boatEngine.getId());
             LoggerUtil.devLogger("server is about to send soundinstance change packet");

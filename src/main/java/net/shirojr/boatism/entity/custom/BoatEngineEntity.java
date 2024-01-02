@@ -113,35 +113,36 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
-        getHookedBoatEntityUuid().ifPresent(hookedBoatEntityUuid -> nbt.putUuid("HookedEntity", hookedBoatEntityUuid));
-        BoatEngineNbtHelper.writeItemStacksToNbt(this.armorItems, "ArmorItems", nbt);
-        BoatEngineNbtHelper.writeItemStacksToNbt(this.heldItems, "HandItems", nbt);
-        nbt.putInt("PowerOutput", this.getPowerLevel());
-        nbt.putInt("Overheat", this.getOverheat());
-        nbt.put("ArmRotation", this.getArmRotation().toNbt());
-        nbt.putBoolean("IsSubmerged", this.isSubmerged());
-        nbt.putFloat("Fuel", this.getFuel());
-        nbt.putBoolean("IsLocked", this.isLocked());
+        getHookedBoatEntityUuid().ifPresent(hookedBoatEntityUuid ->
+                nbt.putUuid(NbtKeys.HOOKED_ENTITY, hookedBoatEntityUuid));
+        BoatEngineNbtHelper.writeItemStacksToNbt(this.armorItems, NbtKeys.ARMOR_ITEMS, nbt);
+        BoatEngineNbtHelper.writeItemStacksToNbt(this.heldItems, NbtKeys.HELD_ITEMS, nbt);
+        nbt.putInt(NbtKeys.POWER_OUTPUT, this.getPowerLevel());
+        nbt.putInt(NbtKeys.OVERHEAT, this.getOverheat());
+        nbt.put(NbtKeys.ROTATION, this.getArmRotation().toNbt());
+        nbt.putBoolean(NbtKeys.IS_SUBMERGED, this.isSubmerged());
+        nbt.putFloat(NbtKeys.FUEL, this.getFuel());
+        nbt.putBoolean(NbtKeys.IS_LOCKED, this.isLocked());
     }
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
-        if (nbt.contains("HookedEntity")) {
-            this.setHookedBoatEntity(nbt.getUuid("HookedEntity"));
+        if (nbt.contains(NbtKeys.HOOKED_ENTITY)) {
+            this.setHookedBoatEntity(nbt.getUuid(NbtKeys.HOOKED_ENTITY));
         }
-        if (nbt.contains("ArmorItems")) {
-            this.armorItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "ArmorItems", 4);
+        if (nbt.contains(NbtKeys.ARMOR_ITEMS)) {
+            this.armorItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.ARMOR_ITEMS, 4);
         }
         if (nbt.contains("HandItems")) {
-            this.heldItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, "HandItems", 2);
+            this.heldItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.HELD_ITEMS, 2);
         }
-        this.setPowerLevel(Math.min(nbt.getInt("PowerOutput"), BoatEngineHandler.MAX_POWER_LEVEL / 2));
-        this.setOverheat(nbt.getInt("Overheat"));
-        this.setArmRotation(new EulerAngle(nbt.getList("ArmRotation", NbtElement.FLOAT_TYPE)));
-        this.setSubmerged(nbt.getBoolean("IsSubmerged"));
-        this.setFuel(nbt.getFloat("Fuel"));
-        this.setLocked(nbt.getBoolean("IsLocked"));
+        this.setPowerLevel(Math.min(nbt.getInt(NbtKeys.POWER_OUTPUT), BoatEngineHandler.MAX_POWER_LEVEL / 2));
+        this.setOverheat(nbt.getInt(NbtKeys.OVERHEAT));
+        this.setArmRotation(new EulerAngle(nbt.getList(NbtKeys.ROTATION, NbtElement.FLOAT_TYPE)));
+        this.setSubmerged(nbt.getBoolean(NbtKeys.IS_SUBMERGED));
+        this.setFuel(nbt.getFloat(NbtKeys.FUEL));
+        this.setLocked(nbt.getBoolean(NbtKeys.IS_LOCKED));
     }
 
     @Override
@@ -221,8 +222,16 @@ public class BoatEngineEntity extends LivingEntity {
         return this.armorItems;
     }
 
+    public void setArmorItems(DefaultedList<ItemStack> armorItems) {
+        this.armorItems = armorItems;
+    }
+
     public Iterable<ItemStack> getHeldItems() {
         return this.heldItems;
+    }
+
+    public void setHeldItems(DefaultedList<ItemStack> heldItems) {
+        this.heldItems = heldItems;
     }
 
     @Override
@@ -261,6 +270,12 @@ public class BoatEngineEntity extends LivingEntity {
         }
     }
 
+    @Override
+    public void onEquipStack(EquipmentSlot slot, ItemStack oldStack, ItemStack newStack) {
+        super.onEquipStack(slot, oldStack, newStack);
+        this.engineHandler.soundStateChange();
+    }
+
     public void hookOntoBoatEntity(BoatEntity boatEntity) {
         ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(this.getUuid());
         this.hookedBoatEntityUuid = boatEntity.getUuid();
@@ -279,7 +294,7 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public boolean canBeHitByProjectile() {
-        return false;
+        return super.canBeHitByProjectile();
     }
 
     @Override
@@ -376,10 +391,12 @@ public class BoatEngineEntity extends LivingEntity {
         if (!(this.getWorld() instanceof ServerWorld serverWorld)) return;
         this.getHookedBoatEntity().ifPresent(boatEntity -> boatEntity.getPassengerList().forEach(entity -> {
             if (entity instanceof LivingEntity livingEntity) {
-                livingEntity.addStatusEffect(new StatusEffectInstance(
-                        StatusEffects.NAUSEA, 120, 1, false, false, true));
-                livingEntity.addStatusEffect(new StatusEffectInstance(
-                        StatusEffects.WITHER, 40, 1, false, false, true));
+                if (!(livingEntity instanceof PlayerEntity player) || !player.isCreative()) {
+                    livingEntity.addStatusEffect(new StatusEffectInstance(
+                            StatusEffects.NAUSEA, 240, 1, false, false, true));
+                    livingEntity.addStatusEffect(new StatusEffectInstance(
+                            StatusEffects.WITHER, 80, 1, false, false, true));
+                }
             }
         }));
         serverWorld.createExplosion(this, Explosion.createDamageSource(serverWorld, this), null,
@@ -388,12 +405,11 @@ public class BoatEngineEntity extends LivingEntity {
         this.kill();
     }
 
-    public ItemStack removeBoatEngine(Entity entity) {
-        if (!(entity instanceof BoatEntity boatEntity)) return ItemStack.EMPTY;
+    public void removeBoatEngine(Entity entity) {
+        if (!(entity instanceof BoatEntity boatEntity)) return;
         ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().ifPresent(boatEngineEntity ->
                 ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
         this.discard();
-        return BoatismItems.BASE_ENGINE.getDefaultStack();  //TODO: add nbt entries for custom values?
     }
 
     @Override

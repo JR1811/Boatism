@@ -44,8 +44,6 @@ public class ItemMixin {
         }
         if (usedItem.equals(BoatismItems.FUEL_BUCKET)) {
             float leftOver = engineHandler.fillUpFuel(BoatEngineHandler.MAX_BASE_FUEL);
-            world.playSound(null, boatEngineEntity.getBlockPos(), SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.NEUTRAL,
-                    0.6f, 0.75f);
             if (!user.isCreative()) {
                 stack.decrement(1);
                 user.getInventory().offerOrDrop(Items.BUCKET.getDefaultStack());

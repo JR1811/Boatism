@@ -36,7 +36,8 @@ public class EntityHandler {
                 .flatMap(uuid -> EntityHandler.getBoatEngineEntityFromUuid(uuid, boatEntity.getWorld(),
                         boatEntity.getPos(), 10))
                 .ifPresent(boatEngineEntity -> {
-                    ItemStack boatEngineItemStack = boatEngineEntity.removeBoatEngine(boatEntity);
+                    ItemStack boatEngineItemStack = BoatEngineNbtHelper.getItemStackFromBoatEngineEntity(boatEngineEntity);
+                    boatEngineEntity.removeBoatEngine(boatEntity);
                     if (!(boatEngineEntity.getWorld() instanceof ServerWorld serverWorld)) return;
                     Vec3d pos = boatEngineEntity.getBlockPos().toCenterPos();
                     ItemScatterer.spawn(serverWorld, pos.getX(), pos.getY(), pos.getZ(), boatEngineItemStack);

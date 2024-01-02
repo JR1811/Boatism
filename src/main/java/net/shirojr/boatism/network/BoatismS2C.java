@@ -32,12 +32,14 @@ public class BoatismS2C {
             if (!(client.world.getEntityById(entityId) instanceof BoatEngineEntity boatEngineEntity)) return;
             BoatEngineHandler handler = boatEngineEntity.getEngineHandler();
             List<SoundInstanceIdentifier> instances = new ArrayList<>();
-            if (handler.engineIsRunning()) instances.add(SoundInstanceIdentifier.ENGINE_RUNNING);
-            if (handler.isOverheating()) instances.add(SoundInstanceIdentifier.ENGINE_OVERHEATING);
+            if (boatEngineEntity.isRunning()) {
+                instances.add(SoundInstanceIdentifier.ENGINE_RUNNING);
+            }
+            if (handler.isOverheating()) {
+                instances.add(SoundInstanceIdentifier.ENGINE_OVERHEATING);
+            }
             if (handler.isSubmerged()) {
                 instances.add(SoundInstanceIdentifier.ENGINE_RUNNING_UNDERWATER);
-                instances.remove(SoundInstanceIdentifier.ENGINE_RUNNING);
-                instances.remove(SoundInstanceIdentifier.ENGINE_OVERHEATING);
             }
             instances.forEach(soundInstanceIdentifier -> {
                 BoatismSoundInstance soundInstance;
