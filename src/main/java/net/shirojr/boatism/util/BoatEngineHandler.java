@@ -20,6 +20,7 @@ import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BoatEngineHandler {
@@ -40,7 +41,7 @@ public class BoatEngineHandler {
 
     public static BoatEngineHandler create(BoatEngineEntity boatEngine, List<ItemStack> heldItems, List<ItemStack> armorItems) {
         BoatEngineHandler engineHandler = new BoatEngineHandler(boatEngine, heldItems, armorItems);
-        engineHandler.soundStateChange();
+        engineHandler.soundStateChange(List.of(SoundInstanceIdentifier.NO_SOUND));
         return engineHandler;
     }
 
@@ -49,14 +50,14 @@ public class BoatEngineHandler {
         if (handleFuel()) return;
         if (handleOverheating()) return;
 
-        LoggerUtil.devLogger(String.format("Fuel: %s | OverheatTicks: %s", getFuel(), getOverheat()));
+        // LoggerUtil.devLogger(String.format("Fuel: %s | OverheatTicks: %s", getFuel(), getOverheat()));
     }
 
 
     private boolean handleFuel() {
         if (isLowOnFuel()) {
             if (canPlayLowFuel) {
-                soundStateChange();
+                soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_LOW_FUEL));
                 canPlayLowFuel = false;
             }
         } else {
@@ -82,7 +83,7 @@ public class BoatEngineHandler {
         }
         if (isHeatingUp()) {
             if (canPlayOverheat) {
-                soundStateChange();
+                soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_OVERHEATING));
                 canPlayOverheat = false;
             }
         } else {
@@ -104,7 +105,7 @@ public class BoatEngineHandler {
         }
         playSoundEvent(BoatismSounds.BOAT_ENGINE_START);
         this.boatEngine.setIsRunning(true);
-        soundStateChange();
+        soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_RUNNING));
     }
 
     public void stopEngine() {
@@ -159,7 +160,7 @@ public class BoatEngineHandler {
         if (fuel <= 0) return 0;
         if (newFuelValue == MAX_BASE_FUEL + fuel) return fuel;
         playSoundEvent(BoatismSounds.BOAT_ENGINE_FILL_UP);
-        soundStateChange();
+        soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_LOW_FUEL));
         if (newFuelValue > MAX_BASE_FUEL) {
             setFuel(MAX_BASE_FUEL);
             return newFuelValue - MAX_BASE_FUEL;
@@ -233,7 +234,7 @@ public class BoatEngineHandler {
     public void setSubmerged(boolean isSubmerged) {
         if (isSubmerged == this.isSubmerged()) return;
         this.boatEngine.setSubmerged(isSubmerged);
-        soundStateChange();
+        soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_RUNNING_UNDERWATER));
     }
 
     public boolean breaksWhenSubmerged() {
@@ -242,6 +243,10 @@ public class BoatEngineHandler {
         boolean hasWaterProofedEquippedStacks = this.heldItems.stream().allMatch(stack ->
                 stack.getItem() instanceof BoatEngineComponent component && component.waterProofsEngine());
         return !hasWaterProofedArmorStacks && !hasWaterProofedEquippedStacks;
+    }
+
+    public boolean isLowHealth() {
+        return boatEngine.getHealth() < boatEngine.getMaxHealth() * 0.2;
     }
 
     public float calculateThrustModifier(BoatEntity hookedBoatEntity) {
@@ -284,13 +289,16 @@ public class BoatEngineHandler {
         return !flaggedParts.contains(stack.getItem());
     }
 
-    public void soundStateChange() {
+    public void soundStateChange(List<SoundInstanceIdentifier> changedSoundList) {
         if (!(boatEngine.getWorld() instanceof ServerWorld serverWorld)) return;
         PlayerLookup.around(serverWorld, boatEngine.getPos(), 30).forEach(player -> {
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeVarInt(this.boatEngine.getId());
-            LoggerUtil.devLogger("server is about to send soundinstance change packet");
-            ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_START.getPacketIdentifier(), buf);
+            for (SoundInstanceIdentifier entry : changedSoundList) {
+                PacketByteBuf buf = PacketByteBufs.create();
+                buf.writeVarInt(this.boatEngine.getId());
+                buf.writeIdentifier(entry.getIdentifier());
+                LoggerUtil.devLogger("before S2C is running: " + boatEngine.isRunning());
+                ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_START.getPacketIdentifier(), buf);
+            }
         });
     }
 

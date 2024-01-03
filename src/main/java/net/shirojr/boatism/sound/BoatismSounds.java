@@ -29,6 +29,6 @@ public class BoatismSounds {
     }
 
     public static void initializeSounds() {
-        LoggerUtil.LOGGER.info("Registering " + Boatism.MODID + " Sounds");
+        LoggerUtil.devLogger("Registering " + Boatism.MODID + " Sounds");
     }
 }

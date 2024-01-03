@@ -58,9 +58,6 @@ public class BoatismSoundInstance extends MovingSoundInstance {
                 this.isFinished = true;
             }
         }
-        if (this instanceof EngineOverheatingSoundInstance) {
-            LoggerUtil.devLogger(String.format("Instance: %s | currentTick: %s | transitionTick: %s | transitionState: %s", this.id, currentTick, transitionTick, transitionState));
-        }
 
         this.x = this.boatEngineEntity.getX();
         this.y = this.boatEngineEntity.getY();

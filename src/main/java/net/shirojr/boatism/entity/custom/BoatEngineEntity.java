@@ -31,12 +31,12 @@ import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
-import net.shirojr.boatism.item.BoatismItems;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -147,6 +147,7 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public void tick() {
+        //LoggerUtil.devLogger("is running: %s | client side: %s".formatted(isRunning(), this.getWorld().isClient()));
         super.tick();
         this.setNoGravity(true);
         if (this.getWorld().isClient()) {
@@ -197,7 +198,8 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
-        this.engineHandler.soundStateChange();
+        this.engineHandler.soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_RUNNING,
+                SoundInstanceIdentifier.ENGINE_LOW_FUEL, SoundInstanceIdentifier.ENGINE_OVERHEATING));
         super.onStartedTrackingBy(player);
     }
 
@@ -237,8 +239,12 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public ItemStack getEquippedStack(EquipmentSlot slot) {
         return switch (slot.getType()) {
-            case HAND -> this.heldItems.get(slot.getEntitySlotId());
-            case ARMOR -> this.armorItems.get(slot.getEntitySlotId());
+            case HAND -> {
+                yield this.heldItems.get(slot.getEntitySlotId());
+            }
+            case ARMOR -> {
+                yield this.armorItems.get(slot.getEntitySlotId());
+            }
             default -> ItemStack.EMPTY;
         };
     }
@@ -273,7 +279,7 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public void onEquipStack(EquipmentSlot slot, ItemStack oldStack, ItemStack newStack) {
         super.onEquipStack(slot, oldStack, newStack);
-        this.engineHandler.soundStateChange();
+        this.engineHandler.soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_LOW_FUEL, SoundInstanceIdentifier.ENGINE_LOW_HEALTH));
     }
 
     public void hookOntoBoatEntity(BoatEntity boatEntity) {

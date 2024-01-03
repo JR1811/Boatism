@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
 import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.instance.custom.*;
@@ -26,22 +27,12 @@ public class BoatismS2C {
     private static void handleSoundInstanceChangePackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
                                                          PacketByteBuf clientBuf, PacketSender packetSender) {
         int entityId = clientBuf.readVarInt();
+        Identifier identifier = clientBuf.readIdentifier();
         client.execute(() -> {
-            LoggerUtil.devLogger("client sound packet received");
             if (client.world == null) return;
             if (!(client.world.getEntityById(entityId) instanceof BoatEngineEntity boatEngineEntity)) return;
-            BoatEngineHandler handler = boatEngineEntity.getEngineHandler();
-            List<SoundInstanceIdentifier> instances = new ArrayList<>();
-            if (boatEngineEntity.isRunning()) {
-                instances.add(SoundInstanceIdentifier.ENGINE_RUNNING);
-            }
-            if (handler.isOverheating()) {
-                instances.add(SoundInstanceIdentifier.ENGINE_OVERHEATING);
-            }
-            if (handler.isSubmerged()) {
-                instances.add(SoundInstanceIdentifier.ENGINE_RUNNING_UNDERWATER);
-            }
-            instances.forEach(soundInstanceIdentifier -> {
+            LoggerUtil.devLogger("after S2C is running: " + boatEngineEntity.isRunning());
+            SoundInstanceIdentifier.fromIdentifier(identifier).ifPresent(soundInstanceIdentifier -> {
                 BoatismSoundInstance soundInstance;
                 switch (soundInstanceIdentifier) {
                     case ENGINE_RUNNING -> soundInstance = new EngineRunningSoundInstance(boatEngineEntity);
@@ -49,6 +40,10 @@ public class BoatismS2C {
                     case ENGINE_LOW_FUEL -> soundInstance = new EngineLowFuelSoundInstance(boatEngineEntity);
                     case ENGINE_LOW_HEALTH -> soundInstance = new EngineLowHealthSoundInstance(boatEngineEntity);
                     case ENGINE_OVERHEATING -> soundInstance = new EngineOverheatingSoundInstance(boatEngineEntity);
+                    case NO_SOUND -> {
+                        BoatismClient.soundManager.stopAllSoundInstancesForBoatEngineEntity(boatEngineEntity);
+                        return;
+                    }
                     default -> {
                         LoggerUtil.LOGGER.error(String.format("Failed to play %s SoundInstance", soundInstanceIdentifier.getIdentifier().getPath()));
                         return;

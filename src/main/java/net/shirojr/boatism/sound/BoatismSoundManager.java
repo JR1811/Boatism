@@ -46,10 +46,10 @@ public class BoatismSoundManager {
             LoggerUtil.devLogger(activeInstance.instance.toString());
             if (!(activeInstance.instance instanceof SoundInstanceState activeInstanceState)) continue;
             if (soundInstance.getBoatEngineEntity().equals(activeInstance.instance.getBoatEngineEntity())) {
-                if (soundInstanceIdentifier.equals(activeInstance.identifier)) {
+                /*if (soundInstanceIdentifier.equals(activeInstance.identifier)) {
                     //return;
                     unsupportedSoundInstances.add(activeInstance);
-                }
+                }*/
                 if (state.isMainSound() && activeInstanceState.isMainSound()) {
                     unsupportedSoundInstances.add(activeInstance);
                 }
@@ -76,7 +76,6 @@ public class BoatismSoundManager {
     public void stop(SoundInstanceEntry soundInstanceEntry) {
         for (SoundInstanceEntry entry : this.activeSoundInstances) {
             if (soundInstanceEntry.identifier != entry.identifier) continue;
-            Identifier identifier = soundInstanceEntry.instance.getId();
             soundInstanceEntry.instance.finishSoundInstance();
         }
         removeEntriesFromList(List.of(soundInstanceEntry));

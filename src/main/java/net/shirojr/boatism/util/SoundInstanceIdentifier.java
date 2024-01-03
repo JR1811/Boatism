@@ -1,14 +1,10 @@
 package net.shirojr.boatism.util;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
 
 import java.util.Optional;
 
-@Environment(EnvType.CLIENT)
 public enum SoundInstanceIdentifier {
     ENGINE_RUNNING("engine_running"),
     ENGINE_RUNNING_UNDERWATER("engine_underwater"),
@@ -18,23 +14,13 @@ public enum SoundInstanceIdentifier {
     NO_SOUND("cancel_sound_instances");
 
     private final Identifier identifier;
-    private final SoundCategory category;
-
-    SoundInstanceIdentifier(String soundInstanceName, SoundCategory category) {
-        this.identifier = new Identifier(Boatism.MODID, soundInstanceName);
-        this.category = category;
-    }
 
     SoundInstanceIdentifier(String soundInstanceName) {
-        this(soundInstanceName, SoundCategory.NEUTRAL);
+        this.identifier = new Identifier(Boatism.MODID, soundInstanceName);
     }
 
     public Identifier getIdentifier() {
         return this.identifier;
-    }
-
-    public SoundCategory getCategory() {
-        return this.category;
     }
 
     public static Optional<SoundInstanceIdentifier> fromIdentifier(Identifier identifier) {
