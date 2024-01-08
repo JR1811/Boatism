@@ -291,7 +291,7 @@ public class BoatEngineHandler {
 
     public void soundStateChange(List<SoundInstanceIdentifier> changedSoundList) {
         if (!(boatEngine.getWorld() instanceof ServerWorld serverWorld)) return;
-        PlayerLookup.around(serverWorld, boatEngine.getPos(), 30).forEach(player -> {
+        PlayerLookup.around(serverWorld, boatEngine.getPos(), 60).forEach(player -> {
             for (SoundInstanceIdentifier entry : changedSoundList) {
                 PacketByteBuf buf = PacketByteBufs.create();
                 buf.writeVarInt(this.boatEngine.getId());

@@ -20,7 +20,7 @@ public class EngineOverheatingSoundInstance extends BoatismSoundInstance impleme
 
     @Override
     public boolean canPlay() {
-        return super.canPlay() && engineHandler.getOverheat() > 0;
+        return super.canPlay() && engineHandler.isHeatingUp();
     }
 
     @Override

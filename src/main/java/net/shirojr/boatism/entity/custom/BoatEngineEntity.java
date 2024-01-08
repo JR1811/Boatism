@@ -169,7 +169,7 @@ public class BoatEngineEntity extends LivingEntity {
                         setOverheat(getOverheat() + 4);
                     }
                     boatEntity.velocityModified = true;
-                    boatEntity.velocityDirty = true;
+                    //boatEntity.updateVelocity();
                 }
 
                 if (getPowerLevel() > 3 && actualSpeed < 0.1) {
@@ -283,6 +283,10 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     public void hookOntoBoatEntity(BoatEntity boatEntity) {
+        if (boatEntity.getType().isIn(BoatismTags.Entities.NOT_HOOKABLE)) {
+            LoggerUtil.devLogger("Entity was excluded from being able to hook an engine");
+            return;
+        }
         ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(this.getUuid());
         this.hookedBoatEntityUuid = boatEntity.getUuid();
         this.startRiding(boatEntity, true);
