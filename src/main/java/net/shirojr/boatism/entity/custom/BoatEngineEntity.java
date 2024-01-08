@@ -157,21 +157,7 @@ public class BoatEngineEntity extends LivingEntity {
         if (isRunning()) {
             this.getHookedBoatEntity().ifPresent(boatEntity -> {
                 double actualSpeed = Math.max(0, this.previousLocation.distanceTo(this.getPos()));
-                if (isLogicalSideForUpdatingMovement()) {
-                    if (!boatEntity.isOnGround()) {
-                        Vec3d newVelocity = boatEntity.getRotationVector().multiply(1.0, 0.0, 1.0).normalize()
-                                .multiply(getPowerLevel() * 0.1).multiply(engineHandler.calculateThrustModifier(boatEntity));
-                        if (boatEntity.getVelocity().horizontalLength() < newVelocity.horizontalLength()) {
-                            boatEntity.addVelocity(newVelocity/* originalVelocity.multiply(newVelocity)*/);
-                        }
-                        // boatEntity.setVelocity(newVelocity/* originalVelocity.multiply(newVelocity)*/);
-                    } else {
-                        setOverheat(getOverheat() + 4);
-                    }
-                    boatEntity.velocityModified = true;
-                    //boatEntity.updateVelocity();
-                }
-
+                modifyVelocity(boatEntity);
                 if (getPowerLevel() > 3 && actualSpeed < 0.1) {
                     setOverheat(getOverheat() + 2);
                 }
@@ -181,6 +167,27 @@ public class BoatEngineEntity extends LivingEntity {
 
         this.engineHandler.setSubmerged(this.submergedInWater);
         this.engineHandler.incrementTick();
+    }
+
+    /**
+     * Will modify the velocity of the boat if no Player is in the controlling position right now.
+     * Otherwise, check {@link net.shirojr.boatism.mixin.BoatEntityMixin BoatEntityMixin} since the speed is applied
+     * differently then.
+     *
+     * @param boatEntity Boat for the velocity changes
+     */
+    private void modifyVelocity(BoatEntity boatEntity) {
+        if (boatEntity.getControllingPassenger() instanceof PlayerEntity) return;
+        if (!isLogicalSideForUpdatingMovement()) return;
+        if (boatEntity.isOnGround()) setOverheat(getOverheat() + 4);
+        else {
+            Vec3d newVelocity = boatEntity.getRotationVector().multiply(1.0, 0.0, 1.0).normalize()
+                    .multiply(getPowerLevel() * 0.1).multiply(engineHandler.calculateThrustModifier(boatEntity));
+            if (boatEntity.getVelocity().horizontalLength() < newVelocity.horizontalLength()) {
+                boatEntity.addVelocity(newVelocity);
+            }
+        }
+        boatEntity.velocityModified = true;
     }
 
     @Override
@@ -239,12 +246,8 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public ItemStack getEquippedStack(EquipmentSlot slot) {
         return switch (slot.getType()) {
-            case HAND -> {
-                yield this.heldItems.get(slot.getEntitySlotId());
-            }
-            case ARMOR -> {
-                yield this.armorItems.get(slot.getEntitySlotId());
-            }
+            case HAND -> this.heldItems.get(slot.getEntitySlotId());
+            case ARMOR -> this.armorItems.get(slot.getEntitySlotId());
             default -> ItemStack.EMPTY;
         };
     }

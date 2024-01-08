@@ -1,5 +1,7 @@
 package net.shirojr.boatism.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
@@ -20,6 +22,7 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.item.custom.BaseEngineItem;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.BoatEngineCoupler;
+import net.shirojr.boatism.util.EntityHandler;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -58,6 +61,20 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
         return this.dataTracker.get(BOAT_ENGINE_UUID);
     }
 
+    @Inject(method = "updatePaddles", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/entity/vehicle/BoatEntity;getVelocity()Lnet/minecraft/util/math/Vec3d;"))
+    private void boatism$controlBoatSpeed(CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef f) {
+        BoatEntity boatEntity = (BoatEntity) (Object) this;
+        ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().flatMap(engineUuid ->
+                        EntityHandler.getBoatEngineEntityFromUuid(engineUuid, boatEntity.getWorld(), boatEntity.getPos(), 10))
+                .ifPresent(boatEngine -> {
+                    float baseSpeed = f.get();
+                    float powerLevel = boatEngine.getPowerLevel() * 0.01f;
+                    float thrust = baseSpeed + (powerLevel * boatEngine.getEngineHandler().calculateThrustModifier(boatEntity));
+                    f.set(thrust);
+                });
+    }
+
     @Inject(method = "interact", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/entity/player/PlayerEntity;startRiding(Lnet/minecraft/entity/Entity;)Z",
             shift = At.Shift.BEFORE),
@@ -66,7 +83,7 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
         ItemStack stack = player.getStackInHand(hand);
         BoatEntity boatEntity = (BoatEntity) (Object) this;
         if (((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().isPresent()) return;
-        if (stack.getItem() instanceof BaseEngineItem engineItem) {
+        if (stack.getItem() instanceof BaseEngineItem) {
             if (!this.getWorld().isClient()) {
                 BoatEngineEntity engineEntity = new BoatEngineEntity(this.getWorld(), boatEntity);
                 this.getWorld().spawnEntity(engineEntity);
