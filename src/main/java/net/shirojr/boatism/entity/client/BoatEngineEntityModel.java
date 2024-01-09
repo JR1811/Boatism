@@ -33,23 +33,23 @@ public class BoatEngineEntityModel<T extends BoatEngineEntity> extends SinglePar
         ModelPartData root = modelPartData.addChild("root", ModelPartBuilder.create(),
                 ModelTransform.pivot(0.0F, 23.0F, -5.0F));
         ModelPartData top = root.addChild("top", ModelPartBuilder.create().uv(0, 0)
-                .cuboid(-3.0F, -7.0F, -4.0F, 6.0F, 3.0F, 9.0F, new Dilation(0.0F))
-                .uv(11, 16)
-                .cuboid(-1.0F, -4.0F, -4.0F, 2.0F, 1.0F, 8.0F, new Dilation(0.0F))
-                .uv(0, 14)
-                .cuboid(-2.0F, -6.0F, -5.0F, 4.0F, 4.0F, 5.0F, new Dilation(0.0F))
-                .uv(24, 18)
-                .cuboid(-2.0F, -9.0F, 5.0F, 1.0F, 4.0F, 1.0F, new Dilation(0.0F)),
+                        .cuboid(-3.0F, -7.0F, -4.0F, 6.0F, 3.0F, 9.0F, new Dilation(0.0F))
+                        .uv(11, 16)
+                        .cuboid(-1.0F, -4.0F, -4.0F, 2.0F, 1.0F, 8.0F, new Dilation(0.0F))
+                        .uv(0, 14)
+                        .cuboid(-2.0F, -6.0F, -5.0F, 4.0F, 4.0F, 5.0F, new Dilation(0.0F))
+                        .uv(24, 18)
+                        .cuboid(-2.0F, -9.0F, 5.0F, 1.0F, 4.0F, 1.0F, new Dilation(0.0F)),
                 ModelTransform.pivot(0.0F, 2.0F, 5.0F));
         ModelPartData rod = root.addChild("rod", ModelPartBuilder.create().uv(0, 0)
-                .cuboid(-1.0F, -2.0F, -5.0F, 2.0F, 7.0F, 2.0F, new Dilation(0.0F)),
+                        .cuboid(-1.0F, -2.0F, -5.0F, 2.0F, 7.0F, 2.0F, new Dilation(0.0F)),
                 ModelTransform.pivot(0.0F, 2.0F, 5.0F));
         ModelPartData propeller = rod.addChild("propeller", ModelPartBuilder.create().uv(0, 10)
-                .cuboid(0.0F, -3.0F, -1.0F, 0.0F, 6.0F, 2.0F, new Dilation(0.0F)),
+                        .cuboid(0.0F, -3.0F, -1.0F, 0.0F, 6.0F, 2.0F, new Dilation(0.0F)),
                 ModelTransform.of(0.0F, 3.0F, -2.0F, 0.0F, 0.0F, 0.7854F));
 
         ModelPartData cube_r1 = propeller.addChild("cube_r1", ModelPartBuilder.create().uv(0, 10)
-                .cuboid(0.0F, -3.0F, 0.0F, 0.0F, 6.0F, 2.0F, new Dilation(0.0F)),
+                        .cuboid(0.0F, -3.0F, 0.0F, 0.0F, 6.0F, 2.0F, new Dilation(0.0F)),
                 ModelTransform.of(0.0F, 0.0F, -1.0F, 0.0F, 0.0F, 1.5708F));
 
         return TexturedModelData.of(modelData, 64, 64);
@@ -57,28 +57,27 @@ public class BoatEngineEntityModel<T extends BoatEngineEntity> extends SinglePar
 
     @Override
     public void setAngles(BoatEngineEntity entity, float limbAngle, float limbDistance, float animationProgress,
-                    float headYaw, float headPitch) {
-            this.root.traverse().forEach(ModelPart::resetTransform);
+                          float headYaw, float headPitch) {
+        this.root.traverse().forEach(ModelPart::resetTransform);
+        float baseSpinSpeed = 3f;
+        float powerLevelMultiplier = entity.getPowerLevel() * 0.2f;
+        this.updateAnimation(entity.leftSpinAnimationState, BoatismAnimation.SPIN_LEFT,
+                animationProgress, baseSpinSpeed * powerLevelMultiplier);
 
-            float baseSpinSpeed = 3f;
-            float powerLevelMultiplier = entity.getPowerLevel() * 0.2f;
-            this.updateAnimation(entity.leftSpinAnimationState, BoatismAnimation.SPIN_LEFT,
-                            animationProgress, baseSpinSpeed * powerLevelMultiplier);
-
-            if (entity.isLocked()) {
-                    this.root.pitch = 0.7f;
-            } else {
-                    this.root.pitch = 0.0f;
-            }
-            // Can be used instead of a fancy animation
-            // if (boatEngineEntity.isRunning()) {
-            // this.propeller.roll = animationProgress;
-            // }
+        if (entity.isLocked()) {
+            this.root.pitch = 0.7f;
+        } else {
+            this.root.pitch = 0.0f;
+        }
+        // Can be used instead of a fancy animation
+        // if (boatEngineEntity.isRunning()) {
+        // this.propeller.roll = animationProgress;
+        // }
     }
 
     @Override
     public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green,
-            float blue, float alpha) {
+                       float blue, float alpha) {
         float scaleFactor = 1.0f;
 
         matrices.translate(0.0f, 0.0f, 0.1f);

@@ -4,8 +4,7 @@ public class NbtKeys {
     private NbtKeys() {
     }
     public static final String HOOKED_ENTITY = "HookedEntity";
-    public static final String ARMOR_ITEMS = "ArmorItems";
-    public static final String HELD_ITEMS = "HeldItems";
+    public static final String MOUNTED_ITEMS = "MountedItems";
     public static final String POWER_OUTPUT = "PowerOutput";
     public static final String FUEL = "Fuel";
     public static final String OVERHEAT = "Overheat";

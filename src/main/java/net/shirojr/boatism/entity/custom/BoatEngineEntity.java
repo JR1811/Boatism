@@ -17,12 +17,12 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.EulerAngle;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -36,15 +36,12 @@ import net.shirojr.boatism.util.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class BoatEngineEntity extends LivingEntity {
-    private DefaultedList<ItemStack> heldItems = DefaultedList.ofSize(2, ItemStack.EMPTY);
-    private DefaultedList<ItemStack> armorItems = DefaultedList.ofSize(4, ItemStack.EMPTY);
+    private List<ItemStack> mountedItems = new ArrayList<>();
     private static final TrackedData<Integer> POWER_LEVEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Integer> OVERHEAT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Float> OVERHEAT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private static final TrackedData<EulerAngle> ARM_ROTATION = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.ROTATION);
     private static final TrackedData<Boolean> SUBMERGED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> RUNNING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -64,7 +61,7 @@ public class BoatEngineEntity extends LivingEntity {
 
     public BoatEngineEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
-        this.engineHandler = BoatEngineHandler.create(this, this.heldItems, this.armorItems);
+        this.engineHandler = BoatEngineHandler.create(this, this.mountedItems);
         this.setNoGravity(true);
         this.setStepHeight(0.0f);
     }
@@ -85,7 +82,7 @@ public class BoatEngineEntity extends LivingEntity {
     protected void initDataTracker() {
         super.initDataTracker();
         this.dataTracker.startTracking(POWER_LEVEL, 0);
-        this.dataTracker.startTracking(OVERHEAT, 0);
+        this.dataTracker.startTracking(OVERHEAT, 0.0f);
         this.dataTracker.startTracking(ARM_ROTATION, new EulerAngle(0.0f, 5.0f, 0.0f));
         this.dataTracker.startTracking(SUBMERGED, false);
         this.dataTracker.startTracking(FUEL, 0.0f);
@@ -115,10 +112,9 @@ public class BoatEngineEntity extends LivingEntity {
         super.writeCustomDataToNbt(nbt);
         getHookedBoatEntityUuid().ifPresent(hookedBoatEntityUuid ->
                 nbt.putUuid(NbtKeys.HOOKED_ENTITY, hookedBoatEntityUuid));
-        BoatEngineNbtHelper.writeItemStacksToNbt(this.armorItems, NbtKeys.ARMOR_ITEMS, nbt);
-        BoatEngineNbtHelper.writeItemStacksToNbt(this.heldItems, NbtKeys.HELD_ITEMS, nbt);
+        BoatEngineNbtHelper.writeItemStacksToNbt(this.mountedItems, NbtKeys.MOUNTED_ITEMS, nbt);
         nbt.putInt(NbtKeys.POWER_OUTPUT, this.getPowerLevel());
-        nbt.putInt(NbtKeys.OVERHEAT, this.getOverheat());
+        nbt.putFloat(NbtKeys.OVERHEAT, this.getOverheat());
         nbt.put(NbtKeys.ROTATION, this.getArmRotation().toNbt());
         nbt.putBoolean(NbtKeys.IS_SUBMERGED, this.isSubmerged());
         nbt.putFloat(NbtKeys.FUEL, this.getFuel());
@@ -131,14 +127,11 @@ public class BoatEngineEntity extends LivingEntity {
         if (nbt.contains(NbtKeys.HOOKED_ENTITY)) {
             this.setHookedBoatEntity(nbt.getUuid(NbtKeys.HOOKED_ENTITY));
         }
-        if (nbt.contains(NbtKeys.ARMOR_ITEMS)) {
-            this.armorItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.ARMOR_ITEMS, 4);
-        }
-        if (nbt.contains("HandItems")) {
-            this.heldItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.HELD_ITEMS, 2);
+        if (nbt.contains(NbtKeys.MOUNTED_ITEMS)) {
+            this.mountedItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.MOUNTED_ITEMS, 4);
         }
         this.setPowerLevel(Math.min(nbt.getInt(NbtKeys.POWER_OUTPUT), BoatEngineHandler.MAX_POWER_LEVEL / 2));
-        this.setOverheat(nbt.getInt(NbtKeys.OVERHEAT));
+        this.setOverheat(nbt.getFloat(NbtKeys.OVERHEAT));
         this.setArmRotation(new EulerAngle(nbt.getList(NbtKeys.ROTATION, NbtElement.FLOAT_TYPE)));
         this.setSubmerged(nbt.getBoolean(NbtKeys.IS_SUBMERGED));
         this.setFuel(nbt.getFloat(NbtKeys.FUEL));
@@ -192,7 +185,21 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
-        if (player.getStackInHand(hand).isEmpty() && player.isSneaking()) {
+        ItemStack stack = player.getStackInHand(hand);
+
+        if (player.isSneaking() && stack.getItem() instanceof BoatEngineComponent && engineHandler.canEquipPart(stack)) {
+            if (!mountedItemsContain(stack)) {
+                addToMountedItems(stack);
+                if (this.getWorld().isClient()) return ActionResult.SUCCESS;
+                if (!player.isCreative()) stack.decrement(1);
+                this.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
+                        BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 1f, 1f);
+
+                LoggerUtil.devLogger(String.format("Equiped component %s on the engine", stack.getName()));
+                return ActionResult.SUCCESS;
+            }
+        }
+        if (stack.isEmpty()) {
             if (!this.getWorld().isClient()) {
                 if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
                 else engineHandler.stopEngine();
@@ -200,13 +207,13 @@ public class BoatEngineEntity extends LivingEntity {
             }
             return ActionResult.SUCCESS;
         }
+
         return super.interact(player, hand);
     }
 
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
-        this.engineHandler.soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_RUNNING,
-                SoundInstanceIdentifier.ENGINE_LOW_FUEL, SoundInstanceIdentifier.ENGINE_OVERHEATING));
+
         super.onStartedTrackingBy(player);
     }
 
@@ -226,30 +233,26 @@ public class BoatEngineEntity extends LivingEntity {
         this.hookedBoatEntityUuid = uuid;
     }
 
-    @Override
-    public Iterable<ItemStack> getArmorItems() {
-        return this.armorItems;
+    public List<ItemStack> getMountedItems() {
+        return this.mountedItems;
     }
 
-    public void setArmorItems(DefaultedList<ItemStack> armorItems) {
-        this.armorItems = armorItems;
+    public void setMountedItems(List<ItemStack> mountedItems) {
+        this.mountedItems = mountedItems;
     }
 
-    public Iterable<ItemStack> getHeldItems() {
-        return this.heldItems;
+    public void addToMountedItems(ItemStack itemStack) {
+        if (!(itemStack.getItem() instanceof BoatEngineComponent component)) return;
+        this.mountedItems.add(component.getMountedItemStack(itemStack).copy());
     }
 
-    public void setHeldItems(DefaultedList<ItemStack> heldItems) {
-        this.heldItems = heldItems;
+    public boolean mountedItemsContain(ItemStack itemStack) {
+        return this.getMountedItems().stream().anyMatch(mountedStack -> mountedStack.getItem().equals(itemStack.getItem()));
     }
 
     @Override
     public ItemStack getEquippedStack(EquipmentSlot slot) {
-        return switch (slot.getType()) {
-            case HAND -> this.heldItems.get(slot.getEntitySlotId());
-            case ARMOR -> this.armorItems.get(slot.getEntitySlotId());
-            default -> ItemStack.EMPTY;
-        };
+        return ItemStack.EMPTY;
     }
 
     @Override
@@ -273,16 +276,14 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public void equipStack(EquipmentSlot slot, ItemStack stack) {
         this.processEquippedStack(stack);
-        switch (slot.getType()) {
-            case HAND -> this.onEquipStack(slot, this.heldItems.set(slot.getEntitySlotId(), stack), stack);
-            case ARMOR -> this.onEquipStack(slot, this.armorItems.set(slot.getEntitySlotId(), stack), stack);
+        if (slot.getType().equals(EquipmentSlot.Type.ARMOR)) {
+            this.onEquipStack(slot, this.mountedItems.set(slot.getEntitySlotId(), stack), stack);
         }
     }
 
     @Override
     public void onEquipStack(EquipmentSlot slot, ItemStack oldStack, ItemStack newStack) {
-        super.onEquipStack(slot, oldStack, newStack);
-        this.engineHandler.soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_LOW_FUEL, SoundInstanceIdentifier.ENGINE_LOW_HEALTH));
+        //super.onEquipStack(slot, oldStack, newStack);
     }
 
     public void hookOntoBoatEntity(BoatEntity boatEntity) {
@@ -332,6 +333,11 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     @Override
+    public Iterable<ItemStack> getArmorItems() {
+        return Collections.singleton(ItemStack.EMPTY);
+    }
+
+    @Override
     public boolean isPushable() {
         return false;
     }
@@ -348,11 +354,11 @@ public class BoatEngineEntity extends LivingEntity {
         this.dataTracker.set(POWER_LEVEL, level);
     }
 
-    public int getOverheat() {
+    public float getOverheat() {
         return this.dataTracker.get(OVERHEAT);
     }
 
-    public void setOverheat(int overheat) {
+    public void setOverheat(float overheat) {
         this.dataTracker.set(OVERHEAT, overheat);
     }
 

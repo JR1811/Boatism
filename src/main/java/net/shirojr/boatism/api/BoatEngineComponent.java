@@ -1,6 +1,9 @@
 package net.shirojr.boatism.api;
 
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 
 import java.util.List;
 
@@ -39,6 +42,13 @@ public interface BoatEngineComponent {
     }
 
     /**
+     * This value will lower the tick based overheat value, if the engine is overheating.
+     */
+    default float addedCoolingFactor() {
+        return 0.0f;
+    }
+
+    /**
      * This value will add to the consumed fuel, if e.g. your custom Item is heavy.
      * Keep in mind that fuel is reduced per tick.
      */
@@ -66,5 +76,49 @@ public interface BoatEngineComponent {
      */
     default boolean waterProofsEngine() {
         return false;
+    }
+
+    /**
+     * This method can define an extra ItemStack, if the ItemStack from e.g. the inventory is not the same as the
+     * one, which should be mounted on the engine, to be displayed.<br><br>
+     * If you change this method, you migh also want to change
+     * {@link BoatEngineComponent#getReturnedItemStack(ItemStack) getReturnedItemStack}
+     *
+     * @param originalStack Original ItemStack from e.g. the inventory
+     * @return The new ItemStack which will be displayed on the engine
+     */
+    default ItemStack getMountedItemStack(ItemStack originalStack) {
+        return originalStack;
+    }
+
+    /**
+     * This method can define an extra ItemStack, if the ItemStack which is mounted on the engine is not the same as the
+     * one, which should be returned if it will be taken off.<br><br>
+     * If you change this method, you migh also want to change
+     * {@link BoatEngineComponent#getMountedItemStack(ItemStack) getMountedItemStack}
+     *
+     * @param displayedStack Original ItemStack from e.g. the inventory
+     * @return The new ItemStack which will be displayed on the engine
+     */
+    default ItemStack getReturnedItemStack(ItemStack displayedStack) {
+        return displayedStack;
+    }
+
+    /**
+     * Allows for changing the rendering of the item on the engine. This way, Items can be adjusted individually.
+     * The rendering of this item is implemented as an
+     * {@link net.shirojr.boatism.entity.client.EquipedPartFeatureRenderer EquipedPartFeatureRenderer}
+     * of the engine entity.<br><br>
+     * @see net.shirojr.boatism.item.custom.CanisterItem CanisterItem
+     *
+     * @implNote make sure to push the MatrixStack to transform the item individually. The MatrixStack has the
+     * pop call already defined after it's being rendered.
+     *
+     * @param boatEngineEntity engine, which has this component equipped
+     * @param matrixStack      original MatrixStack from the component renderer
+     * @return changed MatrixStack for the item feature renderer
+     */
+    default MatrixStack itemRenderTransform(BoatEngineEntity boatEngineEntity, MatrixStack matrixStack) {
+        return matrixStack;
     }
 }

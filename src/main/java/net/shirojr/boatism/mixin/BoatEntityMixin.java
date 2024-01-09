@@ -69,7 +69,7 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
                         EntityHandler.getBoatEngineEntityFromUuid(engineUuid, boatEntity.getWorld(), boatEntity.getPos(), 10))
                 .ifPresent(boatEngine -> {
                     float baseSpeed = f.get();
-                    float powerLevel = boatEngine.getPowerLevel() * 0.01f;
+                    float powerLevel = boatEngine.getPowerLevel() * 0.008f;
                     float thrust = baseSpeed + (powerLevel * boatEngine.getEngineHandler().calculateThrustModifier(boatEntity));
                     f.set(thrust);
                 });
@@ -80,7 +80,7 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
             shift = At.Shift.BEFORE),
             cancellable = true)
     private void boatism$equipEngineEntity(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        ItemStack stack = player.getStackInHand(hand);
+        ItemStack stack = player.getMainHandStack();
         BoatEntity boatEntity = (BoatEntity) (Object) this;
         if (((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().isPresent()) return;
         if (stack.getItem() instanceof BaseEngineItem) {

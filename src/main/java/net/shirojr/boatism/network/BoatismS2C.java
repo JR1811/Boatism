@@ -9,12 +9,8 @@ import net.minecraft.util.Identifier;
 import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.instance.custom.*;
-import net.shirojr.boatism.util.BoatEngineHandler;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.SoundInstanceIdentifier;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class BoatismS2C {
     public static void registerClientReceivers() {
@@ -31,12 +27,12 @@ public class BoatismS2C {
         client.execute(() -> {
             if (client.world == null) return;
             if (!(client.world.getEntityById(entityId) instanceof BoatEngineEntity boatEngineEntity)) return;
-            LoggerUtil.devLogger("after S2C is running: " + boatEngineEntity.isRunning());
             SoundInstanceIdentifier.fromIdentifier(identifier).ifPresent(soundInstanceIdentifier -> {
                 BoatismSoundInstance soundInstance;
                 switch (soundInstanceIdentifier) {
                     case ENGINE_RUNNING -> soundInstance = new EngineRunningSoundInstance(boatEngineEntity);
-                    case ENGINE_RUNNING_UNDERWATER -> soundInstance = new EngineSubmergedSoundInstance(boatEngineEntity);
+                    case ENGINE_RUNNING_UNDERWATER ->
+                            soundInstance = new EngineSubmergedSoundInstance(boatEngineEntity);
                     case ENGINE_LOW_FUEL -> soundInstance = new EngineLowFuelSoundInstance(boatEngineEntity);
                     case ENGINE_LOW_HEALTH -> soundInstance = new EngineLowHealthSoundInstance(boatEngineEntity);
                     case ENGINE_OVERHEATING -> soundInstance = new EngineOverheatingSoundInstance(boatEngineEntity);

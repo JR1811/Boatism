@@ -11,6 +11,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 
 public class EquipedPartFeatureRenderer<T extends LivingEntity, M extends EntityModel<T>>
@@ -26,14 +27,13 @@ public class EquipedPartFeatureRenderer<T extends LivingEntity, M extends Entity
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, T entity,
                        float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
         if (!(entity instanceof BoatEngineEntity boatEngine)) return;
-        //int lightLevel = boatEngine.getWorld().getLightLevel(LightType.SKY, boatEngine.getBlockPos());
-        for (ItemStack stack : boatEngine.getArmorItems()) {
-            if (stack.isEmpty()) continue;
-            this.renderItem(stack, light, matrices, vertexConsumers, boatEngine.getWorld(), boatEngine.getId());
-        }
-        for (ItemStack stack : boatEngine.getHeldItems()) {
-            if (stack.isEmpty()) continue;
-            this.renderItem(stack, light, matrices, vertexConsumers, boatEngine.getWorld(), boatEngine.getId());
+        for (ItemStack stack : boatEngine.getMountedItems()) {
+            if (stack.isEmpty() || !(stack.getItem() instanceof BoatEngineComponent component)) continue;
+            ItemStack displayedStack = component.getMountedItemStack(stack);
+            matrices = component.itemRenderTransform(boatEngine, matrices);
+            //TODO: angle for items in locked position
+            this.renderItem(displayedStack, light, matrices, vertexConsumers, boatEngine.getWorld(), boatEngine.getId());
+            matrices.pop();
         }
     }
 

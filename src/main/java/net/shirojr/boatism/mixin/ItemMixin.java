@@ -7,8 +7,6 @@ import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
@@ -47,8 +45,6 @@ public class ItemMixin {
             if (!user.isCreative()) {
                 stack.decrement(1);
                 user.getInventory().offerOrDrop(Items.BUCKET.getDefaultStack());
-                boolean containsBucket = user.getInventory().contains(Items.BUCKET.getDefaultStack());
-                LoggerUtil.devLogger("contains rest item: " + containsBucket);
             }
             LoggerUtil.devLogger(String.format("Filled up fuel. %s was left over", leftOver));
             cir.setReturnValue(ActionResult.SUCCESS);

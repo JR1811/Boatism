@@ -1,19 +1,10 @@
 package net.shirojr.boatism.entity.client;
 
-import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
-import net.minecraft.client.render.entity.feature.ArmorFeatureRenderer;
-import net.minecraft.client.render.entity.feature.HeldItemFeatureRenderer;
-import net.minecraft.client.render.entity.feature.PlayerHeldItemFeatureRenderer;
-import net.minecraft.client.render.entity.model.ArmorEntityModel;
-import net.minecraft.client.render.entity.model.ArmorStandArmorEntityModel;
-import net.minecraft.client.render.entity.model.EntityModelLayers;
-import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.text.Text;
@@ -22,7 +13,6 @@ import net.minecraft.util.math.random.Random;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.util.BoatEngineHandler;
 
 public class BoatEngineEntityRenderer
         extends LivingEntityRenderer<BoatEngineEntity, BoatEngineEntityModel<BoatEngineEntity>> {

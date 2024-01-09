@@ -3,7 +3,6 @@ package net.shirojr.boatism.item;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -14,11 +13,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
-import net.shirojr.boatism.item.custom.BaseEngineItem;
-import net.shirojr.boatism.item.custom.BoatismArmorItem;
-import net.shirojr.boatism.item.custom.CanisterItem;
-import net.shirojr.boatism.item.custom.FuelBucketItem;
-import net.shirojr.boatism.item.material.BoatismArmorMaterial;
+import net.shirojr.boatism.item.custom.*;
 import net.shirojr.boatism.util.LoggerUtil;
 
 import java.util.List;
@@ -28,18 +23,14 @@ public class BoatismItems {
             new FuelBucketItem(new FabricItemSettings().maxCount(1)));
     public static BaseEngineItem BASE_ENGINE = register("base_engine",
             new BaseEngineItem(new FabricItemSettings().maxCount(1).fireproof()));
-    public static BoatismArmorItem COMPONENT_EXHAUST = register("component_exhaust",
-            new BoatismArmorItem(BoatismArmorMaterial.BOAT_EXHAUST, ArmorItem.Type.LEGGINGS,
-                    new FabricItemSettings().maxCount(1)));
+    public static BoatismEquipmentItem COMPONENT_EXHAUST = register("component_exhaust",
+            new ExhaustItem(new FabricItemSettings().maxCount(1)));
     public static CanisterItem COMPONENT_CANISTER = register("component_canister",
-            new CanisterItem(BoatismArmorMaterial.BOAT_CANISTER, ArmorItem.Type.HELMET,
-                    new FabricItemSettings().maxCount(1)));
+            new CanisterItem(new FabricItemSettings().maxCount(1)));
     public static CanisterItem COMPONENT_CANISTER_STRAPPED = register("component_canister_strapped",
-            new CanisterItem(BoatismArmorMaterial.BOAT_CANISTER, ArmorItem.Type.HELMET,
-                    new FabricItemSettings().maxCount(1)));
-    public static BoatismArmorItem COMPONENT_PLATES = register("component_plates",
-            new BoatismArmorItem(BoatismArmorMaterial.BOAT_PLATES, ArmorItem.Type.CHESTPLATE,
-                    new FabricItemSettings().maxCount(1)));
+            new CanisterItem(new FabricItemSettings().maxCount(1)));
+    public static BoatismEquipmentItem COMPONENT_PLATES = register("component_plates",
+            new PlatesItem(new FabricItemSettings().maxCount(1)));
 
     public static RegistryKey<ItemGroup> BOATISM_ITEM_GROUP = registerItemGroup("boatism",
             Text.translatable("itemgroup.boatism.boatism"), new ItemStack(BoatismItems.BASE_ENGINE));
