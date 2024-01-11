@@ -25,19 +25,22 @@ public class EquipedPartFeatureRenderer<T extends LivingEntity, M extends Entity
 
     @Override
     public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, T entity,
-                       float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
+                       float limbAngle, float limbDistance, float tickDelta, float animationProgress,
+                       float headYaw, float headPitch) {
         if (!(entity instanceof BoatEngineEntity boatEngine)) return;
         for (ItemStack stack : boatEngine.getMountedItems()) {
             if (stack.isEmpty() || !(stack.getItem() instanceof BoatEngineComponent component)) continue;
             ItemStack displayedStack = component.getMountedItemStack(stack);
             matrices = component.itemRenderTransform(boatEngine, matrices);
-            //TODO: angle for items in locked position
-            this.renderItem(displayedStack, light, matrices, vertexConsumers, boatEngine.getWorld(), boatEngine.getId());
+            this.renderItem(displayedStack, light, matrices, vertexConsumers,
+                    boatEngine.getWorld(), boatEngine.getId());
             matrices.pop();
         }
     }
 
-    private void renderItem(ItemStack stack, int light, MatrixStack matrices, VertexConsumerProvider vertexConsumer, World world, int seed) {
-        itemRenderer.renderItem(stack, ModelTransformationMode.FIXED, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumer, world, seed);
+    private void renderItem(ItemStack stack, int light, MatrixStack matrices,
+                            VertexConsumerProvider vertexConsumer, World world, int seed) {
+        itemRenderer.renderItem(stack, ModelTransformationMode.FIXED, light, OverlayTexture.DEFAULT_UV,
+                matrices, vertexConsumer, world, seed);
     }
 }

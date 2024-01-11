@@ -4,6 +4,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.item.custom.upgrade.CanisterItem;
 
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
  * <h1>Improve or Punish Engine Stats</h1>
  * <p>
  * Implement this interface to your custom ArmorItem class to define the data, which improves or punishes
- * the engine's performance. Check out {@link net.shirojr.boatism.item.custom.CanisterItem CanisterItem} if you need
+ * the engine's performance. Check out {@link CanisterItem CanisterItem} if you need
  * and example.
  *
  * <h3>Usage</h3>
@@ -44,7 +45,7 @@ public interface BoatEngineComponent {
     /**
      * This value will lower the tick based overheat value, if the engine is overheating.
      */
-    default float addedCoolingFactor() {
+    default float addedOverheatTolerance() {
         return 0.0f;
     }
 
@@ -109,7 +110,7 @@ public interface BoatEngineComponent {
      * The rendering of this item is implemented as an
      * {@link net.shirojr.boatism.entity.client.EquipedPartFeatureRenderer EquipedPartFeatureRenderer}
      * of the engine entity.<br><br>
-     * @see net.shirojr.boatism.item.custom.CanisterItem CanisterItem
+     * @see CanisterItem CanisterItem
      *
      * @implNote make sure to push the MatrixStack to transform the item individually. The MatrixStack has the
      * pop call already defined after it's being rendered.

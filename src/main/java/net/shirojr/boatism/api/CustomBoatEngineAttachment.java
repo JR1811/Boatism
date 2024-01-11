@@ -1,5 +1,6 @@
 package net.shirojr.boatism.api;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import org.joml.Vector3f;
 
@@ -20,6 +21,20 @@ public interface CustomBoatEngineAttachment {
      *
      * @param dimensions Your entity dimensions (optional to use)
      * @return Relative position for the engine
+     * @apiNote The custom BoatEntity shouldn't override the <b>getPassengerAttachmentPos()</b> method, or this
+     * method might not work as intended.
+     * <h4>Possible solutions if it is still needed</h4>
+     * <ul>
+     *     <li>
+     *         Call the super method first and change your passenger's position (without changing the
+     *         {@link net.shirojr.boatism.entity.custom.BoatEngineEntity BoatEngineEntity} position values).
+     *     </li>
+     *     <li>
+     *          [NOT RECOMMENDED] Don't use this interface method but but check for the passenger entity to be a
+     *          {@link net.shirojr.boatism.entity.custom.BoatEngineEntity BoatEngineEntity}
+     *          and change the position manually.
+     *     </li>
+     * </ul>
      */
     Vector3f boatism$attachmentPos(EntityDimensions dimensions);
 }

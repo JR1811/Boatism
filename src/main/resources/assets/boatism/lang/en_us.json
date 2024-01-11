@@ -16,6 +16,8 @@
   "tooltip.boatism.base_engine_4": "Use §3[Mouse Wheel]§r while sitting in a running boat to adjust Power Level",
   "tooltip.boatism.base_engine_5": "§4Don't overheat and have fun!§r",
 
+  "warning.boatism.engine_is_running": "§3Engine is running§r",
+
   "mouse.boatism.power_level": "Power Level: §a%s§r",
 
   "sound.boatism.boat_engine.default": "Running Engine",

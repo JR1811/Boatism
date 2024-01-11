@@ -19,9 +19,9 @@ public class BoatismConfig implements ConfigData {
     @ConfigEntry.Category("general_engine_data")
     @Comment("Base fuel capacity")
     @ConfigEntry.Gui.RequiresRestart
-    public int maxFuel = 1500;
+    public int maxBaseFuel = 1000;
     @ConfigEntry.Category("general_engine_data")
     @Comment("Overheat limit")
     @ConfigEntry.Gui.RequiresRestart
-    public int maxOverheat = 100;
+    public int maxBaseOverheat = 1000;
 }

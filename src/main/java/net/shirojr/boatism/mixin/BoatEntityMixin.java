@@ -122,7 +122,7 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     protected void boatism$getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor,
                                                      CallbackInfoReturnable<Vector3f> info) {
         if (passenger instanceof BoatEngineEntity) {
-            info.setReturnValue(boatism$attachmentPos(dimensions));
+            info.setReturnValue(((CustomBoatEngineAttachment)this).boatism$attachmentPos(dimensions));
         }
     }
 

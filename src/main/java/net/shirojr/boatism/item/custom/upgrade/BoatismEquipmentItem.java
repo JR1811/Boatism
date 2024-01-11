@@ -1,4 +1,4 @@
-package net.shirojr.boatism.item.custom;
+package net.shirojr.boatism.item.custom.upgrade;
 
 import net.minecraft.item.Item;
 import net.shirojr.boatism.api.BoatEngineComponent;

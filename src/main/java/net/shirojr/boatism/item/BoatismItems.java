@@ -14,6 +14,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.item.custom.*;
+import net.shirojr.boatism.item.custom.upgrade.BoatismEquipmentItem;
+import net.shirojr.boatism.item.custom.upgrade.CanisterItem;
+import net.shirojr.boatism.item.custom.upgrade.ExhaustItem;
+import net.shirojr.boatism.item.custom.upgrade.PlatesItem;
 import net.shirojr.boatism.util.LoggerUtil;
 
 import java.util.List;
@@ -36,12 +40,12 @@ public class BoatismItems {
             Text.translatable("itemgroup.boatism.boatism"), new ItemStack(BoatismItems.BASE_ENGINE));
 
 
-    public static <T extends Item> T register(String name, T item) {
+    private static <T extends Item> T register(String name, T item) {
         Identifier identifier = new Identifier(Boatism.MODID, name);
         return Registry.register(Registries.ITEM, identifier, item);
     }
 
-    public static RegistryKey<ItemGroup> registerItemGroup(String name, Text displayName, ItemStack displayItemStack) {
+    private static RegistryKey<ItemGroup> registerItemGroup(String name, Text displayName, ItemStack displayItemStack) {
         ItemGroup group = FabricItemGroup.builder().icon(() -> displayItemStack).displayName(displayName).build();
         Identifier groupIdentifier = new Identifier(Boatism.MODID, name);
         Registry.register(Registries.ITEM_GROUP, groupIdentifier, group);

@@ -29,7 +29,7 @@ public class EngineOverheatingSoundInstance extends BoatismSoundInstance impleme
 
         LoggerUtil.devLogger(String.format("Instance: %s | currentTick: %s | transitionTick: %s | transitionState: %s", this.id, currentTick, transitionTick, transitionState));
 
-        float normalizedOverheatTicks = (float) engineHandler.getOverheat() / BoatEngineHandler.MAX_OVERHEAT;
+        float normalizedOverheatTicks = engineHandler.getOverheat() / BoatEngineHandler.MAX_BASE_OVERHEAT;
         boolean isPotentiallyCooling = !engineHandler.isHeatingUp();
         if (isPotentiallyCooling) {
             if (isCoolBuffer > COOL_BUFFER_MAX) {

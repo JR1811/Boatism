@@ -1,4 +1,4 @@
-package net.shirojr.boatism.item.custom;
+package net.shirojr.boatism.item.custom.upgrade;
 
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.RotationAxis;
@@ -11,8 +11,8 @@ public class ExhaustItem extends BoatismEquipmentItem {
     }
 
     @Override
-    public float addedCoolingFactor() {
-        return 0.025f;
+    public float addedOverheatTolerance() {
+        return 2000.0f;
     }
 
     @Override

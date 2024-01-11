@@ -23,8 +23,8 @@ import java.util.List;
 
 public class BoatEngineHandler {
     public static final int MAX_POWER_LEVEL = 9;
-    public static final int MAX_BASE_FUEL = Boatism.CONFIG.maxFuel;
-    public static final int MAX_OVERHEAT = Boatism.CONFIG.maxOverheat;
+    public static final int MAX_BASE_FUEL = Boatism.CONFIG.maxBaseFuel;
+    public static final int MAX_BASE_OVERHEAT = Boatism.CONFIG.maxBaseOverheat;
 
     private final BoatEngineEntity boatEngine;
     private final List<ItemStack> mountedItems;
@@ -69,6 +69,8 @@ public class BoatEngineHandler {
 
     private boolean handleOverheating() {
         if (!this.boatEngine.getWorld().isClient()) {
+            LoggerUtil.devLogger("Max Fuel: %s | Fuel: %s | Max Heat: %s | Heat: %s"
+                    .formatted(getMaxFuelCapacity(), getFuel(), getMaxOverHeatCapacity(),  getOverheat()));
             float currentOverHeat = 0;
             if (isExperiencingHeavyLoad()) {
                 currentOverHeat += 2;
@@ -79,7 +81,7 @@ public class BoatEngineHandler {
             }
             for (ItemStack stack : mountedItems) {
                 if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
-                currentOverHeat -= component.addedCoolingFactor();
+                currentOverHeat -= component.addedOverheatTolerance();
             }
 
             setOverheat(getOverheat() + currentOverHeat);
@@ -157,11 +159,11 @@ public class BoatEngineHandler {
     public float fillUpFuel(float fuel) {
         float newFuelValue = getFuel() + fuel;
         if (fuel <= 0) return 0;
-        if (newFuelValue == MAX_BASE_FUEL + fuel) return fuel;
+        if (newFuelValue == getMaxFuelCapacity() + fuel) return fuel;
         playSoundEvent(BoatismSounds.BOAT_ENGINE_FILL_UP);
-        if (newFuelValue > MAX_BASE_FUEL) {
-            setFuel(MAX_BASE_FUEL);
-            return newFuelValue - MAX_BASE_FUEL;
+        if (newFuelValue > getMaxFuelCapacity()) {
+            setFuel(getMaxFuelCapacity());
+            return newFuelValue - getMaxFuelCapacity();
         }
         setFuel(fuel);
         return fuel;
@@ -209,7 +211,16 @@ public class BoatEngineHandler {
     }
 
     public boolean isOverheating() {
-        return getOverheat() > MAX_OVERHEAT;
+        return getOverheat() > getMaxOverHeatCapacity();
+    }
+
+    public float getMaxOverHeatCapacity() {
+        float maxCapacity = MAX_BASE_OVERHEAT;
+        for (ItemStack stack : mountedItems) {
+            if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
+            maxCapacity += component.addedOverheatTolerance();
+        }
+        return maxCapacity;
     }
 
     public boolean isExperiencingHeavyLoad() {

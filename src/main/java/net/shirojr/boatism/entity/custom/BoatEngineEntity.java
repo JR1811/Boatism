@@ -200,14 +200,11 @@ public class BoatEngineEntity extends LivingEntity {
             }
         }
         if (stack.isEmpty()) {
-            if (!this.getWorld().isClient()) {
-                if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
-                else engineHandler.stopEngine();
-                LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
-            }
+            if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
+            else engineHandler.stopEngine();
+            LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
             return ActionResult.SUCCESS;
         }
-
         return super.interact(player, hand);
     }
 

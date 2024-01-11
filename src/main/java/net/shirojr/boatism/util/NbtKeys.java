@@ -11,4 +11,6 @@ public class NbtKeys {
     public static final String ROTATION = "EngineRotation";
     public static final String IS_SUBMERGED = "IsSubmerged";
     public static final String IS_LOCKED = "IsLocked";
+
+    public static final String BUCKET_FUEL = "BucketFuel";
 }

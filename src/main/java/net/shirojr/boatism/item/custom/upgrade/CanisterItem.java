@@ -1,4 +1,4 @@
-package net.shirojr.boatism.item.custom;
+package net.shirojr.boatism.item.custom.upgrade;
 
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Item;
