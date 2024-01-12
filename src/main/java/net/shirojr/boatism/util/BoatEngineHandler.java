@@ -27,16 +27,14 @@ public class BoatEngineHandler {
     public static final int MAX_BASE_OVERHEAT = Boatism.CONFIG.maxBaseOverheat;
 
     private final BoatEngineEntity boatEngine;
-    private final List<ItemStack> mountedItems;
     private boolean canPlayOverheat = true, canPlayLowFuel = true;
 
-    private BoatEngineHandler(BoatEngineEntity boatEngine, List<ItemStack> mountedItems) {
+    private BoatEngineHandler(BoatEngineEntity boatEngine) {
         this.boatEngine = boatEngine;
-        this.mountedItems = mountedItems;
     }
 
     public static BoatEngineHandler create(BoatEngineEntity boatEngine, List<ItemStack> armorItems) {
-        return new BoatEngineHandler(boatEngine, armorItems);
+        return new BoatEngineHandler(boatEngine);
     }
 
     public void incrementTick() {
@@ -58,12 +56,13 @@ public class BoatEngineHandler {
             if (!canPlayLowFuel) canPlayLowFuel = true;
         }
         if (!this.boatEngine.getWorld().isClient()) {
+            if (getFuel() <= 0) {
+                stopEngine();
+                return true;
+            }
             consumeFuel(1.0f);
         }
-        if (getFuel() <= 0) {
-            stopEngine();
-            return true;
-        }
+
         return false;
     }
 
@@ -79,11 +78,6 @@ public class BoatEngineHandler {
                 currentOverHeat -= 1;
                 setOverheat(getOverheat() - 1);
             }
-            for (ItemStack stack : mountedItems) {
-                if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
-                currentOverHeat -= component.addedOverheatTolerance();
-            }
-
             setOverheat(getOverheat() + currentOverHeat);
         }
         if (isHeatingUp()) {
@@ -144,7 +138,7 @@ public class BoatEngineHandler {
     public float getMaxFuelCapacity() {
         float maxCapacity = MAX_BASE_FUEL;
 
-        for (ItemStack stack : mountedItems) {
+        for (ItemStack stack : getMountedItems()) {
             if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
             maxCapacity += component.addedFuelCapacity();
         }
@@ -176,7 +170,7 @@ public class BoatEngineHandler {
 
     private float additionalConsumedFuel() {
         float fuelPerTick = 0;
-        for (ItemStack entry : mountedItems) {
+        for (ItemStack entry : getMountedItems()) {
             if (entry.getItem() instanceof BoatEngineComponent component) {
                 fuelPerTick += component.addedConsumedFuel();
             }
@@ -216,7 +210,7 @@ public class BoatEngineHandler {
 
     public float getMaxOverHeatCapacity() {
         float maxCapacity = MAX_BASE_OVERHEAT;
-        for (ItemStack stack : mountedItems) {
+        for (ItemStack stack : getMountedItems()) {
             if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
             maxCapacity += component.addedOverheatTolerance();
         }
@@ -242,13 +236,21 @@ public class BoatEngineHandler {
     }
 
     public boolean breaksWhenSubmerged() {
-        boolean hasWaterProofedArmorStacks = mountedItems.stream().allMatch(stack ->
+        return getMountedItems().stream().noneMatch(stack ->
                 stack.getItem() instanceof BoatEngineComponent component && component.waterProofsEngine());
-        return !hasWaterProofedArmorStacks;
     }
 
     public boolean isLowHealth() {
         return boatEngine.getHealth() < boatEngine.getMaxHealth() * 0.2;
+    }
+
+    public float getFullArmorValue() {
+        float armor = 0;
+        for (ItemStack entry : boatEngine.getMountedItems()) {
+            if (!(entry.getItem() instanceof BoatEngineComponent component)) continue;
+            armor += component.getAdditionalArmor();
+        }
+        return armor;
     }
 
     public float calculateThrustModifier(BoatEntity hookedBoatEntity) {
@@ -258,7 +260,7 @@ public class BoatEngineHandler {
         int maxPassenger = ((BoatEntityInvoker) hookedBoatEntity).invokeGetMaxPassenger();
         int thrust = 1;
 
-        mountedItems.forEach(stack -> {
+        getMountedItems().forEach(stack -> {
             if (stack.getItem() instanceof BoatEngineComponent component && component.addedThrust() > 0.0f) {
                 boatComponentStacks.add(stack);
             }
@@ -273,12 +275,16 @@ public class BoatEngineHandler {
     public boolean canEquipPart(ItemStack stack) {
         if (!(stack.getItem() instanceof BoatEngineComponent)) return false;
         List<Item> flaggedParts = new ArrayList<>();
-        for (ItemStack entry : mountedItems) {
+        for (ItemStack entry : getMountedItems()) {
             if (entry.getItem() instanceof BoatEngineComponent component) {
                 flaggedParts.addAll(component.getConflictingParts());
             }
         }
         return !flaggedParts.contains(stack.getItem());
+    }
+
+    public List<ItemStack> getMountedItems() {
+        return boatEngine.getMountedItems();
     }
 
     public void soundStateChange(List<SoundInstanceIdentifier> changedSoundList) {

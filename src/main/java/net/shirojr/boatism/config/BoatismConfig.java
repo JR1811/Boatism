@@ -11,11 +11,11 @@ public class BoatismConfig implements ConfigData {
     @ConfigEntry.Category("general_engine_data")
     @Comment("General Health value")
     @ConfigEntry.Gui.RequiresRestart
-    public float health = 15.0f;
+    public float health = 6.0f;
     @ConfigEntry.Category("general_engine_data")
     @Comment("Indication of low health")
     @ConfigEntry.Gui.RequiresRestart
-    public float lowHealth = 5.0f;
+    public float lowHealth = 3.0f;
     @ConfigEntry.Category("general_engine_data")
     @Comment("Base fuel capacity")
     @ConfigEntry.Gui.RequiresRestart

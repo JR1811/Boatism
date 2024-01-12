@@ -13,6 +13,7 @@ import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.entity.vehicle.VehicleEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -22,6 +23,7 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.item.custom.BaseEngineItem;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.BoatEngineCoupler;
+import net.shirojr.boatism.util.BoatEngineNbtHelper;
 import net.shirojr.boatism.util.EntityHandler;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -82,10 +84,12 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     private void boatism$equipEngineEntity(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         ItemStack stack = player.getMainHandStack();
         BoatEntity boatEntity = (BoatEntity) (Object) this;
+        EntityHandler.engineLinkCleanUp(boatEntity);
         if (((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().isPresent()) return;
         if (stack.getItem() instanceof BaseEngineItem) {
             if (!this.getWorld().isClient()) {
-                BoatEngineEntity engineEntity = new BoatEngineEntity(this.getWorld(), boatEntity);
+                // BoatEngineEntity engineEntity = new BoatEngineEntity(this.getWorld(), boatEntity);
+                BoatEngineEntity engineEntity = BoatEngineNbtHelper.getBoatEngineEntityFromItemStack(stack, boatEntity);
                 this.getWorld().spawnEntity(engineEntity);
                 this.getWorld().playSound(null, boatEntity.getX(), boatEntity.getY(), boatEntity.getZ(),
                         BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.9f, 1.0f);

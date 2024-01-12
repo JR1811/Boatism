@@ -1,5 +1,6 @@
 package net.shirojr.boatism.util;
 
+import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -30,14 +31,12 @@ public class BoatEngineNbtHelper {
         nbt.put(name, nbtList);
     }
 
-    public static DefaultedList<ItemStack> readItemStacksFromNbt(NbtCompound nbt, String name, int size) {
-        NbtList nbtList;
-        DefaultedList<ItemStack> stacks = DefaultedList.ofSize(size);
+    public static List<ItemStack> readItemStacksFromNbt(NbtCompound nbt, String name) {
+        List<ItemStack> stacks = new ArrayList<>();
         if (nbt.contains(name, NbtElement.LIST_TYPE)) {
-            nbtList = nbt.getList(name, NbtElement.COMPOUND_TYPE);
-            stacks = DefaultedList.ofSize(nbtList.size(), ItemStack.EMPTY);
+            NbtList nbtList = nbt.getList(name, NbtElement.COMPOUND_TYPE);
             for (int i = 0; i < nbtList.size(); i++) {
-                stacks.set(i, ItemStack.fromNbt(nbtList.getCompound(i)));
+                stacks.add(ItemStack.fromNbt(nbtList.getCompound(i)));
             }
         }
         return stacks;
@@ -47,11 +46,10 @@ public class BoatEngineNbtHelper {
         ItemStack engineStack = new ItemStack(BoatismItems.BASE_ENGINE);
         NbtCompound nbt = engineStack.getOrCreateNbt();
 
-        List<ItemStack> armorList = StreamSupport
-                .stream(engineEntity.getMountedItems().spliterator(), false).toList();
+        List<ItemStack> mountedList = engineEntity.getMountedItems().stream().toList();
         engineEntity.getHookedBoatEntityUuid().ifPresent(hookedBoatEntityUuid ->
                 nbt.putUuid(NbtKeys.HOOKED_ENTITY, hookedBoatEntityUuid));
-        BoatEngineNbtHelper.writeItemStacksToNbt(armorList, NbtKeys.MOUNTED_ITEMS, nbt);
+        BoatEngineNbtHelper.writeItemStacksToNbt(mountedList, NbtKeys.MOUNTED_ITEMS, nbt);
         nbt.putInt(NbtKeys.POWER_OUTPUT, engineEntity.getPowerLevel());
         nbt.putFloat(NbtKeys.OVERHEAT, engineEntity.getOverheat());
         nbt.put(NbtKeys.ROTATION, engineEntity.getArmRotation().toNbt());
@@ -72,8 +70,8 @@ public class BoatEngineNbtHelper {
     }
 
     @SuppressWarnings("CommentedOutCode")
-    public BoatEngineEntity getBoatEngineEntityFromItemStack(ItemStack stack, World world) {
-        BoatEngineEntity boatEngine = new BoatEngineEntity(BoatismEntities.BOAT_ENGINE, world);
+    public static BoatEngineEntity getBoatEngineEntityFromItemStack(ItemStack stack, BoatEntity linkedBoat) {
+        BoatEngineEntity boatEngine = new BoatEngineEntity(linkedBoat.getWorld(), linkedBoat);
         NbtCompound stackNbt = stack.getOrCreateNbt();
 
         // hook will be done with entity later on
@@ -81,7 +79,7 @@ public class BoatEngineNbtHelper {
             boatEngine.setHookedBoatEntity(stackNbt.getUuid("HookedEntity"));
         }*/
         if (stackNbt.contains(NbtKeys.MOUNTED_ITEMS)) {
-            boatEngine.setMountedItems(BoatEngineNbtHelper.readItemStacksFromNbt(stackNbt, NbtKeys.MOUNTED_ITEMS, 4));
+            boatEngine.setMountedItems(BoatEngineNbtHelper.readItemStacksFromNbt(stackNbt, NbtKeys.MOUNTED_ITEMS));
         }
         boatEngine.setPowerLevel(Math.min(stackNbt.getInt(NbtKeys.POWER_OUTPUT), BoatEngineHandler.MAX_POWER_LEVEL / 2));
         boatEngine.setOverheat(stackNbt.getFloat(NbtKeys.OVERHEAT));

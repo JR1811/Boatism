@@ -14,25 +14,30 @@ import org.joml.Vector3f;
  */
 public interface CustomBoatEngineAttachment {
     /**
-     * Define the position of the Boat Engine when it is hooked up to your custom boat.<br><br>
+     * Defines the position of the Boat Engine when it is hooked up to your custom boat.
+     * This will change only the position of the
+     * {@link net.shirojr.boatism.entity.custom.BoatEngineEntity BoatEngineEntity} which is listed as a passenger.<br><br>
      * If you need an example, check out the default positions defined
      * in {@link net.shirojr.boatism.mixin.BoatEntityMixin#boatism$attachmentPos(EntityDimensions)
      * BoatEntityMixin}
      *
      * @param dimensions Your entity dimensions (optional to use)
      * @return Relative position for the engine
-     * @apiNote The custom BoatEntity shouldn't override the <b>getPassengerAttachmentPos()</b> method, or this
-     * method might not work as intended.
-     * <h4>Possible solutions if it is still needed</h4>
+     * @apiNote If your custom {@link net.minecraft.entity.vehicle.BoatEntity BoatEntity} already overrides the
+     * <b>getPassengerAttachmentPos()</b> method, Boatism's engine placement method might not work as intended.<br>
+     *
+     * <h3>Possible solutions</h3>
+     *
      * <ul>
      *     <li>
-     *         Call the super method first and change your passenger's position (without changing the
-     *         {@link net.shirojr.boatism.entity.custom.BoatEngineEntity BoatEngineEntity} position values).
+     *         Call the super method after your passenger position changes. Then define the
+     *         {@link net.shirojr.boatism.entity.custom.BoatEngineEntity BoatEngineEntity}'s position in this
+     *         interface method like usually. This will support future dynamic engine position changes made by Boatism.
      *     </li>
      *     <li>
-     *          [NOT RECOMMENDED] Don't use this interface method but but check for the passenger entity to be a
+     *          [NOT RECOMMENDED] Don't use this interface method but check for the passenger entity to be a
      *          {@link net.shirojr.boatism.entity.custom.BoatEngineEntity BoatEngineEntity}
-     *          and change the position manually.
+     *          and change the position manually. This won't support all position changes which are made by Boatism!
      *     </li>
      * </ul>
      */

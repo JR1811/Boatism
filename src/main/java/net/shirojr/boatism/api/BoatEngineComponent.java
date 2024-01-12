@@ -6,6 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.item.custom.upgrade.CanisterItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,7 +33,7 @@ public interface BoatEngineComponent {
      * If engine contains parts which conflict with this list, the engine won't accept equipping your item.
      */
     default List<Item> getConflictingParts() {
-        return List.of();
+        return new ArrayList<>();
     }
 
     /**
@@ -65,7 +66,7 @@ public interface BoatEngineComponent {
     }
 
     /**
-     * This value will improve the armor of the engine. (not yet implemented!)
+     * This value will improve the armor of the engine.
      */
     default float getAdditionalArmor() {
         return 0.0f;
@@ -120,6 +121,7 @@ public interface BoatEngineComponent {
      * @return changed MatrixStack for the item feature renderer
      */
     default MatrixStack itemRenderTransform(BoatEngineEntity boatEngineEntity, MatrixStack matrixStack) {
+        matrixStack.push();
         return matrixStack;
     }
 }

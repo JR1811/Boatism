@@ -2,6 +2,8 @@ package net.shirojr.boatism.entity.custom;
 
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
@@ -37,6 +39,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BoatEngineEntity extends LivingEntity {
     private List<ItemStack> mountedItems = new ArrayList<>();
@@ -47,6 +50,9 @@ public class BoatEngineEntity extends LivingEntity {
     private static final TrackedData<Boolean> RUNNING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Float> FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private static final TrackedData<Boolean> LOCKED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+
+    public static final UUID COMPONENT_ARMOR_ID = UUID.fromString("7E0292F2-9434-48D5-A29F-9583AF7DF27F");
+    private static EntityAttributeModifier COMPONENT_ARMOR_BONUS;
 
     public final AnimationState rightSpinAnimationState = new AnimationState();
     public final AnimationState leftSpinAnimationState = new AnimationState();
@@ -64,6 +70,7 @@ public class BoatEngineEntity extends LivingEntity {
         this.engineHandler = BoatEngineHandler.create(this, this.mountedItems);
         this.setNoGravity(true);
         this.setStepHeight(0.0f);
+        this.mountedItems = new ArrayList<>();
     }
 
     public BoatEngineEntity(World world, double x, double y, double z) {
@@ -92,8 +99,11 @@ public class BoatEngineEntity extends LivingEntity {
 
     public static DefaultAttributeContainer.Builder setAttributes() {
         return LivingEntity.createLivingAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, Boatism.CONFIG.health)
-                .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0f);
+                .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1.0f)
+                .add(EntityAttributes.GENERIC_ARMOR, 0.0f)
+                .add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 15.0f);
     }
+
 
     private void updateAnimationStates() {
         if (getPowerLevel() > 0) {
@@ -128,7 +138,8 @@ public class BoatEngineEntity extends LivingEntity {
             this.setHookedBoatEntity(nbt.getUuid(NbtKeys.HOOKED_ENTITY));
         }
         if (nbt.contains(NbtKeys.MOUNTED_ITEMS)) {
-            this.mountedItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.MOUNTED_ITEMS, 4);
+            //FIXME: Client side stays empty after re-joining world
+            this.mountedItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.MOUNTED_ITEMS);
         }
         this.setPowerLevel(Math.min(nbt.getInt(NbtKeys.POWER_OUTPUT), BoatEngineHandler.MAX_POWER_LEVEL / 2));
         this.setOverheat(nbt.getFloat(NbtKeys.OVERHEAT));
@@ -191,15 +202,14 @@ public class BoatEngineEntity extends LivingEntity {
             if (!mountedItemsContain(stack)) {
                 addToMountedItems(stack);
                 if (this.getWorld().isClient()) return ActionResult.SUCCESS;
+                LoggerUtil.devLogger(String.format("Equipped component %s on the engine", stack.getName()));
+
                 if (!player.isCreative()) stack.decrement(1);
                 this.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
                         BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 1f, 1f);
-
-                LoggerUtil.devLogger(String.format("Equiped component %s on the engine", stack.getName()));
                 return ActionResult.SUCCESS;
             }
-        }
-        if (stack.isEmpty()) {
+        } else if (stack.isEmpty()) {
             if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
             else engineHandler.stopEngine();
             LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
@@ -231,6 +241,9 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     public List<ItemStack> getMountedItems() {
+        String items = mountedItems.stream().map(stack -> stack.getName().getString()).collect(Collectors.joining(","));
+        LoggerUtil.devLogger("IsClient: %s | Items: %s".formatted(this.getWorld().isClient(), items) );
+
         return this.mountedItems;
     }
 
@@ -240,7 +253,18 @@ public class BoatEngineEntity extends LivingEntity {
 
     public void addToMountedItems(ItemStack itemStack) {
         if (!(itemStack.getItem() instanceof BoatEngineComponent component)) return;
-        this.mountedItems.add(component.getMountedItemStack(itemStack).copy());
+        EntityAttributeInstance armorAttributeInstance = this.getAttributeInstance(EntityAttributes.GENERIC_ARMOR);
+        if (armorAttributeInstance == null || itemStack == null) return;
+
+        this.mountedItems.add(component.getMountedItemStack(itemStack));
+        if (this.getWorld().isClient()) return;
+
+        armorAttributeInstance.removeModifier(COMPONENT_ARMOR_ID);
+        COMPONENT_ARMOR_BONUS = new EntityAttributeModifier(COMPONENT_ARMOR_ID, "Component armor bonus",
+                engineHandler.getFullArmorValue(), EntityAttributeModifier.Operation.ADDITION);
+        armorAttributeInstance.addPersistentModifier(COMPONENT_ARMOR_BONUS);
+        LoggerUtil.devLogger("");
+        // removeModifier(COMPONENT_ARMOR_BONUS.getId());
     }
 
     public boolean mountedItemsContain(ItemStack itemStack) {
@@ -272,15 +296,19 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public void equipStack(EquipmentSlot slot, ItemStack stack) {
-        this.processEquippedStack(stack);
+        LoggerUtil.devLogger("Tried to equip an item on a BoatEngineEntity!", true, null);
+        /*this.processEquippedStack(stack);
         if (slot.getType().equals(EquipmentSlot.Type.ARMOR)) {
             this.onEquipStack(slot, this.mountedItems.set(slot.getEntitySlotId(), stack), stack);
-        }
+        }*/
     }
 
     @Override
     public void onEquipStack(EquipmentSlot slot, ItemStack oldStack, ItemStack newStack) {
         //super.onEquipStack(slot, oldStack, newStack);
+        if (!(this.getWorld() instanceof ServerWorld serverWorld)) return;
+        serverWorld.playSound(null, this.getX(), this.getY(), this.getZ(),
+                BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.75f, 1f);
     }
 
     public void hookOntoBoatEntity(BoatEntity boatEntity) {

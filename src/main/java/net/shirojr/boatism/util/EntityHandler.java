@@ -48,4 +48,12 @@ public class EntityHandler {
                     }
                 });
     }
+
+    public static void engineLinkCleanUp(BoatEntity boatEntity) {
+        if (!(boatEntity instanceof BoatEngineCoupler boatLink)) return;
+        if (boatLink.boatism$getBoatEngineEntityUuid().isEmpty()) return;
+        if (boatEntity.getPassengerList().stream().noneMatch(entity -> entity instanceof BoatEngineEntity)) {
+            boatLink.boatism$setBoatEngineEntity(null);
+        }
+    }
 }
