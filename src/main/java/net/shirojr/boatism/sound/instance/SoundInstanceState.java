@@ -1,7 +1,7 @@
 package net.shirojr.boatism.sound.instance;
 
 import net.shirojr.boatism.sound.BoatismSoundManager;
-import net.shirojr.boatism.util.SoundInstanceIdentifier;
+import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
 import java.util.List;
 

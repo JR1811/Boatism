@@ -1,4 +1,4 @@
-package net.shirojr.boatism.util;
+package net.shirojr.boatism.util.nbt;
 
 public class NbtKeys {
     private NbtKeys() {

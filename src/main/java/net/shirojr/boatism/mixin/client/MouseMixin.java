@@ -11,7 +11,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.util.BoatEngineCoupler;
-import net.shirojr.boatism.util.EntityHandler;
+import net.shirojr.boatism.util.handler.EntityHandler;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

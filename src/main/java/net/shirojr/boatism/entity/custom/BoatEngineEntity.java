@@ -42,7 +42,11 @@ import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
+import net.shirojr.boatism.util.tag.BoatismTags;
 import net.shirojr.boatism.util.*;
+import net.shirojr.boatism.util.handler.BoatEngineHandler;
+import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
+import net.shirojr.boatism.util.nbt.NbtKeys;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

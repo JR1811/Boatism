@@ -1,4 +1,4 @@
-package net.shirojr.boatism.util;
+package net.shirojr.boatism.util.nbt;
 
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
@@ -9,6 +9,7 @@ import net.minecraft.util.math.EulerAngle;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.item.BoatismItems;
+import net.shirojr.boatism.util.handler.BoatEngineHandler;
 
 import java.util.ArrayList;
 import java.util.List;

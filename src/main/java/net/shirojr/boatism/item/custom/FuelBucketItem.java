@@ -12,7 +12,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.util.NbtKeys;
+import net.shirojr.boatism.util.nbt.NbtKeys;
 
 public class FuelBucketItem extends Item /*BucketItem*/ {
     public final static float MAX_CAPACITY = 3000;

@@ -13,7 +13,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.item.BoatismItems;
-import net.shirojr.boatism.util.BoatEngineHandler;
+import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import net.shirojr.boatism.util.LoggerUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;

@@ -1,4 +1,4 @@
-package net.shirojr.boatism.util;
+package net.shirojr.boatism.util.handler;
 
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -17,6 +17,8 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.mixin.BoatEntityInvoker;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
+import net.shirojr.boatism.util.LoggerUtil;
+import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;

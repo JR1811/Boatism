@@ -12,7 +12,7 @@ import net.shirojr.boatism.event.BoatismEvents;
 import net.shirojr.boatism.item.BoatismItems;
 import net.shirojr.boatism.network.BoatismC2S;
 import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.util.BoatismTags;
+import net.shirojr.boatism.util.tag.BoatismTags;
 import net.shirojr.boatism.util.LoggerUtil;
 
 public class Boatism implements ModInitializer {

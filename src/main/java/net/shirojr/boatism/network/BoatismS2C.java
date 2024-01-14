@@ -11,7 +11,7 @@ import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.instance.custom.*;
 import net.shirojr.boatism.util.LoggerUtil;
-import net.shirojr.boatism.util.SoundInstanceIdentifier;
+import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;

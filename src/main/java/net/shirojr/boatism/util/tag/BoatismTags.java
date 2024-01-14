@@ -1,9 +1,10 @@
-package net.shirojr.boatism.util;
+package net.shirojr.boatism.util.tag;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
+import net.shirojr.boatism.util.LoggerUtil;
 
 public class BoatismTags {
     public static class Entities {

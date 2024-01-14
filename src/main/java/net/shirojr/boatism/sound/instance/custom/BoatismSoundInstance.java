@@ -8,8 +8,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.util.BoatEngineHandler;
-import net.shirojr.boatism.util.LoggerUtil;
+import net.shirojr.boatism.util.handler.BoatEngineHandler;
 
 @Environment(EnvType.CLIENT)
 public class BoatismSoundInstance extends MovingSoundInstance {

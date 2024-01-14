@@ -6,7 +6,7 @@ import net.minecraft.util.math.MathHelper;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
-import net.shirojr.boatism.util.BoatEngineHandler;
+import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import net.shirojr.boatism.util.LoggerUtil;
 
 @Environment(EnvType.CLIENT)

@@ -1,4 +1,4 @@
-package net.shirojr.boatism.util;
+package net.shirojr.boatism.util.sound;
 
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
