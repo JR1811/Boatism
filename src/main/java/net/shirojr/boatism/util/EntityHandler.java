@@ -42,9 +42,10 @@ public class EntityHandler {
                     allEngineStacks.add(BoatEngineNbtHelper.getItemStackFromBoatEngineEntity(boatEngineEntity));
                     allEngineStacks.addAll(BoatEngineNbtHelper.getMountedItemsFromBoatEngineEntity(boatEngineEntity));
                     boatEngineEntity.removeBoatEngine(boatEntity);
-                    BlockPos pos = boatEngineEntity.getBlockPos();
                     for (ItemStack entry : allEngineStacks) {
-                        ItemScatterer.spawn(serverWorld, pos.getX(), pos.getY(), pos.getZ(), entry);
+                        boatEngineEntity.dropStack(entry);
+                        //BlockPos pos = boatEngineEntity.getBlockPos();
+                        //ItemScatterer.spawn(serverWorld, pos.getX(), pos.getY(), pos.getZ(), entry);
                     }
                 });
     }

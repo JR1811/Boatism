@@ -33,7 +33,7 @@ public class BoatEngineHandler {
         this.boatEngine = boatEngine;
     }
 
-    public static BoatEngineHandler create(BoatEngineEntity boatEngine, List<ItemStack> armorItems) {
+    public static BoatEngineHandler create(BoatEngineEntity boatEngine) {
         return new BoatEngineHandler(boatEngine);
     }
 
@@ -246,7 +246,7 @@ public class BoatEngineHandler {
 
     public float getFullArmorValue() {
         float armor = 0;
-        for (ItemStack entry : boatEngine.getMountedItems()) {
+        for (ItemStack entry : boatEngine.getMountedInventory().getHeldStacks()) {
             if (!(entry.getItem() instanceof BoatEngineComponent component)) continue;
             armor += component.getAdditionalArmor();
         }
@@ -284,7 +284,7 @@ public class BoatEngineHandler {
     }
 
     public List<ItemStack> getMountedItems() {
-        return boatEngine.getMountedItems();
+        return boatEngine.getMountedInventory().getHeldStacks();
     }
 
     public void soundStateChange(List<SoundInstanceIdentifier> changedSoundList) {
@@ -294,7 +294,7 @@ public class BoatEngineHandler {
                 PacketByteBuf buf = PacketByteBufs.create();
                 buf.writeVarInt(this.boatEngine.getId());
                 buf.writeIdentifier(entry.getIdentifier());
-                ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_START.getPacketIdentifier(), buf);
+                ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_START.getIdentifier(), buf);
             }
         });
     }

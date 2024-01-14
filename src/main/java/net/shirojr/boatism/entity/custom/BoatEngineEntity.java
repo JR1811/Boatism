@@ -1,5 +1,8 @@
 package net.shirojr.boatism.entity.custom;
 
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
@@ -13,9 +16,13 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.InventoryChangedListener;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -33,16 +40,20 @@ import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
+import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class BoatEngineEntity extends LivingEntity {
-    private List<ItemStack> mountedItems = new ArrayList<>();
+public class BoatEngineEntity extends LivingEntity implements InventoryChangedListener {
+    private final SimpleInventory mountedInventory;
     private static final TrackedData<Integer> POWER_LEVEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Float> OVERHEAT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private static final TrackedData<EulerAngle> ARM_ROTATION = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.ROTATION);
@@ -67,10 +78,10 @@ public class BoatEngineEntity extends LivingEntity {
 
     public BoatEngineEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
-        this.engineHandler = BoatEngineHandler.create(this, this.mountedItems);
+        this.engineHandler = BoatEngineHandler.create(this);
+        this.mountedInventory = new SimpleInventory(32);
         this.setNoGravity(true);
         this.setStepHeight(0.0f);
-        this.mountedItems = new ArrayList<>();
     }
 
     public BoatEngineEntity(World world, double x, double y, double z) {
@@ -104,7 +115,6 @@ public class BoatEngineEntity extends LivingEntity {
                 .add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 15.0f);
     }
 
-
     private void updateAnimationStates() {
         if (getPowerLevel() > 0) {
             if (spinAnimationTimeout <= 0) {
@@ -122,7 +132,7 @@ public class BoatEngineEntity extends LivingEntity {
         super.writeCustomDataToNbt(nbt);
         getHookedBoatEntityUuid().ifPresent(hookedBoatEntityUuid ->
                 nbt.putUuid(NbtKeys.HOOKED_ENTITY, hookedBoatEntityUuid));
-        BoatEngineNbtHelper.writeItemStacksToNbt(this.mountedItems, NbtKeys.MOUNTED_ITEMS, nbt);
+        BoatEngineNbtHelper.writeItemStacksToNbt(this.mountedInventory.getHeldStacks(), NbtKeys.MOUNTED_ITEMS, nbt);
         nbt.putInt(NbtKeys.POWER_OUTPUT, this.getPowerLevel());
         nbt.putFloat(NbtKeys.OVERHEAT, this.getOverheat());
         nbt.put(NbtKeys.ROTATION, this.getArmRotation().toNbt());
@@ -138,8 +148,9 @@ public class BoatEngineEntity extends LivingEntity {
             this.setHookedBoatEntity(nbt.getUuid(NbtKeys.HOOKED_ENTITY));
         }
         if (nbt.contains(NbtKeys.MOUNTED_ITEMS)) {
-            //FIXME: Client side stays empty after re-joining world
-            this.mountedItems = BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.MOUNTED_ITEMS);
+            this.mountedInventory.clear();
+            setMountedItemsFromItemStackList(BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.MOUNTED_ITEMS));
+            syncComponentListToClient();
         }
         this.setPowerLevel(Math.min(nbt.getInt(NbtKeys.POWER_OUTPUT), BoatEngineHandler.MAX_POWER_LEVEL / 2));
         this.setOverheat(nbt.getFloat(NbtKeys.OVERHEAT));
@@ -149,9 +160,22 @@ public class BoatEngineEntity extends LivingEntity {
         this.setLocked(nbt.getBoolean(NbtKeys.IS_LOCKED));
     }
 
+    private void syncComponentListToClient() {
+        if (!(this.getWorld() instanceof ServerWorld)) return;
+        PlayerLookup.tracking(this).forEach(player -> {
+            PacketByteBuf buf = PacketByteBufs.create();
+            buf.writeVarInt(this.getId());
+            buf.writeVarInt(this.getMountedInventory().size());
+            for (int i = 0; i < getMountedInventory().size(); i++) {
+                buf.writeVarInt(i);
+                buf.writeItemStack(getMountedInventory().getStack(i));
+            }
+            ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.BOAT_COMPONENT_SYNC.getIdentifier(), buf);
+        });
+    }
+
     @Override
     public void tick() {
-        //LoggerUtil.devLogger("is running: %s | client side: %s".formatted(isRunning(), this.getWorld().isClient()));
         super.tick();
         this.setNoGravity(true);
         if (this.getWorld().isClient()) {
@@ -199,14 +223,11 @@ public class BoatEngineEntity extends LivingEntity {
         ItemStack stack = player.getStackInHand(hand);
 
         if (player.isSneaking() && stack.getItem() instanceof BoatEngineComponent && engineHandler.canEquipPart(stack)) {
-            if (!mountedItemsContain(stack)) {
-                addToMountedItems(stack);
+            if (!mountedInventoryContain(stack)) {
+                addToMountedInventory(stack);
                 if (this.getWorld().isClient()) return ActionResult.SUCCESS;
                 LoggerUtil.devLogger(String.format("Equipped component %s on the engine", stack.getName()));
-
                 if (!player.isCreative()) stack.decrement(1);
-                this.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
-                        BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 1f, 1f);
                 return ActionResult.SUCCESS;
             }
         } else if (stack.isEmpty()) {
@@ -220,7 +241,7 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
-
+        syncComponentListToClient();
         super.onStartedTrackingBy(player);
     }
 
@@ -240,24 +261,42 @@ public class BoatEngineEntity extends LivingEntity {
         this.hookedBoatEntityUuid = uuid;
     }
 
-    public List<ItemStack> getMountedItems() {
-        String items = mountedItems.stream().map(stack -> stack.getName().getString()).collect(Collectors.joining(","));
-        LoggerUtil.devLogger("IsClient: %s | Items: %s".formatted(this.getWorld().isClient(), items) );
+    public SimpleInventory getMountedInventory() {
+        if (this.getWorld().isClient()) {
+            String items = mountedInventory.getHeldStacks().stream().map(stack -> stack.getName().getString())
+                    .collect(Collectors.joining(","));
+            LoggerUtil.devLogger("IsClient: %s | Items: %s".formatted(this.getWorld().isClient(), items));
+        }
 
-        return this.mountedItems;
+        return this.mountedInventory;
     }
 
-    public void setMountedItems(List<ItemStack> mountedItems) {
-        this.mountedItems = mountedItems;
+    public void setMountedItemsFromItemStackList(List<ItemStack> mountedItems) {
+        if (mountedItems.size() > getMountedInventory().size()) {
+            LoggerUtil.devLogger("inventory size was bigger than expected", true, null);
+            return;
+        }
+        for (int i = 0; i < mountedItems.size(); i++) {
+            getMountedInventory().setStack(i, mountedItems.get(i));
+        }
     }
 
-    public void addToMountedItems(ItemStack itemStack) {
+    public void setMountedItemsFromComponentList(List<EngineComponent> components) {
+        this.mountedInventory.clear();
+        for (EngineComponent component : components) {
+            this.mountedInventory.addStack(component.componentStack);
+        }
+    }
+
+    public void addToMountedInventory(ItemStack itemStack) {
         if (!(itemStack.getItem() instanceof BoatEngineComponent component)) return;
         EntityAttributeInstance armorAttributeInstance = this.getAttributeInstance(EntityAttributes.GENERIC_ARMOR);
         if (armorAttributeInstance == null || itemStack == null) return;
+        this.getMountedInventory().addStack(component.getMountedItemStack(itemStack));
 
-        this.mountedItems.add(component.getMountedItemStack(itemStack));
-        if (this.getWorld().isClient()) return;
+        if (this.getWorld().isClient()){
+            return;
+        }
 
         armorAttributeInstance.removeModifier(COMPONENT_ARMOR_ID);
         COMPONENT_ARMOR_BONUS = new EntityAttributeModifier(COMPONENT_ARMOR_ID, "Component armor bonus",
@@ -267,8 +306,8 @@ public class BoatEngineEntity extends LivingEntity {
         // removeModifier(COMPONENT_ARMOR_BONUS.getId());
     }
 
-    public boolean mountedItemsContain(ItemStack itemStack) {
-        return this.getMountedItems().stream().anyMatch(mountedStack -> mountedStack.getItem().equals(itemStack.getItem()));
+    public boolean mountedInventoryContain(ItemStack itemStack) {
+        return this.getMountedInventory().containsAny(mountedStack -> mountedStack.getItem().equals(itemStack.getItem()));
     }
 
     @Override
@@ -466,5 +505,13 @@ public class BoatEngineEntity extends LivingEntity {
     public void onDeath(DamageSource damageSource) {
         getHookedBoatEntity().ifPresent(boatEntity -> ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
         super.onDeath(damageSource);
+    }
+
+    @Override
+    public void onInventoryChanged(Inventory sender) {
+        this.playSound(BoatismSounds.BOAT_ENGINE_EQUIP, 0.5f, 1.0f);
+    }
+
+    public record EngineComponent(int slot, ItemStack componentStack) {
     }
 }

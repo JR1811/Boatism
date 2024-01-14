@@ -28,7 +28,7 @@ public class EquipedPartFeatureRenderer<T extends LivingEntity, M extends Entity
                        float limbAngle, float limbDistance, float tickDelta, float animationProgress,
                        float headYaw, float headPitch) {
         if (!(entity instanceof BoatEngineEntity boatEngine)) return;
-        for (ItemStack stack : boatEngine.getMountedItems()) {
+        for (ItemStack stack : boatEngine.getMountedInventory().getHeldStacks()) {
             if (stack.isEmpty() || !(stack.getItem() instanceof BoatEngineComponent component)) continue;
             ItemStack displayedStack = component.getMountedItemStack(stack);
             matrices = component.itemRenderTransform(boatEngine, matrices);

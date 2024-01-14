@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.BoatismClient;
@@ -12,12 +13,17 @@ import net.shirojr.boatism.sound.instance.custom.*;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.SoundInstanceIdentifier;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BoatismS2C {
     public static void registerClientReceivers() {
-        ClientPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SOUND_START.getPacketIdentifier(),
+        ClientPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SOUND_START.getIdentifier(),
                 BoatismS2C::handleSoundInstanceChangePackets);
-        ClientPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SOUND_END_ALL.getPacketIdentifier(),
+        ClientPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SOUND_END_ALL.getIdentifier(),
                 BoatismS2C::handleClearAllSoundInstancesPackets);
+        ClientPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.BOAT_COMPONENT_SYNC.getIdentifier(),
+                BoatismS2C::handleClientEngineComponentsSyncPackets);
     }
 
     private static void handleSoundInstanceChangePackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
@@ -52,8 +58,23 @@ public class BoatismS2C {
 
     private static void handleClearAllSoundInstancesPackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
                                                             PacketByteBuf clientBuf, PacketSender packetSender) {
+        client.execute(() -> BoatismClient.soundManager.stopAllSoundInstances());
+    }
+
+    private static void handleClientEngineComponentsSyncPackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
+                                                                PacketByteBuf clientBuf, PacketSender packetSender) {
+        int entityId = clientBuf.readVarInt();
+        int componentListSize = clientBuf.readVarInt();
+        List<BoatEngineEntity.EngineComponent> componentList = new ArrayList<>();
+        for (int i = 0; i < componentListSize; i++) {
+            componentList.add(new BoatEngineEntity.EngineComponent(clientBuf.readVarInt(), clientBuf.readItemStack()));
+        }
+
         client.execute(() -> {
-            BoatismClient.soundManager.stopAllSoundInstances();
+            if (client.world == null) return;
+            ClientWorld clientWorld = client.world;
+            if (!(clientWorld.getEntityById(entityId) instanceof BoatEngineEntity boatEngine)) return;
+            boatEngine.setMountedItemsFromComponentList(componentList);
         });
     }
 }

@@ -10,8 +10,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.BoatEngineCoupler;
@@ -22,7 +20,7 @@ import java.util.UUID;
 
 public class BoatismC2S {
     public static void registerServerReceivers() {
-        ServerPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SCROLLED.getPacketIdentifier(),
+        ServerPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SCROLLED.getIdentifier(),
                 BoatismC2S::handleScrollPackets);
     }
 

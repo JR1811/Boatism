@@ -36,7 +36,7 @@ public class BoatEngineEntityCommand {
         PacketByteBuf buf = PacketByteBufs.create();
         ServerPlayerEntity serverPlayerEntity = context.getSource().getPlayer();
         if (serverPlayerEntity == null) return 0;
-        ServerPlayNetworking.send(serverPlayerEntity, BoatismNetworkIdentifiers.SOUND_END_ALL.getPacketIdentifier(), buf);
+        ServerPlayNetworking.send(serverPlayerEntity, BoatismNetworkIdentifiers.SOUND_END_ALL.getIdentifier(), buf);
         return 1;
     }
 

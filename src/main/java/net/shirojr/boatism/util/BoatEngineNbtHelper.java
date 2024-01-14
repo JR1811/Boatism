@@ -5,17 +5,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.EulerAngle;
-import net.minecraft.world.World;
 import net.shirojr.boatism.api.BoatEngineComponent;
-import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.item.BoatismItems;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.StreamSupport;
 
 public class BoatEngineNbtHelper {
 
@@ -46,7 +42,7 @@ public class BoatEngineNbtHelper {
         ItemStack engineStack = new ItemStack(BoatismItems.BASE_ENGINE);
         NbtCompound nbt = engineStack.getOrCreateNbt();
 
-        List<ItemStack> mountedList = engineEntity.getMountedItems().stream().toList();
+        List<ItemStack> mountedList = engineEntity.getMountedInventory().getHeldStacks().stream().toList();
         engineEntity.getHookedBoatEntityUuid().ifPresent(hookedBoatEntityUuid ->
                 nbt.putUuid(NbtKeys.HOOKED_ENTITY, hookedBoatEntityUuid));
         BoatEngineNbtHelper.writeItemStacksToNbt(mountedList, NbtKeys.MOUNTED_ITEMS, nbt);
@@ -61,7 +57,7 @@ public class BoatEngineNbtHelper {
 
     public static List<ItemStack> getMountedItemsFromBoatEngineEntity(BoatEngineEntity engineEntity) {
         List<ItemStack> returnedItemStacks = new ArrayList<>();
-        engineEntity.getMountedItems().forEach(stack -> {
+        engineEntity.getMountedInventory().getHeldStacks().forEach(stack -> {
             if (stack.getItem() instanceof BoatEngineComponent component) {
                 returnedItemStacks.add(component.getReturnedItemStack(stack));
             }
@@ -79,7 +75,7 @@ public class BoatEngineNbtHelper {
             boatEngine.setHookedBoatEntity(stackNbt.getUuid("HookedEntity"));
         }*/
         if (stackNbt.contains(NbtKeys.MOUNTED_ITEMS)) {
-            boatEngine.setMountedItems(BoatEngineNbtHelper.readItemStacksFromNbt(stackNbt, NbtKeys.MOUNTED_ITEMS));
+            boatEngine.setMountedItemsFromItemStackList(BoatEngineNbtHelper.readItemStacksFromNbt(stackNbt, NbtKeys.MOUNTED_ITEMS));
         }
         boatEngine.setPowerLevel(Math.min(stackNbt.getInt(NbtKeys.POWER_OUTPUT), BoatEngineHandler.MAX_POWER_LEVEL / 2));
         boatEngine.setOverheat(stackNbt.getFloat(NbtKeys.OVERHEAT));
