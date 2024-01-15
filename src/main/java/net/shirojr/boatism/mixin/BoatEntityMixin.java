@@ -21,7 +21,7 @@ import net.shirojr.boatism.api.CustomBoatEngineAttachment;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.item.custom.BaseEngineItem;
 import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.util.BoatEngineCoupler;
+import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
 import net.shirojr.boatism.util.handler.EntityHandler;
 import org.jetbrains.annotations.Nullable;

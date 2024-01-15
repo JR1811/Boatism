@@ -40,7 +40,7 @@ import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.util.BoatEngineCoupler;
+import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
@@ -67,7 +67,7 @@ public class BoatEngineEntity extends LivingEntity {
     public static final UUID COMPONENT_ARMOR_ID = UUID.fromString("7E0292F2-9434-48D5-A29F-9583AF7DF27F");
     private static EntityAttributeModifier COMPONENT_ARMOR_BONUS;
 
-    public final AnimationState rightSpinAnimationState = new AnimationState();
+    // public final AnimationState rightSpinAnimationState = new AnimationState();
     public final AnimationState leftSpinAnimationState = new AnimationState();
     public float spinAnimationTimeout = 0;
 

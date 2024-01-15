@@ -1,4 +1,4 @@
-package net.shirojr.boatism.util;
+package net.shirojr.boatism.api;
 
 import java.util.Optional;
 import java.util.UUID;

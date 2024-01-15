@@ -16,7 +16,7 @@ import net.minecraft.text.Text;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
-import net.shirojr.boatism.util.BoatEngineCoupler;
+import net.shirojr.boatism.api.BoatEngineCoupler;
 
 public class BoatEngineEntityCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher,

@@ -13,3 +13,30 @@ Here you can find all the utility to adjust and add your own content to Boatism.
 ---
 
 If you have any questions or request, use the [GitHub Issues](https://github.com/JR1811/Boatism/issues) page.
+
+## Read engine power level and thrust manually
+
+If you are changing the default boat speed and velocity behaviour, it is likely that you are using the same Mixin as Boatism
+does. If you are having trouble with the engine there you can keep your own velocity calculation and get the engine
+data manually by casting to the `BoatEngineCoupler` interface on your custom Boat Entity.
+This will give you access to the linked *(a.k.a. hooked)* `BoatEngineEntity`.
+
+Information about the engine's performance are handled in the `BoatEngineEntity`'s `BoatEngineHandler` which is updated
+based on the `BoatEngineEntity`'s ticks. Many values, such as boat passenger count, equipment and other factors are
+used to calculate the values, which you can access using the `BoatEngineHandler`'s methods.
+
+Keep in mind, that the power level is an arbitrary number of power that the boat is set to by the player.
+This will be used to calculate the final thrust value by looking at things like passenger count, equipped items, etc.
+
+In Boatism's default implementation the thrust value is applied in the `BoatEntity`'s `updatePaddles()` method (yarn)
+like this:
+
+```java
+// balancing the 0-9 power level value
+float powerLevel = boatEngine.getPowerLevel() * 0.008f;
+// applying additional thrust modifiers from the engine
+float thrust = baseSpeed + (powerLevel * boatEngine.getEngineHandler().calculateThrustModifier(boatEntity));
+```
+
+This method is used for a single float value, but extending it with simple vector math should make this viable even for
+custom boat implementations which need their velocity (with e.g. Vec3d) changed instead.

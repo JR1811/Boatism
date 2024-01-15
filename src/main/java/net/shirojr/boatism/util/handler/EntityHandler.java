@@ -9,7 +9,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.util.BoatEngineCoupler;
+import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,7 +37,7 @@ public class EntityHandler {
                 .flatMap(uuid -> EntityHandler.getBoatEngineEntityFromUuid(uuid, boatEntity.getWorld(),
                         boatEntity.getPos(), 10))
                 .ifPresent(boatEngineEntity -> {
-                    if (!(boatEngineEntity.getWorld() instanceof ServerWorld serverWorld)) return;
+                    if (!(boatEngineEntity.getWorld() instanceof ServerWorld)) return;
                     List<ItemStack> allEngineStacks = new ArrayList<>();
                     allEngineStacks.add(BoatEngineNbtHelper.getItemStackFromBoatEngineEntity(boatEngineEntity));
                     allEngineStacks.addAll(BoatEngineNbtHelper.getMountedItemsFromBoatEngineEntity(boatEngineEntity));

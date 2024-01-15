@@ -12,7 +12,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.util.BoatEngineCoupler;
+import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 
 import java.util.Optional;
