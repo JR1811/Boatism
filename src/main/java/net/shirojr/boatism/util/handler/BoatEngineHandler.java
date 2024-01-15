@@ -17,6 +17,7 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.mixin.BoatEntityInvoker;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
+import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.List;
 
 public class BoatEngineHandler {
     public static final int MAX_POWER_LEVEL = 9;
+    public static final int LIMITED_MAX_POWER_LEVEL = 3;
     public static final int MAX_BASE_FUEL = Boatism.CONFIG.maxBaseFuel;
     public static final int MAX_BASE_OVERHEAT = Boatism.CONFIG.maxBaseOverheat;
 
@@ -43,12 +45,14 @@ public class BoatEngineHandler {
         if (handleFuel()) return;
         if (handleOverheating()) return;
 
-        // LoggerUtil.devLogger(String.format("Fuel: %s | OverheatTicks: %s", getFuel(), getOverheat()));
+        LoggerUtil.devLogger(String.format("Fuel: %s/%s | Overheat: %s/%s",
+                getFuel(), getMaxFuelCapacity(), getOverheat(), getMaxOverHeatCapacity()));
     }
 
 
     private boolean handleFuel() {
         if (isLowOnFuel()) {
+            if (getPowerLevel() > getMaxPowerLevel()) this.setPowerLevel(getMaxPowerLevel());
             if (canPlayLowFuel) {
                 soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_LOW_FUEL));
                 canPlayLowFuel = false;
@@ -183,6 +187,11 @@ public class BoatEngineHandler {
 
     public int getPowerLevel() {
         return this.boatEngine.getPowerLevel();
+    }
+
+    public int getMaxPowerLevel() {
+        if (isLowOnFuel()) return LIMITED_MAX_POWER_LEVEL;
+        return MAX_POWER_LEVEL;
     }
 
     public void setPowerLevel(int powerLevel) {

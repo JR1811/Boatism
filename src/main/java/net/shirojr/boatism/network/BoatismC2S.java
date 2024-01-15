@@ -35,7 +35,7 @@ public class BoatismC2S {
                 if (boatEngineEntity == null) return;
                 BoatEngineHandler engineHandler = boatEngineEntity.getEngineHandler();
                 int newPowerLevel = engineHandler.getPowerLevel() + (int) delta;
-                newPowerLevel = Math.min(newPowerLevel, BoatEngineHandler.MAX_POWER_LEVEL);
+                newPowerLevel = Math.min(newPowerLevel, engineHandler.getMaxPowerLevel());
                 newPowerLevel = Math.max(newPowerLevel, 0);
 
                 if (newPowerLevel > engineHandler.getPowerLevel()) {

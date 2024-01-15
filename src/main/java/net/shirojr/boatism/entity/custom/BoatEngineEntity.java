@@ -75,7 +75,6 @@ public class BoatEngineEntity extends LivingEntity {
     private UUID hookedBoatEntityUuid;
     @NotNull
     private final BoatEngineHandler engineHandler;
-    private int previousPowerLevel = 0;
     private Vec3d previousLocation = Vec3d.ZERO;
 
     public BoatEngineEntity(EntityType<? extends LivingEntity> entityType, World world) {
