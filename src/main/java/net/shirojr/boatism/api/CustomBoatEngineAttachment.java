@@ -1,6 +1,5 @@
 package net.shirojr.boatism.api;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import org.joml.Vector3f;
 

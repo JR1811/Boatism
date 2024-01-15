@@ -17,7 +17,6 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.mixin.BoatEntityInvoker;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
 import java.util.ArrayList;
@@ -70,8 +69,6 @@ public class BoatEngineHandler {
 
     private boolean handleOverheating() {
         if (!this.boatEngine.getWorld().isClient()) {
-            LoggerUtil.devLogger("Max Fuel: %s | Fuel: %s | Max Heat: %s | Heat: %s"
-                    .formatted(getMaxFuelCapacity(), getFuel(), getMaxOverHeatCapacity(),  getOverheat()));
             float currentOverHeat = 0;
             if (isExperiencingHeavyLoad()) {
                 currentOverHeat += 2;

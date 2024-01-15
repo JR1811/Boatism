@@ -16,8 +16,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.InventoryChangedListener;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -42,11 +40,12 @@ import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.util.tag.BoatismTags;
-import net.shirojr.boatism.util.*;
+import net.shirojr.boatism.util.BoatEngineCoupler;
+import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
 import net.shirojr.boatism.util.nbt.NbtKeys;
+import net.shirojr.boatism.util.tag.BoatismTags;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,9 +53,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-public class BoatEngineEntity extends LivingEntity implements InventoryChangedListener {
+public class BoatEngineEntity extends LivingEntity {
     private final SimpleInventory mountedInventory;
     private static final TrackedData<Integer> POWER_LEVEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Float> OVERHEAT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
@@ -225,7 +223,6 @@ public class BoatEngineEntity extends LivingEntity implements InventoryChangedLi
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
-
         if (player.isSneaking() && stack.getItem() instanceof BoatEngineComponent && engineHandler.canEquipPart(stack)) {
             if (!mountedInventoryContain(stack)) {
                 addToMountedInventory(stack);
@@ -234,7 +231,7 @@ public class BoatEngineEntity extends LivingEntity implements InventoryChangedLi
                 if (!player.isCreative()) stack.decrement(1);
                 return ActionResult.SUCCESS;
             }
-        } else if (stack.isEmpty()) {
+        } else if (player.getMainHandStack().isEmpty()) {
             if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
             else engineHandler.stopEngine();
             LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
@@ -266,12 +263,6 @@ public class BoatEngineEntity extends LivingEntity implements InventoryChangedLi
     }
 
     public SimpleInventory getMountedInventory() {
-        if (this.getWorld().isClient()) {
-            String items = mountedInventory.getHeldStacks().stream().map(stack -> stack.getName().getString())
-                    .collect(Collectors.joining(","));
-            LoggerUtil.devLogger("IsClient: %s | Items: %s".formatted(this.getWorld().isClient(), items));
-        }
-
         return this.mountedInventory;
     }
 
@@ -298,7 +289,7 @@ public class BoatEngineEntity extends LivingEntity implements InventoryChangedLi
         if (armorAttributeInstance == null || itemStack == null) return;
         this.getMountedInventory().addStack(component.getMountedItemStack(itemStack));
 
-        if (this.getWorld().isClient()){
+        if (this.getWorld().isClient()) {
             return;
         }
 
@@ -509,11 +500,6 @@ public class BoatEngineEntity extends LivingEntity implements InventoryChangedLi
     public void onDeath(DamageSource damageSource) {
         getHookedBoatEntity().ifPresent(boatEntity -> ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
         super.onDeath(damageSource);
-    }
-
-    @Override
-    public void onInventoryChanged(Inventory sender) {
-        this.playSound(BoatismSounds.BOAT_ENGINE_EQUIP, 0.5f, 1.0f);
     }
 
     public record EngineComponent(int slot, ItemStack componentStack) {
