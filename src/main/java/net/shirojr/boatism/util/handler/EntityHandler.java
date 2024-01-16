@@ -44,8 +44,6 @@ public class EntityHandler {
                     boatEngineEntity.removeBoatEngine(boatEntity);
                     for (ItemStack entry : allEngineStacks) {
                         boatEngineEntity.dropStack(entry);
-                        //BlockPos pos = boatEngineEntity.getBlockPos();
-                        //ItemScatterer.spawn(serverWorld, pos.getX(), pos.getY(), pos.getZ(), entry);
                     }
                 });
     }
