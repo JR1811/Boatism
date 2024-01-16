@@ -27,6 +27,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
@@ -36,23 +37,21 @@ import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineComponent;
+import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
+import net.shirojr.boatism.util.handler.EntityHandler;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
 import net.shirojr.boatism.util.nbt.NbtKeys;
 import net.shirojr.boatism.util.tag.BoatismTags;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class BoatEngineEntity extends LivingEntity {
     private final SimpleInventory mountedInventory;
@@ -222,14 +221,24 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
-        if (player.isSneaking() && stack.getItem() instanceof BoatEngineComponent && engineHandler.canEquipPart(stack)) {
-            if (!mountedInventoryContain(stack)) {
+        if (player.isSneaking() && stack.getItem() instanceof BoatEngineComponent) {
+            if (engineHandler.canEquipPart(stack) && !mountedInventoryContains(stack)) {
                 addToMountedInventory(stack);
                 if (this.getWorld().isClient()) return ActionResult.SUCCESS;
                 LoggerUtil.devLogger(String.format("Equipped component %s on the engine", stack.getName()));
                 if (!player.isCreative()) stack.decrement(1);
+                player.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
+                        BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
                 return ActionResult.SUCCESS;
+            } else {
+                player.sendMessage(Text.translatable("warning.boatism.component_is_blocked"), true);
             }
+        } else if (player.getMainHandStack().isEmpty() && player.isSneaking()) {
+            EntityHandler.dropMountedInventory(this, false);
+            if (this.getWorld().isClient()) return ActionResult.SUCCESS;
+            player.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
+                    BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
+            return ActionResult.SUCCESS;
         } else if (player.getMainHandStack().isEmpty()) {
             if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
             else engineHandler.stopEngine();
@@ -287,21 +296,31 @@ public class BoatEngineEntity extends LivingEntity {
         EntityAttributeInstance armorAttributeInstance = this.getAttributeInstance(EntityAttributes.GENERIC_ARMOR);
         if (armorAttributeInstance == null || itemStack == null) return;
         this.getMountedInventory().addStack(component.getMountedItemStack(itemStack));
-
-        if (this.getWorld().isClient()) {
-            return;
-        }
-
-        armorAttributeInstance.removeModifier(COMPONENT_ARMOR_ID);
-        COMPONENT_ARMOR_BONUS = new EntityAttributeModifier(COMPONENT_ARMOR_ID, "Component armor bonus",
-                engineHandler.getFullArmorValue(), EntityAttributeModifier.Operation.ADDITION);
-        armorAttributeInstance.addPersistentModifier(COMPONENT_ARMOR_BONUS);
-        LoggerUtil.devLogger("");
-        // removeModifier(COMPONENT_ARMOR_BONUS.getId());
+        if (this.getWorld().isClient()) return;
+        changeAttributeModifier(armorAttributeInstance, COMPONENT_ARMOR_ID, COMPONENT_ARMOR_BONUS);
     }
 
-    public boolean mountedInventoryContain(ItemStack itemStack) {
-        return this.getMountedInventory().containsAny(mountedStack -> mountedStack.getItem().equals(itemStack.getItem()));
+    public void clearMountedInventory() {
+        mountedInventory.clear();
+        EntityAttributeInstance armorAttributeInstance = this.getAttributeInstance(EntityAttributes.GENERIC_ARMOR);
+        if (armorAttributeInstance == null) return;
+        if (this.getWorld().isClient()) return;
+        changeAttributeModifier(armorAttributeInstance, COMPONENT_ARMOR_ID, COMPONENT_ARMOR_BONUS);
+    }
+
+    public boolean mountedInventoryContains(ItemStack itemStack) {
+        if (!(itemStack.getItem() instanceof BoatEngineComponent component)) return false;
+        return this.getMountedInventory().containsAny(mountedStack ->
+                mountedStack.getItem().equals(component.getMountedItemStack(itemStack).getItem()));
+    }
+
+    public void changeAttributeModifier(EntityAttributeInstance instance, UUID uuid, EntityAttributeModifier modifier) {
+        instance.removeModifier(uuid);
+        // removeModifier(modifier.getId());
+
+        modifier = new EntityAttributeModifier(uuid, "Component armor bonus", engineHandler.getFullArmorValue(),
+                EntityAttributeModifier.Operation.ADDITION);
+        instance.addPersistentModifier(modifier);
     }
 
     @Override
@@ -352,6 +371,14 @@ public class BoatEngineEntity extends LivingEntity {
         ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(this.getUuid());
         this.hookedBoatEntityUuid = boatEntity.getUuid();
         this.startRiding(boatEntity, true);
+    }
+
+    public void broadcastToAllPlayerPassengers(Text text, boolean overlay) {
+        this.getHookedBoatEntity().ifPresent(boatEntity -> boatEntity.getPassengerList().forEach(entity -> {
+            if (entity instanceof PlayerEntity player) {
+                player.sendMessage(text, overlay);
+            }
+        }));
     }
 
     @Override

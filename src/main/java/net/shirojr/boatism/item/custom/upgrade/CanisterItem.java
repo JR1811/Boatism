@@ -48,7 +48,7 @@ public class CanisterItem extends BoatismEquipmentItem implements BoatEngineComp
 
     @Override
     public float addedFuelCapacity() {
-        return 2000.0f;
+        return 3500.0f;
     }
 
     @Override

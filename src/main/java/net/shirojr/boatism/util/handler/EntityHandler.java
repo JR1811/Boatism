@@ -3,6 +3,7 @@ package net.shirojr.boatism.util.handler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -11,6 +12,7 @@ import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
+import net.shirojr.boatism.util.nbt.NbtKeys;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 public class EntityHandler {
     private EntityHandler() {
     }
@@ -38,14 +41,32 @@ public class EntityHandler {
                         boatEntity.getPos(), 10))
                 .ifPresent(boatEngineEntity -> {
                     if (!(boatEngineEntity.getWorld() instanceof ServerWorld)) return;
-                    List<ItemStack> allEngineStacks = new ArrayList<>();
-                    allEngineStacks.add(BoatEngineNbtHelper.getItemStackFromBoatEngineEntity(boatEngineEntity));
-                    allEngineStacks.addAll(BoatEngineNbtHelper.getMountedItemsFromBoatEngineEntity(boatEngineEntity));
+                    dropMountedInventory(boatEngineEntity, true);
                     boatEngineEntity.removeBoatEngine(boatEntity);
-                    for (ItemStack entry : allEngineStacks) {
-                        boatEngineEntity.dropStack(entry);
-                    }
+
                 });
+    }
+
+    public static void dropItemStackFromMountedInventory(ItemStack itemStack, BoatEngineEntity boatEngineEntity) {
+        boatEngineEntity.dropStack(itemStack);
+    }
+
+    public static void dropMountedInventory(BoatEngineEntity boatEngineEntity, boolean dropEngine) {
+        List<ItemStack> allEngineStacks = new ArrayList<>();
+        if (dropEngine) {
+            allEngineStacks.add(BoatEngineNbtHelper.getItemStackFromBoatEngineEntity(boatEngineEntity));
+        }
+        allEngineStacks.addAll(BoatEngineNbtHelper.getMountedItemsFromBoatEngineEntity(boatEngineEntity));
+        for (ItemStack entry : allEngineStacks) {
+            boatEngineEntity.dropStack(entry);
+        }
+        /*NbtCompound compound = new NbtCompound();
+        boatEngineEntity.writeNbt(compound);*/
+        for (int i = 0; i < boatEngineEntity.getMountedInventory().size(); i++) {
+            boatEngineEntity.getMountedInventory().setStack(i, ItemStack.EMPTY);
+        }
+        /*BoatEngineNbtHelper.removeInventoryEntriesFromNbt(compound, NbtKeys.MOUNTED_ITEMS);
+        boatEngineEntity.saveNbt(compound);*/
     }
 
     public static void engineLinkCleanUp(BoatEntity boatEntity) {

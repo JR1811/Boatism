@@ -17,6 +17,9 @@
   "tooltip.boatism.base_engine_5": "§4Don't overheat and have fun!§r",
 
   "warning.boatism.engine_is_running": "§3Engine is running§r",
+  "warning.boatism.component_is_blocked": "§3Component is blocked by another component§r",
+  "warning.boatism.low_on_fuel": "§3Engine is running out of fuel§r",
+  "warning.boatism.starting_to_overheat": "§3Engine is slowly starting to overheat§r",
 
   "mouse.boatism.power_level": "Power Level: §a%s§r",
 

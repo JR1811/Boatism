@@ -10,6 +10,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineComponent;
@@ -54,6 +55,7 @@ public class BoatEngineHandler {
         if (isLowOnFuel()) {
             if (getPowerLevel() > getMaxPowerLevel()) this.setPowerLevel(getMaxPowerLevel());
             if (canPlayLowFuel) {
+                boatEngine.broadcastToAllPlayerPassengers(Text.translatable("warning.boatism.low_on_fuel"), true);
                 soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_LOW_FUEL));
                 canPlayLowFuel = false;
             }
@@ -85,13 +87,15 @@ public class BoatEngineHandler {
         }
         if (isHeatingUp()) {
             if (canPlayOverheat) {
+                boatEngine.broadcastToAllPlayerPassengers(
+                        Text.translatable("warning.boatism.starting_to_overheat"), true);
                 soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_OVERHEATING));
                 canPlayOverheat = false;
             }
         } else {
             if (!canPlayOverheat) canPlayOverheat = true;
         }
-        if (isOverheating()) {
+        if (isOverheated()) {
             stopEngine();
             this.boatEngine.onOverheated();
             return true;
@@ -124,7 +128,7 @@ public class BoatEngineHandler {
     public boolean engineCanStart() {
         if (getFuel() < 5.0f) return false;
         if (isSubmerged() && breaksWhenSubmerged()) return false;
-        if (isOverheating()) return false;
+        if (isOverheated()) return false;
         if (this.boatEngine.isLocked()) return false;
         return !this.boatEngine.isRunning();
     }
@@ -182,7 +186,11 @@ public class BoatEngineHandler {
     }
 
     public boolean isLowOnFuel() {
-        return getFuel() < MAX_BASE_FUEL * 0.2;
+        return getFuel() < getMaxFuelCapacity() * 0.2;
+    }
+
+    public boolean isFullOnFuel() {
+        return getFuel() > getMaxFuelCapacity();
     }
 
     public int getPowerLevel() {
@@ -212,7 +220,7 @@ public class BoatEngineHandler {
         this.boatEngine.setOverheat(overheat);
     }
 
-    public boolean isOverheating() {
+    public boolean isOverheated() {
         return getOverheat() > getMaxOverHeatCapacity();
     }
 
