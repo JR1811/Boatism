@@ -7,12 +7,12 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
-import net.shirojr.boatism.util.LoggerUtil;
 
 @Environment(EnvType.CLIENT)
 public class EngineOverheatingSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     private static final int COOL_BUFFER_MAX = 3;
     private int isCoolBuffer = 0;
+
     public EngineOverheatingSoundInstance(BoatEngineEntity boatEngineEntity) {
         super(boatEngineEntity, BoatismSounds.BOAT_ENGINE_HEAT, 60, 60);
         transitionState = TransitionState.STARTING;
@@ -20,15 +20,12 @@ public class EngineOverheatingSoundInstance extends BoatismSoundInstance impleme
 
     @Override
     public boolean canPlay() {
-        return super.canPlay() && engineHandler.isHeatingUp();
+        return super.canPlay() && engineHandler.engineIsRunning();
     }
 
     @Override
     public void tick() {
         super.tick();
-
-        LoggerUtil.devLogger(String.format("Instance: %s | currentTick: %s | transitionTick: %s | transitionState: %s", this.id, currentTick, transitionTick, transitionState));
-
         float normalizedOverheatTicks = engineHandler.getOverheat() / BoatEngineHandler.MAX_BASE_OVERHEAT;
         boolean isPotentiallyCooling = !engineHandler.isHeatingUp();
         if (isPotentiallyCooling) {

@@ -42,21 +42,22 @@ public class BoatEngineHandler {
     }
 
     public void incrementTick() {
-        if (breaksWhenSubmerged() && isSubmerged()) stopEngine();
-        if (handleFuel()) return;
-        if (handleOverheating()) return;
-
         LoggerUtil.devLogger(String.format("Fuel: %s/%s | Overheat: %s/%s",
                 getFuel(), getMaxFuelCapacity(), getOverheat(), getMaxOverHeatCapacity()));
+
+        if (breaksWhenSubmerged() && isSubmerged()) stopEngine();
+        if (handleOverheating()) return;
+        if (handleFuel()) return;
+
     }
 
 
     private boolean handleFuel() {
         if (isLowOnFuel()) {
-            if (getPowerLevel() > getMaxPowerLevel()) this.setPowerLevel(getMaxPowerLevel());
+            if (getPowerLevel() > getMaxPowerLevel() && engineIsRunning()) this.setPowerLevel(getMaxPowerLevel());
             if (canPlayLowFuel) {
                 boatEngine.broadcastToAllPlayerPassengers(Text.translatable("warning.boatism.low_on_fuel"), true);
-                soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_LOW_FUEL));
+                if (engineIsRunning()) soundStateChange(List.of(SoundInstanceIdentifier.ENGINE_LOW_FUEL));
                 canPlayLowFuel = false;
             }
         } else {

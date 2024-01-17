@@ -106,16 +106,24 @@ public class BoatismSoundInstance extends MovingSoundInstance {
     }
 
     protected static void transformSoundForTransition(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance) {
+        transformSoundForTransition(originalVolume, originalPitch, soundInstance, true, true);
+    }
+    protected static void transformSoundForTransition(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance,
+                                                      boolean includeStarting, boolean includeStopping) {
         float normalizedStartTransitionTick = (float) soundInstance.transitionTick / soundInstance.startTransitionTicks;
         float normalizedEndTransitionTick = (float) soundInstance.transitionTick / soundInstance.endTransitionTicks;
         switch (soundInstance.transitionState) {
             case STARTING -> {
-                soundInstance.volume = MathHelper.lerp(normalizedStartTransitionTick, 0.0f, originalVolume);
-                soundInstance.pitch = MathHelper.lerp(normalizedStartTransitionTick, originalPitch - 0.2f, originalPitch);
+                if (includeStarting) {
+                    soundInstance.volume = MathHelper.lerp(normalizedStartTransitionTick, 0.0f, originalVolume);
+                    soundInstance.pitch = MathHelper.lerp(normalizedStartTransitionTick, originalPitch - 0.2f, originalPitch);
+                }
             }
             case FINISHING -> {
-                soundInstance.volume = MathHelper.lerp(normalizedEndTransitionTick, originalVolume, 0.0f);
-                soundInstance.pitch = MathHelper.lerp(normalizedEndTransitionTick, originalPitch, originalPitch - 0.2f);
+                if (includeStopping) {
+                    soundInstance.volume = MathHelper.lerp(normalizedEndTransitionTick, originalVolume, 0.0f);
+                    soundInstance.pitch = MathHelper.lerp(normalizedEndTransitionTick, originalPitch, originalPitch - 0.2f);
+                }
             }
         }
     }

@@ -9,6 +9,7 @@ public class NbtKeys {
     public static final String FUEL = "Fuel";
     public static final String OVERHEAT = "Overheat";
     public static final String ROTATION = "EngineRotation";
+    public static final String IS_RUNNING = "IsRunning";
     public static final String IS_SUBMERGED = "IsSubmerged";
     public static final String IS_LOCKED = "IsLocked";
 

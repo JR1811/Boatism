@@ -48,6 +48,7 @@ public class BoatEngineNbtHelper {
         engineEntity.getHookedBoatEntityUuid().ifPresent(hookedBoatEntityUuid ->
                 nbt.putUuid(NbtKeys.HOOKED_ENTITY, hookedBoatEntityUuid));
         BoatEngineNbtHelper.writeItemStacksToNbt(mountedList, NbtKeys.MOUNTED_ITEMS, nbt);
+        nbt.putBoolean(NbtKeys.IS_RUNNING, engineEntity.isRunning());
         nbt.putInt(NbtKeys.POWER_OUTPUT, engineEntity.getPowerLevel());
         nbt.putFloat(NbtKeys.OVERHEAT, engineEntity.getOverheat());
         nbt.put(NbtKeys.ROTATION, engineEntity.getArmRotation().toNbt());
@@ -79,6 +80,7 @@ public class BoatEngineNbtHelper {
         if (stackNbt.contains(NbtKeys.MOUNTED_ITEMS)) {
             boatEngine.setMountedItemsFromItemStackList(BoatEngineNbtHelper.readItemStacksFromNbt(stackNbt, NbtKeys.MOUNTED_ITEMS));
         }
+        boatEngine.setIsRunning(stackNbt.getBoolean(NbtKeys.IS_RUNNING));
         boatEngine.setPowerLevel(Math.min(stackNbt.getInt(NbtKeys.POWER_OUTPUT), BoatEngineHandler.MAX_POWER_LEVEL / 2));
         boatEngine.setOverheat(stackNbt.getFloat(NbtKeys.OVERHEAT));
         boatEngine.setArmRotation(new EulerAngle(stackNbt.getList(NbtKeys.ROTATION, NbtElement.FLOAT_TYPE)));

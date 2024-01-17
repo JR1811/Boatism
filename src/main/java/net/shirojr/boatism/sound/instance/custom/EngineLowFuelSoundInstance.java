@@ -5,6 +5,7 @@ import net.fabricmc.api.Environment;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
+
 @Environment(EnvType.CLIENT)
 public class EngineLowFuelSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     public EngineLowFuelSoundInstance(BoatEngineEntity entity) {
@@ -13,17 +14,19 @@ public class EngineLowFuelSoundInstance extends BoatismSoundInstance implements 
 
     @Override
     public boolean canPlay() {
-        return super.canPlay() && boatEngineEntity.getEngineHandler().isLowOnFuel() && boatEngineEntity.isRunning();
+        return super.canPlay() && boatEngineEntity.getEngineHandler().isLowOnFuel();
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (!boatEngineEntity.getEngineHandler().isLowOnFuel() && !transitionState.equals(TransitionState.FINISHING)) {
+        boolean shouldStop = !boatEngineEntity.getEngineHandler().isLowOnFuel() || !boatEngineEntity.isRunning();
+        if (shouldStop && !transitionState.equals(TransitionState.FINISHING)) {
             this.finishSoundInstance();
             return;
         }
         BoatismSoundInstance.defaultSoundHandling(this);
+        transformSoundForTransition(this.volume, this.pitch, this, false, true);
     }
 
     @Override

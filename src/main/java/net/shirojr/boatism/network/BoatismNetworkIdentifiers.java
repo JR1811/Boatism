@@ -5,6 +5,7 @@ import net.shirojr.boatism.Boatism;
 
 public enum BoatismNetworkIdentifiers {
     SOUND_START("custom_sound_start_instance", TargetSide.CLIENT),
+    SOUND_END_ENGINE("custom_sound_stop_engine_instances", TargetSide.CLIENT),
     SOUND_END_ALL("custom_sound_stop_all_instances", TargetSide.CLIENT),
     SCROLLED("scrolled", TargetSide.SERVER),
     BOAT_COMPONENT_SYNC("component_sync", TargetSide.CLIENT);

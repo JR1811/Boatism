@@ -133,6 +133,7 @@ public class BoatEngineEntity extends LivingEntity {
         getHookedBoatEntityUuid().ifPresent(hookedBoatEntityUuid ->
                 nbt.putUuid(NbtKeys.HOOKED_ENTITY, hookedBoatEntityUuid));
         BoatEngineNbtHelper.writeItemStacksToNbt(this.mountedInventory.getHeldStacks(), NbtKeys.MOUNTED_ITEMS, nbt);
+        nbt.putBoolean(NbtKeys.IS_RUNNING, this.isRunning());
         nbt.putInt(NbtKeys.POWER_OUTPUT, this.getPowerLevel());
         nbt.putFloat(NbtKeys.OVERHEAT, this.getOverheat());
         nbt.put(NbtKeys.ROTATION, this.getArmRotation().toNbt());
@@ -152,6 +153,7 @@ public class BoatEngineEntity extends LivingEntity {
             setMountedItemsFromItemStackList(BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.MOUNTED_ITEMS));
             syncComponentListToClient();
         }
+        this.setIsRunning(nbt.getBoolean(NbtKeys.IS_RUNNING));
         this.setPowerLevel(Math.min(nbt.getInt(NbtKeys.POWER_OUTPUT), BoatEngineHandler.MAX_POWER_LEVEL / 2));
         this.setOverheat(nbt.getFloat(NbtKeys.OVERHEAT));
         this.setArmRotation(new EulerAngle(nbt.getList(NbtKeys.ROTATION, NbtElement.FLOAT_TYPE)));
@@ -233,8 +235,8 @@ public class BoatEngineEntity extends LivingEntity {
             } else {
                 player.sendMessage(Text.translatable("warning.boatism.component_is_blocked"), true);
             }
-        } else if (player.getMainHandStack().isEmpty() && player.isSneaking()) {
-            EntityHandler.dropMountedInventory(this, false);
+        } else if (player.getMainHandStack().isEmpty() && player.isSneaking() && getMountedInventorySize() > 0) {
+            EntityHandler.dropMountedInventory(this, false, true);
             if (this.getWorld().isClient()) return ActionResult.SUCCESS;
             player.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
                     BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
@@ -252,6 +254,14 @@ public class BoatEngineEntity extends LivingEntity {
     public void onStartedTrackingBy(ServerPlayerEntity player) {
         syncComponentListToClient();
         super.onStartedTrackingBy(player);
+    }
+
+    @Override
+    public void onStoppedTrackingBy(ServerPlayerEntity player) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeVarInt(this.getId());
+        ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_END_ENGINE.getIdentifier(), buf);
+        super.onStoppedTrackingBy(player);
     }
 
     //region getter & setter
@@ -272,6 +282,14 @@ public class BoatEngineEntity extends LivingEntity {
 
     public SimpleInventory getMountedInventory() {
         return this.mountedInventory;
+    }
+
+    public int getMountedInventorySize() {
+        int i = 0;
+        for (ItemStack entry : getMountedInventory().getHeldStacks()) {
+            if (entry.getItem() instanceof BoatEngineComponent) i++;
+        }
+        return i;
     }
 
     public void setMountedItemsFromItemStackList(List<ItemStack> mountedItems) {

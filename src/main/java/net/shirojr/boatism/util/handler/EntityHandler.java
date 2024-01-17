@@ -41,7 +41,7 @@ public class EntityHandler {
                         boatEntity.getPos(), 10))
                 .ifPresent(boatEngineEntity -> {
                     if (!(boatEngineEntity.getWorld() instanceof ServerWorld)) return;
-                    dropMountedInventory(boatEngineEntity, true);
+                    dropMountedInventory(boatEngineEntity, true, false);
                     boatEngineEntity.removeBoatEngine(boatEntity);
                 });
     }
@@ -50,12 +50,14 @@ public class EntityHandler {
         boatEngineEntity.dropStack(itemStack);
     }
 
-    public static void dropMountedInventory(BoatEngineEntity boatEngineEntity, boolean dropEngine) {
+    public static void dropMountedInventory(BoatEngineEntity boatEngineEntity, boolean dropEngine, boolean dropEquipment) {
         List<ItemStack> allEngineStacks = new ArrayList<>();
         if (dropEngine) {
             allEngineStacks.add(BoatEngineNbtHelper.getItemStackFromBoatEngineEntity(boatEngineEntity));
         }
-        allEngineStacks.addAll(BoatEngineNbtHelper.getMountedItemsFromBoatEngineEntity(boatEngineEntity));
+        if (dropEquipment) {
+            allEngineStacks.addAll(BoatEngineNbtHelper.getMountedItemsFromBoatEngineEntity(boatEngineEntity));
+        }
         for (ItemStack entry : allEngineStacks) {
             boatEngineEntity.dropStack(entry);
         }
