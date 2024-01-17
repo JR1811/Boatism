@@ -43,7 +43,6 @@ public class EntityHandler {
                     if (!(boatEngineEntity.getWorld() instanceof ServerWorld)) return;
                     dropMountedInventory(boatEngineEntity, true);
                     boatEngineEntity.removeBoatEngine(boatEntity);
-
                 });
     }
 
@@ -60,13 +59,9 @@ public class EntityHandler {
         for (ItemStack entry : allEngineStacks) {
             boatEngineEntity.dropStack(entry);
         }
-        /*NbtCompound compound = new NbtCompound();
-        boatEngineEntity.writeNbt(compound);*/
         for (int i = 0; i < boatEngineEntity.getMountedInventory().size(); i++) {
             boatEngineEntity.getMountedInventory().setStack(i, ItemStack.EMPTY);
         }
-        /*BoatEngineNbtHelper.removeInventoryEntriesFromNbt(compound, NbtKeys.MOUNTED_ITEMS);
-        boatEngineEntity.saveNbt(compound);*/
     }
 
     public static void engineLinkCleanUp(BoatEntity boatEntity) {

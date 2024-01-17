@@ -12,21 +12,13 @@ import java.util.List;
 /**
  * <h1>Improve or Punish Engine Stats</h1>
  * <p>
- * Implement this interface to your custom ArmorItem class to define the data, which improves or punishes
+ * Implement this interface to your custom Item class to define the data, which improves or punishes
  * the engine's performance. Check out {@link CanisterItem CanisterItem} if you need
- * and example.
+ * an example.
  *
  * <h3>Usage</h3>
- * <p>
- * Your custom Item class should extend from {@link net.minecraft.item.ArmorItem ArmorItem}
- * to be able to get equipped to the engine. All methods have a default implementation with no impact on the engine so
+ * All methods have a default implementation with no impact on the engine so
  * you don't have to override all methods.
- *
- * <h3>Information</h3>
- * <ul>
- *     <li>Access to the custom item rendering on the engine entity is not externally yet available.</li>
- *     <li>Limitation of only ArmorItem extending classes might be lifted in a future update</li>
- * </ul>
  */
 public interface BoatEngineComponent {
     /**
