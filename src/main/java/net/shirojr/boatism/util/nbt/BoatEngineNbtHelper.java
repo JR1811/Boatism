@@ -2,7 +2,6 @@ package net.shirojr.boatism.util.nbt;
 
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -68,21 +67,20 @@ public class BoatEngineNbtHelper {
         return returnedItemStacks;
     }
 
-    @SuppressWarnings("CommentedOutCode")
     public static BoatEngineEntity getBoatEngineEntityFromItemStack(ItemStack stack, BoatEntity linkedBoat) {
         BoatEngineEntity boatEngine = new BoatEngineEntity(linkedBoat.getWorld(), linkedBoat);
         NbtCompound stackNbt = stack.getOrCreateNbt();
 
-        // hook will be done with entity later on
-        /*if (stackNbt.contains(NbtKeys.HOOKED_ENTITY)) {
-            boatEngine.setHookedBoatEntity(stackNbt.getUuid("HookedEntity"));
-        }*/
         if (stackNbt.contains(NbtKeys.MOUNTED_ITEMS)) {
             boatEngine.setMountedItemsFromItemStackList(BoatEngineNbtHelper.readItemStacksFromNbt(stackNbt, NbtKeys.MOUNTED_ITEMS));
         }
         boatEngine.setIsRunning(stackNbt.getBoolean(NbtKeys.IS_RUNNING));
         boatEngine.setPowerLevel(Math.min(stackNbt.getInt(NbtKeys.POWER_OUTPUT), BoatEngineHandler.MAX_POWER_LEVEL / 2));
-        boatEngine.setOverheat(stackNbt.getFloat(NbtKeys.OVERHEAT));
+        float overheat = stackNbt.getFloat(NbtKeys.OVERHEAT);
+        if (overheat > boatEngine.getEngineHandler().getMaxOverHeatCapacity() * 0.8) {
+            overheat = boatEngine.getEngineHandler().getMaxOverHeatCapacity() * 0.8f;
+        }
+        boatEngine.setOverheat(overheat);
         boatEngine.setArmRotation(new EulerAngle(stackNbt.getList(NbtKeys.ROTATION, NbtElement.FLOAT_TYPE)));
         boatEngine.setSubmerged(stackNbt.getBoolean(NbtKeys.IS_SUBMERGED));
         boatEngine.setFuel(stackNbt.getFloat(NbtKeys.FUEL));

@@ -67,9 +67,7 @@ public class BoatEngineEntity extends LivingEntity {
     private static final TrackedData<Boolean> RUNNING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Float> FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private static final TrackedData<Boolean> LOCKED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-
     public static final UUID COMPONENT_ARMOR_ID = UUID.fromString("7E0292F2-9434-48D5-A29F-9583AF7DF27F");
-    private static EntityAttributeModifier COMPONENT_ARMOR_BONUS;
 
     // public final AnimationState rightSpinAnimationState = new AnimationState();
     public final AnimationState leftSpinAnimationState = new AnimationState();
@@ -320,15 +318,7 @@ public class BoatEngineEntity extends LivingEntity {
         if (armorAttributeInstance == null || itemStack == null) return;
         this.getMountedInventory().addStack(component.getMountedItemStack(itemStack));
         if (this.getWorld().isClient()) return;
-        changeAttributeModifier(armorAttributeInstance, COMPONENT_ARMOR_ID, COMPONENT_ARMOR_BONUS);
-    }
-
-    public void clearMountedInventory() {
-        mountedInventory.clear();
-        EntityAttributeInstance armorAttributeInstance = this.getAttributeInstance(EntityAttributes.GENERIC_ARMOR);
-        if (armorAttributeInstance == null) return;
-        if (this.getWorld().isClient()) return;
-        changeAttributeModifier(armorAttributeInstance, COMPONENT_ARMOR_ID, COMPONENT_ARMOR_BONUS);
+        changeArmorModifier(armorAttributeInstance, COMPONENT_ARMOR_ID);
     }
 
     public boolean mountedInventoryContains(ItemStack itemStack) {
@@ -337,13 +327,13 @@ public class BoatEngineEntity extends LivingEntity {
                 mountedStack.getItem().equals(component.getMountedItemStack(itemStack).getItem()));
     }
 
-    public void changeAttributeModifier(EntityAttributeInstance instance, UUID uuid, EntityAttributeModifier modifier) {
+    public void changeArmorModifier(EntityAttributeInstance instance, UUID uuid) {
         instance.removeModifier(uuid);
         // removeModifier(modifier.getId());
 
-        modifier = new EntityAttributeModifier(uuid, "Component armor bonus", engineHandler.getFullArmorValue(),
+        EntityAttributeModifier COMPONENT_ARMOR_BONUS = new EntityAttributeModifier(uuid, "Component armor bonus", engineHandler.getFullArmorValue(),
                 EntityAttributeModifier.Operation.ADDITION);
-        instance.addPersistentModifier(modifier);
+        instance.addPersistentModifier(COMPONENT_ARMOR_BONUS);
     }
 
     @Override
@@ -372,15 +362,10 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public void equipStack(EquipmentSlot slot, ItemStack stack) {
         LoggerUtil.devLogger("Tried to equip an item on a BoatEngineEntity!", true, null);
-        /*this.processEquippedStack(stack);
-        if (slot.getType().equals(EquipmentSlot.Type.ARMOR)) {
-            this.onEquipStack(slot, this.mountedItems.set(slot.getEntitySlotId(), stack), stack);
-        }*/
     }
 
     @Override
     public void onEquipStack(EquipmentSlot slot, ItemStack oldStack, ItemStack newStack) {
-        //super.onEquipStack(slot, oldStack, newStack);
         if (!(this.getWorld() instanceof ServerWorld serverWorld)) return;
         serverWorld.playSound(null, this.getX(), this.getY(), this.getZ(),
                 BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.75f, 1f);

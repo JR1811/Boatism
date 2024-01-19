@@ -42,13 +42,12 @@ public class BoatEngineHandler {
     }
 
     public void incrementTick() {
-        LoggerUtil.devLogger(String.format("Fuel: %s/%s | Overheat: %s/%s",
-                getFuel(), getMaxFuelCapacity(), getOverheat(), getMaxOverHeatCapacity()));
-
         if (breaksWhenSubmerged() && isSubmerged()) stopEngine();
         if (handleOverheating()) return;
         if (handleFuel()) return;
 
+        LoggerUtil.devLogger(String.format("Fuel: %s/%s | Overheat: %s/%s",
+                getFuel(), getMaxFuelCapacity(), getOverheat(), getMaxOverHeatCapacity()));
     }
 
     private boolean handleFuel() {

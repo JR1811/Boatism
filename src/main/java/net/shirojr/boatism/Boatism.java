@@ -3,8 +3,6 @@ package net.shirojr.boatism;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
-
-import net.fabricmc.loader.api.FabricLoader;
 import net.shirojr.boatism.config.BoatismConfig;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.BoatismEntityAttributes;
@@ -13,35 +11,31 @@ import net.shirojr.boatism.gamerule.BoatismGameRules;
 import net.shirojr.boatism.item.BoatismItems;
 import net.shirojr.boatism.network.BoatismC2S;
 import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.util.tag.BoatismTags;
 import net.shirojr.boatism.util.LoggerUtil;
+import net.shirojr.boatism.util.tag.BoatismTags;
 
 public class Boatism implements ModInitializer {
-	public static String MODID = "boatism";
-	public static BoatismConfig CONFIG = new BoatismConfig();
+    public static String MODID = "boatism";
+    public static BoatismConfig CONFIG = new BoatismConfig();
 
-	@Override
-	public void onInitialize() {
-		initConfig();
-		BoatismItems.initialize();
-		BoatismEntities.initialize();
-		BoatismEntityAttributes.initialize();
-		BoatismEvents.registerEvents();
-		BoatismSounds.initializeSounds();
-		BoatismC2S.registerServerReceivers();
-		BoatismTags.register();
-		BoatismGameRules.register();
+    @Override
+    public void onInitialize() {
+        initConfig();
+        BoatismItems.initialize();
+        BoatismEntities.initialize();
+        BoatismEntityAttributes.initialize();
+        BoatismEvents.registerEvents();
+        BoatismSounds.initializeSounds();
+        BoatismC2S.registerServerReceivers();
+        BoatismTags.register();
+        BoatismGameRules.register();
 
-		LoggerUtil.devLogger("initialized common entrypoint");
-		LoggerUtil.LOGGER.info("Spread the Boatism!");
-	}
+        LoggerUtil.devLogger("initialized common entrypoint");
+        LoggerUtil.LOGGER.info("Spread the Boatism!");
+    }
 
-	private static void initConfig() {
-		AutoConfig.register(BoatismConfig.class, JanksonConfigSerializer::new);
-		CONFIG = AutoConfig.getConfigHolder(BoatismConfig.class).getConfig();
-	}
-
-	public static boolean isDevEnvironment() {
-		return FabricLoader.getInstance().isDevelopmentEnvironment();
-	}
+    private static void initConfig() {
+        AutoConfig.register(BoatismConfig.class, JanksonConfigSerializer::new);
+        CONFIG = AutoConfig.getConfigHolder(BoatismConfig.class).getConfig();
+    }
 }
