@@ -51,7 +51,6 @@ public class BoatEngineHandler {
 
     }
 
-
     private boolean handleFuel() {
         if (isLowOnFuel()) {
             if (getPowerLevel() > getMaxPowerLevel() && engineIsRunning()) this.setPowerLevel(getMaxPowerLevel());

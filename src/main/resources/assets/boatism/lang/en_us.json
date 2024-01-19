@@ -21,6 +21,8 @@
   "warning.boatism.low_on_fuel": "§3Engine is running out of fuel§r",
   "warning.boatism.starting_to_overheat": "§3Engine is slowly starting to overheat§r",
 
+  "gamerule.destructive_engine_explosion": "Overheated engines explode destructively (plating can mitigate)",
+
   "mouse.boatism.power_level": "Power Level: §a%s§r",
 
   "sound.boatism.boat_engine.default": "Running Engine",

@@ -40,8 +40,10 @@ import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
+import net.shirojr.boatism.gamerule.BoatismGameRules;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
+import net.shirojr.boatism.util.BoatEngineExplosionBehaviour;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import net.shirojr.boatism.util.handler.EntityHandler;
@@ -51,7 +53,10 @@ import net.shirojr.boatism.util.tag.BoatismTags;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public class BoatEngineEntity extends LivingEntity {
     private final SimpleInventory mountedInventory;
@@ -511,19 +516,25 @@ public class BoatEngineEntity extends LivingEntity {
 
     public void onOverheated() {
         if (!(this.getWorld() instanceof ServerWorld serverWorld)) return;
-        this.getHookedBoatEntity().ifPresent(boatEntity -> boatEntity.getPassengerList().forEach(entity -> {
-            if (entity instanceof LivingEntity livingEntity) {
-                if (!(livingEntity instanceof PlayerEntity player) || !player.isCreative()) {
-                    livingEntity.addStatusEffect(new StatusEffectInstance(
-                            StatusEffects.NAUSEA, 240, 1, false, false, true));
-                    livingEntity.addStatusEffect(new StatusEffectInstance(
-                            StatusEffects.WITHER, 80, 1, false, false, true));
-                }
+        this.getHookedBoatEntity().ifPresent(boatEntity -> {
+            for (Entity entry : boatEntity.getPassengerList()) {
+                if (!(entry instanceof PlayerEntity player)) continue;
+                if (player.isCreative()) continue;
+                player.addStatusEffect(new StatusEffectInstance(
+                        StatusEffects.NAUSEA, 240, 1, false, false, true));
+                player.addStatusEffect(new StatusEffectInstance(
+                        StatusEffects.WITHER, 80, 1, false, false, true));
             }
-        }));
-        serverWorld.createExplosion(this, Explosion.createDamageSource(serverWorld, this), null,
-                this.getX(), this.getY(), this.getZ(), 4.0f, true, World.ExplosionSourceType.NONE,
-                ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.ENTITY_GENERIC_EXPLODE);
+        });
+        boolean destructiveExplosion = serverWorld.getGameRules().getBoolean(BoatismGameRules.DESTRUCTIVE_ENGINE_EXPLOSION);
+        for (ItemStack stack : getMountedInventory().getHeldStacks()) {
+            if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
+            if (component.getAdditionalArmor() > 0) destructiveExplosion = false;
+        }
+        serverWorld.createExplosion(this, Explosion.createDamageSource(serverWorld, this),
+                new BoatEngineExplosionBehaviour(), this.getX(), this.getY(), this.getZ(), 4.0f, destructiveExplosion,
+                World.ExplosionSourceType.NONE, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER,
+                SoundEvents.ENTITY_GENERIC_EXPLODE);
         this.kill();
     }
 
