@@ -14,22 +14,18 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.shirojr.boatism.Boatism;
+import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
-import net.shirojr.boatism.api.BoatEngineCoupler;
 
 public class BoatEngineEntityCommand {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher,
-                                CommandRegistryAccess commandRegistryAccess,
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess,
                                 CommandManager.RegistrationEnvironment registrationEnvironment) {
-        dispatcher.register(CommandManager.literal(Boatism.MODID)
-                .then(CommandManager.literal("sound")
-                        .then(CommandManager.literal("stop")
-                                .executes(BoatEngineEntityCommand::stopAllSoundInstances)))
-                .then(CommandManager.literal("entities").requires(serverCommandSource -> serverCommandSource.hasPermissionLevel(2))
-                        .then(CommandManager.literal("remove")
-                                .executes(BoatEngineEntityCommand::removeBoatEngineEntities))));
-        // .then(CommandManager.argument("entity", EntityArgumentType.entities()))
+        dispatcher.register(CommandManager.literal(Boatism.MODID).then(CommandManager.literal("sound")
+                        .then(CommandManager.literal("stop").executes(BoatEngineEntityCommand::stopAllSoundInstances)))
+                .then(CommandManager.literal("entities")
+                        .requires(serverCommandSource -> serverCommandSource.hasPermissionLevel(2))
+                        .then(CommandManager.literal("remove").executes(BoatEngineEntityCommand::removeBoatEngineEntities))));
     }
 
     private static int stopAllSoundInstances(CommandContext<ServerCommandSource> context) {
@@ -41,7 +37,6 @@ public class BoatEngineEntityCommand {
     }
 
     private static int removeBoatEngineEntities(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        // var entities = context.getArgument("entity", EntitySelector.class).getEntities(context.getSource());
         Iterable<ServerWorld> serverWorlds = context.getSource().getServer().getWorlds();
         serverWorlds.forEach(serverWorld -> serverWorld.getEntitiesByType(BoatismEntities.BOAT_ENGINE, boatEngine -> true)
                 .forEach(boatEngine -> {

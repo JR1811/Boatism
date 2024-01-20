@@ -60,7 +60,7 @@ public class BoatismS2C {
 
     private static void handleClearAllSoundInstancesPackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
                                                             PacketByteBuf clientBuf, PacketSender packetSender) {
-        client.execute(() -> BoatismClient.soundManager.stopAllSoundInstances());
+        client.execute(() -> BoatismClient.soundManager.stopAllSoundInstances(true));
     }
 
     private static void handleClientEngineComponentsSyncPackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,

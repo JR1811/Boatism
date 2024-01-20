@@ -24,7 +24,7 @@ public class EngineLowHealthSoundInstance extends BoatismSoundInstance implement
             return;
         }
         BoatismSoundInstance.defaultSoundHandling(this);
-        BoatismSoundInstance.transformSoundForTransition(this.volume, this.pitch, this);
+        BoatismSoundInstance.transformSoundForTransition(this.volume, this.pitch, this, false, true);
     }
 
     @Override

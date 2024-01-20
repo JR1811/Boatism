@@ -20,6 +20,7 @@
   "warning.boatism.component_is_blocked": "§3Component is blocked by another component§r",
   "warning.boatism.low_on_fuel": "§3Engine is running out of fuel§r",
   "warning.boatism.starting_to_overheat": "§3Engine is slowly starting to overheat§r",
+  "warning.boatism.low_health": "§3Engine is damaged§r",
 
   "gamerule.destructive_engine_explosion": "Overheated engines explode destructively (plating can mitigate)",
 

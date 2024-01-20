@@ -108,6 +108,8 @@ public class BoatismSoundInstance extends MovingSoundInstance {
     protected static void transformSoundForTransition(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance) {
         transformSoundForTransition(originalVolume, originalPitch, soundInstance, true, true);
     }
+
+    @SuppressWarnings("SameParameterValue")
     protected static void transformSoundForTransition(float originalVolume, float originalPitch, BoatismSoundInstance soundInstance,
                                                       boolean includeStarting, boolean includeStopping) {
         float normalizedStartTransitionTick = (float) soundInstance.transitionTick / soundInstance.startTransitionTicks;
@@ -148,7 +150,5 @@ public class BoatismSoundInstance extends MovingSoundInstance {
         return this.boatEngineEntity;
     }
 
-    protected enum TransitionState {
-        STARTING, FINISHING, IDLE;
-    }
+    protected enum TransitionState {STARTING, FINISHING, IDLE}
 }

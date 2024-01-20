@@ -13,6 +13,7 @@ import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Environment(EnvType.CLIENT)
 public class BoatismSoundManager {
     private final MinecraftClient client = MinecraftClient.getInstance();
@@ -24,12 +25,12 @@ public class BoatismSoundManager {
 
     /**
      * Adds new SoundInstance to active sound instances.<br><br>
-     * <h3>Excluded SoundInstance handling</h3><br>
+     * <h2>Excluded SoundInstance handling</h2>
      * This will only apply, if the new SoundInstance makes use of the {@linkplain SoundInstanceState} Interface.
      * New entries always have priority over already
      * existing entries. If entries have the same {@linkplain SoundInstanceIdentifier} the entry, which is already
-     * in the list, will be removed.<br>
-     * <h4>Criteria:</h4>
+     * in the list, will be removed.<br><br>
+     * <h2>Criteria</h2>
      * <ul>
      *     <li>if new SoundInstance is a main sound, it will stop all other currently running main sounds</li>
      *     <li>if new SoundInstance is manually excluding other sounds, those will be stopped as well</li>
@@ -45,10 +46,6 @@ public class BoatismSoundManager {
             LoggerUtil.devLogger(activeInstance.instance.toString());
             if (!(activeInstance.instance instanceof SoundInstanceState activeInstanceState)) continue;
             if (soundInstance.getBoatEngineEntity().equals(activeInstance.instance.getBoatEngineEntity())) {
-                /*if (soundInstanceIdentifier.equals(activeInstance.identifier)) {
-                    //return;
-                    unsupportedSoundInstances.add(activeInstance);
-                }*/
                 if (state.isMainSound() && activeInstanceState.isMainSound()) {
                     unsupportedSoundInstances.add(activeInstance);
                 }
@@ -88,12 +85,13 @@ public class BoatismSoundManager {
         this.activeSoundInstances.clear();
     }
 
-    public void stopAllSoundInstances() {
+    public void stopAllSoundInstances(boolean sendInformationText) {
         for (var entry : this.activeSoundInstances) {
             client.getSoundManager().stop(entry.instance);
-            if (client.player != null) client.player.sendMessage(
-                    Text.literal("removed " + entry.identifier + " for: " +
-                            entry.instance.getBoatEngineEntity().toString()));
+            if (client.player != null && sendInformationText) {
+                client.player.sendMessage(Text.literal("removed %s for: %s"
+                        .formatted(entry.identifier, entry.instance.getBoatEngineEntity().toString())));
+            }
         }
         this.activeSoundInstances.clear();
     }
