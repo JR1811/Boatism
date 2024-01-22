@@ -3,10 +3,12 @@
   "package": "net.shirojr.boatism.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "AttackWithOwnerGoalMixin",
     "BoatEntityInvoker",
     "BoatEntityMixin",
     "EntityMixin",
-    "ItemMixin"
+    "ItemMixin",
+    "WardenEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
