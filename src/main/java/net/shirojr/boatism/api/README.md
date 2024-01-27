@@ -17,10 +17,10 @@ If you have any questions or requests, use the [GitHub Issues](https://github.co
 
 ## Read engine power level and thrust manually
 
-If you are changing the default boat speed and velocity behaviour, it is likely that you are using the same Mixin as Boatism
-does. If you are having trouble with the engine there you can keep your velocity calculation and get the engine
-data manually by casting to the `BoatEngineCoupler` interface on your custom Boat Entity.
-This will give you access to the linked *(a.k.a. hooked)* `BoatEngineEntity`.
+If you are changing the default boat speed and velocity behaviour, it is likely that you are using
+the same (Mixin) method as Boatism does. If you are having trouble with the engine there you can 
+keep your velocity calculation and get the engine data manually by casting to the `BoatEngineCoupler` interface
+on your custom Boat Entity. This will give you access to the linked *(a.k.a. hooked)* `BoatEngineEntity`.
 
 Information about the engine's performance is handled in the `BoatEngineEntity`'s `BoatEngineHandler` which is updated
 based on the `BoatEngineEntity`'s ticks. Many values, such as boat passenger count, equipment and other factors are

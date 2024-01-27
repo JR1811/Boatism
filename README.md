@@ -17,9 +17,9 @@
 # Boatism Fabric Mod for Minecraft
 
 Embark on a revolutionary journey across the seas with Boatism,
-a fabric mod designed to improve your boating adventures in Minecraft!
+a Fabric mod designed to improve your boating adventures in Minecraft!
 Say goodbye to slow and tedious boat rides and embrace the thrill of high-speed travel
-with our cutting-edge boat engine feature.
+with the new and modular boat engine features.
 
 <div style="text-align: center;">
 <br>
@@ -32,9 +32,9 @@ with our cutting-edge boat engine feature.
 
 ## Features
 
-1. Add new Boat Engine Entities to your Boats. Simply hook them on your favourite Boat, fill up the gas and start the
+1. Add new Boat Engine Entities to your boats. Simply hook them on your favourite Boat, fill up the gas and start the
    engine.
-2. Travel faster by sea than ever before. Engine `Power Level 5` already exceeds the vanilla Boat speed!
+2. Travel faster by sea than ever before. Engine `Power Level 5` already exceeds the vanilla boat speed!
 3. Keep an eye and an ear out for your engine. Continuous high stress may cause unforeseen accidents!
 4. Upgrade your engine with special custom parts.
     - Your fuel capacity is too small? Strap on an extra canister!
@@ -51,7 +51,8 @@ For now every Entity, which extends from the BoatEntity class, is eligible
 to hook up the engine and should need no extra implementations to work as intended.
 
 If your boat has a different size, compared to the default boats, you might want
-to adjust the relative engine position.
+to adjust the relative engine position or if you implemented custom speed and / or velocity handling you might have to
+adjust how you handle them using the data which the engine's handler can provide.
 Check out the [API package](https://github.com/JR1811/Boatism/tree/master/src/main/java/net/shirojr/boatism/api)
 for that.
 

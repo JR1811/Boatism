@@ -435,6 +435,14 @@ public class BoatEngineEntity extends LivingEntity {
         return false;
     }
 
+    @Override
+    protected void pushAway(Entity entity) {
+    }
+
+    @Override
+    public void onStruckByLightning(ServerWorld world, LightningEntity lightning) {
+    }
+
     public @NotNull BoatEngineHandler getEngineHandler() {
         return this.engineHandler;
     }

@@ -287,7 +287,7 @@ public class BoatEngineHandler {
     public float calculateThrustModifier(BoatEntity hookedBoatEntity) {
         if (hookedBoatEntity == null) return 0.0f;
         List<ItemStack> boatComponentStacks = new ArrayList<>();
-        int passengerCount = hookedBoatEntity.getPassengerList().size() - 1;    // engine is passenger too
+        int passengerCount = Math.max(hookedBoatEntity.getPassengerList().size() - 1, 0);    // engine is passenger too
         int maxPassenger = ((BoatEntityInvoker) hookedBoatEntity).invokeGetMaxPassenger();
         int thrust = 1;
 
@@ -304,6 +304,7 @@ public class BoatEngineHandler {
     }
 
     public boolean canEquipPart(ItemStack stack) {
+        if (engineIsRunning()) return false;
         if (!(stack.getItem() instanceof BoatEngineComponent)) return false;
         List<Item> flaggedParts = new ArrayList<>();
         for (ItemStack entry : getMountedItems()) {
