@@ -127,7 +127,7 @@ public class BoatEngineHandler {
         }
         playSoundEvent(BoatismSounds.BOAT_ENGINE_START);
         this.boatEngine.setIsRunning(true);
-        changeSoundState(List.of(SoundInstanceIdentifier.ENGINE_RUNNING));
+        initiateSoundState();
     }
 
     public void stopEngine() {
@@ -317,6 +317,16 @@ public class BoatEngineHandler {
 
     public List<ItemStack> getMountedItems() {
         return boatEngine.getMountedInventory().getHeldStacks();
+    }
+
+    public void initiateSoundState() {
+        List<SoundInstanceIdentifier> identifierList = new ArrayList<>();
+        if (engineIsRunning()) identifierList.add(SoundInstanceIdentifier.ENGINE_RUNNING);
+        if (isLowHealth()) identifierList.add(SoundInstanceIdentifier.ENGINE_LOW_HEALTH);
+        if (isLowOnFuel()) identifierList.add(SoundInstanceIdentifier.ENGINE_LOW_FUEL);
+        if (isSubmerged()) identifierList.add(SoundInstanceIdentifier.ENGINE_RUNNING_UNDERWATER);
+        if (isHeatingUp()) identifierList.add(SoundInstanceIdentifier.ENGINE_OVERHEATING);
+        changeSoundState(identifierList);
     }
 
     public void changeSoundState(List<SoundInstanceIdentifier> changedSoundList) {

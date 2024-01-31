@@ -14,7 +14,8 @@ public class EngineLowFuelSoundInstance extends BoatismSoundInstance implements 
 
     @Override
     public boolean canPlay() {
-        return super.canPlay() && boatEngineEntity.getEngineHandler().isLowOnFuel();
+        return super.canPlay() && boatEngineEntity.getEngineHandler().engineIsRunning() &&
+                boatEngineEntity.getEngineHandler().isLowOnFuel();
     }
 
     @Override

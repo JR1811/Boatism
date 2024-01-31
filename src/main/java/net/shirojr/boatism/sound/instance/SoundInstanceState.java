@@ -1,5 +1,6 @@
 package net.shirojr.boatism.sound.instance;
 
+import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSoundManager;
 import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
@@ -11,7 +12,7 @@ import java.util.List;
 public interface SoundInstanceState {
     /**
      * Main sounds will stop other main sounds, when started.<br>
-     * Other sound won't cancel other main sound by default.
+     * Normal sounds won't cancel other main sounds by default.
      */
     boolean isMainSound();
 
@@ -21,5 +22,9 @@ public interface SoundInstanceState {
      */
     default List<SoundInstanceIdentifier> unsupportedInstances() {
         return List.of();
+    }
+
+    default boolean canRunIfEngineIsTurnedOff(BoatEngineEntity boatEngine) {
+        return false;
     }
 }

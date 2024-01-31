@@ -20,7 +20,17 @@ public class EngineOverheatingSoundInstance extends BoatismSoundInstance impleme
 
     @Override
     public boolean canPlay() {
-        return super.canPlay() && engineHandler.engineIsRunning();
+        return super.canPlay();
+    }
+
+    @Override
+    public boolean isMainSound() {
+        return false;
+    }
+
+    @Override
+    public boolean canRunIfEngineIsTurnedOff(BoatEngineEntity boatEngine) {
+        return true;
     }
 
     @Override
@@ -44,10 +54,4 @@ public class EngineOverheatingSoundInstance extends BoatismSoundInstance impleme
         BoatismSoundInstance.defaultSoundHandling(this);
         this.volume = MathHelper.lerp(normalizedOverheatTicks, 0.0f, 0.7f);
     }
-
-    @Override
-    public boolean isMainSound() {
-        return false;
-    }
-
 }

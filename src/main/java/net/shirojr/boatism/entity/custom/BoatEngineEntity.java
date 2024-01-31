@@ -49,14 +49,12 @@ import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import net.shirojr.boatism.util.handler.EntityHandler;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
 import net.shirojr.boatism.util.nbt.NbtKeys;
+import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 import net.shirojr.boatism.util.tag.BoatismTags;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class BoatEngineEntity extends LivingEntity {
     private final SimpleInventory mountedInventory;
@@ -154,7 +152,7 @@ public class BoatEngineEntity extends LivingEntity {
         if (nbt.contains(NbtKeys.MOUNTED_ITEMS)) {
             this.mountedInventory.clear();
             setMountedItemsFromItemStackList(BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.MOUNTED_ITEMS));
-            syncComponentListToClient();
+            syncComponentListToTrackingClients();
         }
         this.setIsRunning(nbt.getBoolean(NbtKeys.IS_RUNNING));
         this.setPowerLevel(Math.min(nbt.getInt(NbtKeys.POWER_OUTPUT), BoatEngineHandler.MAX_POWER_LEVEL / 2));
@@ -165,7 +163,7 @@ public class BoatEngineEntity extends LivingEntity {
         this.setLocked(nbt.getBoolean(NbtKeys.IS_LOCKED));
     }
 
-    private void syncComponentListToClient() {
+    private void syncComponentListToTrackingClients() {
         if (!(this.getWorld() instanceof ServerWorld)) return;
         PlayerLookup.tracking(this).forEach(player -> {
             PacketByteBuf buf = PacketByteBufs.create();
@@ -240,6 +238,7 @@ public class BoatEngineEntity extends LivingEntity {
             }
         } else if (player.getMainHandStack().isEmpty() && player.isSneaking() && getMountedInventorySize() > 0) {
             EntityHandler.dropMountedInventory(this, false, true);
+            syncComponentListToTrackingClients();
             if (this.getWorld().isClient()) return ActionResult.SUCCESS;
             player.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
                     BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
@@ -255,16 +254,37 @@ public class BoatEngineEntity extends LivingEntity {
 
     @Override
     public void onStartedTrackingBy(ServerPlayerEntity player) {
-        syncComponentListToClient();
+        List<SoundInstanceIdentifier> identifierList = new ArrayList<>();
+        syncComponentListToTrackingClients();
+        sendPacketForStoppingAllSoundInstances(player);
+        if (engineHandler.engineIsRunning()) identifierList.add(SoundInstanceIdentifier.ENGINE_RUNNING);
+        if (engineHandler.isLowHealth()) identifierList.add(SoundInstanceIdentifier.ENGINE_LOW_HEALTH);
+        if (engineHandler.isLowOnFuel()) identifierList.add(SoundInstanceIdentifier.ENGINE_LOW_FUEL);
+        if (engineHandler.isSubmerged()) identifierList.add(SoundInstanceIdentifier.ENGINE_RUNNING_UNDERWATER);
+        if (engineHandler.isHeatingUp()) identifierList.add(SoundInstanceIdentifier.ENGINE_OVERHEATING);
+        identifierList.forEach(identifier -> sendPacketForSoundInstance(identifier, player));
         super.onStartedTrackingBy(player);
     }
 
     @Override
     public void onStoppedTrackingBy(ServerPlayerEntity player) {
+        sendPacketForStoppingAllSoundInstances(player);
+        super.onStoppedTrackingBy(player);
+    }
+
+    private void sendPacketForSoundInstance(SoundInstanceIdentifier soundIdentifier, ServerPlayerEntity player) {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(this.getId());
-        ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_END_ENGINE.getIdentifier(), buf);
+        buf.writeIdentifier(soundIdentifier.getIdentifier());
+        ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_START.getIdentifier(), buf);
         super.onStoppedTrackingBy(player);
+    }
+
+    private void sendPacketForStoppingAllSoundInstances(ServerPlayerEntity player) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeVarInt(this.getId());
+        buf.writeBoolean(true);
+        ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_END_ENGINE.getIdentifier(), buf);
     }
 
     //region getter & setter

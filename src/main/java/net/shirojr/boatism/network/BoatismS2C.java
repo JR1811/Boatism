@@ -19,7 +19,7 @@ import java.util.List;
 public class BoatismS2C {
     public static void registerClientReceivers() {
         ClientPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SOUND_START.getIdentifier(),
-                BoatismS2C::handleSoundInstanceChangePackets);
+                BoatismS2C::handleSoundInstanceStartPackets);
         ClientPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SOUND_END_ALL.getIdentifier(),
                 BoatismS2C::handleClearAllSoundInstancesPackets);
         ClientPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SOUND_END_ENGINE.getIdentifier(),
@@ -28,8 +28,8 @@ public class BoatismS2C {
                 BoatismS2C::handleClientEngineComponentsSyncPackets);
     }
 
-    private static void handleSoundInstanceChangePackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
-                                                         PacketByteBuf clientBuf, PacketSender packetSender) {
+    private static void handleSoundInstanceStartPackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
+                                                        PacketByteBuf clientBuf, PacketSender packetSender) {
         int entityId = clientBuf.readVarInt();
         Identifier identifier = clientBuf.readIdentifier();
         client.execute(() -> {
@@ -45,7 +45,7 @@ public class BoatismS2C {
                     case ENGINE_LOW_HEALTH -> soundInstance = new EngineLowHealthSoundInstance(boatEngineEntity);
                     case ENGINE_OVERHEATING -> soundInstance = new EngineOverheatingSoundInstance(boatEngineEntity);
                     case NO_SOUND -> {
-                        BoatismClient.soundManager.stopAllSoundInstancesForBoatEngineEntity(boatEngineEntity);
+                        BoatismClient.soundManager.stopAllSoundInstancesForBoatEngineEntity(boatEngineEntity, true);
                         return;
                     }
                     default -> {
@@ -55,6 +55,17 @@ public class BoatismS2C {
                 }
                 BoatismClient.soundManager.start(soundInstanceIdentifier, soundInstance);
             });
+        });
+    }
+
+    private static void handleStopTrackingEnginePackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
+                                                        PacketByteBuf clientBuf, PacketSender packetSender) {
+        int entityId = clientBuf.readVarInt();
+        boolean force = clientBuf.readBoolean();
+        client.execute(() -> {
+            if (client.world == null) return;
+            if (!(client.world.getEntityById(entityId) instanceof BoatEngineEntity boatEngine)) return;
+            BoatismClient.soundManager.stopAllSoundInstancesForBoatEngineEntity(boatEngine, force);
         });
     }
 
@@ -77,16 +88,6 @@ public class BoatismS2C {
             ClientWorld clientWorld = client.world;
             if (!(clientWorld.getEntityById(entityId) instanceof BoatEngineEntity boatEngine)) return;
             boatEngine.setMountedItemsFromComponentList(componentList);
-        });
-    }
-
-    private static void handleStopTrackingEnginePackets(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler,
-                                                            PacketByteBuf clientBuf, PacketSender packetSender) {
-        int entityId = clientBuf.readVarInt();
-        client.execute(() -> {
-            if (client.world == null) return;
-            if (!(client.world.getEntityById(entityId) instanceof BoatEngineEntity boatEngine)) return;
-            BoatismClient.soundManager.stopAllSoundInstancesForBoatEngineEntity(boatEngine);
         });
     }
 }

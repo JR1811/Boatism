@@ -42,8 +42,9 @@ public class BoatismSoundManager {
     public void start(SoundInstanceIdentifier soundInstanceIdentifier, BoatismSoundInstance soundInstance) {
         if (!(soundInstance instanceof SoundInstanceState state)) return;
         List<SoundInstanceEntry> unsupportedSoundInstances = new ArrayList<>();
-        for (var activeInstance : this.activeSoundInstances) {
+        for (SoundInstanceEntry activeInstance : this.activeSoundInstances) {
             LoggerUtil.devLogger(activeInstance.instance.toString());
+            if (activeInstance.instance.equals(soundInstance)) continue;
             if (!(activeInstance.instance instanceof SoundInstanceState activeInstanceState)) continue;
             if (soundInstance.getBoatEngineEntity().equals(activeInstance.instance.getBoatEngineEntity())) {
                 if (state.isMainSound() && activeInstanceState.isMainSound()) {
@@ -77,9 +78,11 @@ public class BoatismSoundManager {
         removeEntriesFromList(List.of(soundInstanceEntry));
     }
 
-    public void stopAllSoundInstancesForBoatEngineEntity(BoatEngineEntity boatEngine) {
+    public void stopAllSoundInstancesForBoatEngineEntity(BoatEngineEntity boatEngine, boolean force) {
         for (var entry : this.activeSoundInstances) {
             if (!entry.instance.getBoatEngineEntity().equals(boatEngine)) continue;
+            if (!(entry.instance instanceof SoundInstanceState activeInstanceState)) continue;
+            if (!force && activeInstanceState.canRunIfEngineIsTurnedOff(boatEngine)) continue;
             client.getSoundManager().stop(entry.instance);
         }
         this.activeSoundInstances.clear();
@@ -102,6 +105,10 @@ public class BoatismSoundManager {
         }
     }
 
+    /**
+     * @param identifier identifier for the sound instance (used e.g. for networking)
+     * @param instance   actual sound instance
+     */
     public record SoundInstanceEntry(SoundInstanceIdentifier identifier, BoatismSoundInstance instance) {
     }
 }
