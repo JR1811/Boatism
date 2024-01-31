@@ -40,17 +40,19 @@ public class BoatismSoundManager {
      * @param soundInstance           the actual object, which will be passed to the client BoatismSoundManager
      */
     public void start(SoundInstanceIdentifier soundInstanceIdentifier, BoatismSoundInstance soundInstance) {
-        if (!(soundInstance instanceof SoundInstanceState state)) return;
+        if (!(soundInstance instanceof SoundInstanceState newInstanceState)) return;
         List<SoundInstanceEntry> unsupportedSoundInstances = new ArrayList<>();
         for (SoundInstanceEntry activeInstance : this.activeSoundInstances) {
             LoggerUtil.devLogger(activeInstance.instance.toString());
-            if (activeInstance.instance.equals(soundInstance)) continue;
             if (!(activeInstance.instance instanceof SoundInstanceState activeInstanceState)) continue;
             if (soundInstance.getBoatEngineEntity().equals(activeInstance.instance.getBoatEngineEntity())) {
-                if (state.isMainSound() && activeInstanceState.isMainSound()) {
+                if (newInstanceState.isMainSound() && activeInstanceState.isMainSound()) {
                     unsupportedSoundInstances.add(activeInstance);
                 }
-                for (SoundInstanceIdentifier unsupportedInstance : state.unsupportedInstances()) {
+                if (soundInstance.equals(activeInstance.instance)) {
+                    unsupportedSoundInstances.add(activeInstance);
+                }
+                for (SoundInstanceIdentifier unsupportedInstance : newInstanceState.unsupportedInstances()) {
                     if (activeInstance.identifier.equals(unsupportedInstance))
                         unsupportedSoundInstances.add(activeInstance);
                 }

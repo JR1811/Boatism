@@ -11,7 +11,7 @@ import net.shirojr.boatism.util.handler.BoatEngineHandler;
 @Environment(EnvType.CLIENT)
 public class EngineOverheatingSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     private static final int COOL_BUFFER_MAX = 3;
-    private int isCoolBuffer = 0;
+    private int coolingBuffer = 0;
 
     public EngineOverheatingSoundInstance(BoatEngineEntity boatEngineEntity) {
         super(boatEngineEntity, BoatismSounds.BOAT_ENGINE_HEAT, 60, 60);
@@ -39,16 +39,16 @@ public class EngineOverheatingSoundInstance extends BoatismSoundInstance impleme
         float normalizedOverheatTicks = engineHandler.getOverheat() / BoatEngineHandler.MAX_BASE_OVERHEAT;
         boolean isPotentiallyCooling = !engineHandler.isHeatingUp();
         if (isPotentiallyCooling) {
-            if (isCoolBuffer > COOL_BUFFER_MAX) {
+            if (coolingBuffer > COOL_BUFFER_MAX) {
                 if (!transitionState.equals(TransitionState.FINISHING)) {
                     this.finishSoundInstance();
                     return;
                 }
             } else {
-                --isCoolBuffer;
+                --coolingBuffer;
             }
         } else {
-            isCoolBuffer = 0;
+            coolingBuffer = 0;
         }
 
         BoatismSoundInstance.defaultSoundHandling(this);

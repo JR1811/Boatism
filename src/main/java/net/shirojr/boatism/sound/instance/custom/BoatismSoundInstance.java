@@ -150,5 +150,13 @@ public class BoatismSoundInstance extends MovingSoundInstance {
         return this.boatEngineEntity;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof BoatismSoundInstance soundInstance)) return false;
+        if (!soundInstance.getBoatEngineEntity().equals(this.getBoatEngineEntity())) return false;
+        if (!soundInstance.getId().equals(this.getId())) return false;
+        return true;
+    }
+
     protected enum TransitionState {STARTING, FINISHING, IDLE}
 }
