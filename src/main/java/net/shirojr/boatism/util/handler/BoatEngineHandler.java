@@ -47,8 +47,8 @@ public class BoatEngineHandler {
         if (handleOverheating()) return;
         if (handleFuel()) return;
 
-        LoggerUtil.devLogger(String.format("Fuel: %s/%s | Overheat: %s/%s",
-                getFuel(), getMaxFuelCapacity(), getOverheat(), getMaxOverHeatCapacity()));
+        /*LoggerUtil.devLogger(String.format("Fuel: %s/%s | Overheat: %s/%s",
+                getFuel(), getMaxFuelCapacity(), getOverheat(), getMaxOverHeatCapacity()));*/
     }
 
     private boolean handleHealth() {
@@ -306,7 +306,6 @@ public class BoatEngineHandler {
     }
 
     public boolean canEquipPart(ItemStack stack) {
-        if (engineIsRunning()) return false;
         if (!(stack.getItem() instanceof BoatEngineComponent)) return false;
         List<Item> flaggedParts = new ArrayList<>();
         for (ItemStack entry : getMountedItems()) {

@@ -231,10 +231,6 @@ public class BoatEngineEntity extends LivingEntity {
     public ActionResult interact(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
         if (player.isSneaking() && stack.getItem() instanceof BoatEngineComponent) {
-            if (engineHandler.engineIsRunning()) {
-                player.sendMessage(Text.translatable("warning.boatism.engine_is_running"), true);
-                return ActionResult.PASS;
-            }
             if (engineHandler.canEquipPart(stack) && !mountedInventoryContains(stack)) {
                 addToMountedInventory(stack);
                 if (this.getWorld().isClient()) return ActionResult.SUCCESS;
@@ -554,11 +550,9 @@ public class BoatEngineEntity extends LivingEntity {
             if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
             if (component.getAdditionalArmor() > 0) destructiveExplosion = false;
         }
-        World.ExplosionSourceType explosionSourceType = destructiveExplosion ? World.ExplosionSourceType.TNT :
-                World.ExplosionSourceType.NONE;
         serverWorld.createExplosion(this, Explosion.createDamageSource(serverWorld, this),
-                new BoatEngineExplosionBehaviour(), this.getX(), this.getY(), this.getZ(), 3.0f,
-                destructiveExplosion, explosionSourceType, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER,
+                new BoatEngineExplosionBehaviour(), this.getX(), this.getY(), this.getZ(), 4.0f, destructiveExplosion,
+                World.ExplosionSourceType.NONE, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER,
                 SoundEvents.ENTITY_GENERIC_EXPLODE);
         this.kill();
     }
