@@ -36,4 +36,17 @@ public abstract class EntityMixin {
         }
         return list.add((Entity) passenger);
     }
+
+    @Inject(method = "removeAllPassengers", at = @At("HEAD"), cancellable = true)
+    private void boatism$engineRemovalCancel(CallbackInfo ci) {
+        if ((Entity) (Object) this instanceof BoatEntity boatEntity && boatEntity.hasPassengers()) {
+            if (boatEntity.getPassengerList().stream().noneMatch(entity -> entity instanceof BoatEngineEntity)) return;
+            for (int i = 0; i < boatEntity.getPassengerList().size(); i++) {
+                Entity passenger = boatEntity.getPassengerList().get(i);
+                if (passenger instanceof BoatEngineEntity) continue;
+                passenger.stopRiding();
+            }
+            ci.cancel();
+        }
+    }
 }
