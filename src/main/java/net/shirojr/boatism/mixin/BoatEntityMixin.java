@@ -17,13 +17,13 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
+import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.api.CustomBoatEngineAttachment;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.item.custom.BaseEngineItem;
 import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.api.BoatEngineCoupler;
-import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
 import net.shirojr.boatism.util.handler.EntityHandler;
+import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -105,7 +105,6 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
         }
     }
 
-
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void boatism$readBoatEngineEntry(NbtCompound nbt, CallbackInfo ci) {
         BoatEntity boatEntity = (BoatEntity) (Object) this;
@@ -125,13 +124,16 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     protected void boatism$getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor,
                                                      CallbackInfoReturnable<Vector3f> info) {
         if (passenger instanceof BoatEngineEntity) {
-            info.setReturnValue(((CustomBoatEngineAttachment)this).boatism$attachmentPos(dimensions));
+            info.setReturnValue(((CustomBoatEngineAttachment) this).boatism$attachmentPos(dimensions));
         }
     }
 
     @Inject(method = "canAddPassenger", at = @At("HEAD"), cancellable = true)
     protected void boatism$canAddPassenger(Entity passenger, CallbackInfoReturnable<Boolean> info) {
-        if (this.getPassengerList().size() < 3 && ((BoatEngineCoupler) this).boatism$getBoatEngineEntityUuid().isPresent()) {
+        BoatEntity boatEntity = (BoatEntity) (Object) this;
+        if (((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().isEmpty()) return;
+        int maxPassengers = ((BoatEntityInvoker) boatEntity).invokeGetMaxPassenger() + 1;
+        if (boatEntity.getPassengerList().size() < maxPassengers) {
             info.setReturnValue(true);
         }
     }
