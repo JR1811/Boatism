@@ -22,7 +22,7 @@
   "warning.boatism.starting_to_overheat": "§3Engine is slowly starting to overheat§r",
   "warning.boatism.low_health": "§3Engine is damaged§r",
 
-  "gamerule.destructive_engine_explosion": "Overheated engines explode destructively (plating can mitigate)",
+  "gamerule.engineExplosionDestruction": "Overheated engines explode destructively (plating can mitigate)",
 
   "mouse.boatism.power_level": "Power Level: §a%s§r",
   "key.boatism.group": "Boatism",
