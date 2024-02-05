@@ -5,6 +5,7 @@ import net.fabricmc.api.Environment;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
+
 @Environment(EnvType.CLIENT)
 public class EngineSubmergedSoundInstance extends BoatismSoundInstance implements SoundInstanceState {
     public EngineSubmergedSoundInstance(BoatEngineEntity boatEngineEntity) {
@@ -23,7 +24,9 @@ public class EngineSubmergedSoundInstance extends BoatismSoundInstance implement
             this.finishSoundInstance();
             return;
         }
-        defaultSoundHandling(this);
+        BoatismSoundInstance.defaultSoundHandling(this);
+        BoatismSoundInstance.transformSoundForTransition(this.volume, this.pitch, this);
+        BoatismSoundInstance.transformSoundForEngineLoad(this.volume, this.pitch, this);
     }
 
     @Override

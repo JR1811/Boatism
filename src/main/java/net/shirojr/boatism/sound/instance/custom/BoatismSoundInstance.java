@@ -73,7 +73,7 @@ public class BoatismSoundInstance extends MovingSoundInstance {
 
     @Override
     public boolean canPlay() {
-        return !this.boatEngineEntity.isSilent();
+        return !this.boatEngineEntity.isSilent() && this.boatEngineEntity.isAlive();
     }
 
     @Override

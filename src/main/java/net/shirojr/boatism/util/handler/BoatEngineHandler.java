@@ -81,7 +81,9 @@ public class BoatEngineHandler {
                 stopEngine();
                 return true;
             }
-            consumeFuel(1.0f);
+            if (engineIsRunning()) {
+                consumeFuel(1.0f);
+            }
         }
 
         return false;

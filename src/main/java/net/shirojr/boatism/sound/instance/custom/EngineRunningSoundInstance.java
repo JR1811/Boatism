@@ -14,7 +14,7 @@ public class EngineRunningSoundInstance extends BoatismSoundInstance implements 
 
     @Override
     public boolean canPlay() {
-        return super.canPlay() && !boatEngineEntity.isSubmerged();
+        return super.canPlay();
     }
 
     @Override

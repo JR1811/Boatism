@@ -33,4 +33,9 @@ public class PlatesItem extends BoatismEquipmentItem {
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
         return matrixStack;
     }
+
+    @Override
+    public boolean waterProofsEngine() {
+        return true;    //TODO: find a better item to waterproof engine
+    }
 }
