@@ -25,6 +25,9 @@
   "gamerule.destructive_engine_explosion": "Overheated engines explode destructively (plating can mitigate)",
 
   "mouse.boatism.power_level": "Power Level: §a%s§r",
+  "key.boatism.group": "Boatism",
+  "key.boatism.power_level_up": "Power Level Up",
+  "key.boatism.power_level_down": "Power Level Down",
 
   "sound.boatism.boat_engine.default": "Running Engine",
   "sound.boatism.boat_engine.underwater": "Running submerged Engine",
@@ -41,11 +44,13 @@
 
   "text.autoconfig.boatism.title": "Boatism configurations",
 
-  "text.autoconfig.boatism.category.general_engine_data": "Boat Engine Settings",
+  "text.autoconfig.boatism.category.general": "General Settings",
+  "text.autoconfig.boatism.category.engine_data": "Boat Engine Settings",
 
+  "text.autoconfig.boatism.option.powerLevelScrolling": "Remap scrolling to change Power Level",
   "text.autoconfig.boatism.option.health": "Base health",
   "text.autoconfig.boatism.option.lowHealth": "Low health warning",
-  "text.autoconfig.boatism.option.maxFuel": "Maximum base fuel capacity",
+  "text.autoconfig.boatism.option.maxBaseFuel": "Maximum base fuel capacity",
   "text.autoconfig.boatism.option.lowFuel": "Low fuel warning",
-  "text.autoconfig.boatism.option.maxOverheat": "Base overheat mitigation"
+  "text.autoconfig.boatism.option.maxBaseOverheat": "Base overheat mitigation"
 }

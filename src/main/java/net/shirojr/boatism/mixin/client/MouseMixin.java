@@ -8,6 +8,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.network.PacketByteBuf;
+import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.api.BoatEngineCoupler;
@@ -30,6 +31,7 @@ public class MouseMixin {
 
     @Inject(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;scrollInHotbar(D)V"), cancellable = true)
     private void boatism$onScroll(long window, double horizontal, double vertical, CallbackInfo ci) {
+        if (!Boatism.CONFIG.powerLevelScrolling) return;
         GameOptions options = client.options;
         boolean mouseScrolled = options.getDiscreteMouseScroll().getValue();
         double delta = (mouseScrolled ? Math.signum(horizontal) : vertical) * options.getMouseWheelSensitivity().getValue();
