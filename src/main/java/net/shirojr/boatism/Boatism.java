@@ -30,7 +30,6 @@ public class Boatism implements ModInitializer {
         BoatismTags.register();
         BoatismGameRules.register();
 
-        LoggerUtil.devLogger("initialized common entrypoint");
         LoggerUtil.LOGGER.info("Spread the Boatism!");
     }
 
