@@ -1,18 +1,25 @@
 package net.shirojr.boatism.network;
 
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
-import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.api.BoatEngineCoupler;
+import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
+import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 
 import java.util.Optional;
@@ -22,6 +29,8 @@ public class BoatismC2S {
     public static void registerServerReceivers() {
         ServerPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SCROLLED.getIdentifier(),
                 BoatismC2S::handleScrollPackets);
+        ServerPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.OPEN_ENGINE_INVENTORY.getIdentifier(),
+                BoatismC2S::handleOpenEngineInventoryPackets);
     }
 
     private static void handleScrollPackets(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,
@@ -46,6 +55,39 @@ public class BoatismC2S {
 
                 engineHandler.setPowerLevel(newPowerLevel);
                 player.sendMessage(Text.translatable("mouse.boatism.power_level", newPowerLevel), true);
+            });
+        });
+    }
+
+    private static void handleOpenEngineInventoryPackets(MinecraftServer server, ServerPlayerEntity player,
+                                                         ServerPlayNetworkHandler handler, PacketByteBuf buf,
+                                                         PacketSender responseSender) {
+        int entityId = buf.readVarInt();
+        server.execute(() -> {
+            ServerWorld world = (ServerWorld) player.getWorld();
+            if (!(player.getVehicle() instanceof BoatEngineCoupler boatEngineCoupler)) return;
+            boatEngineCoupler.boatism$getBoatEngineEntityUuid().ifPresent(uuid -> {
+                if (!(world.getEntityById(entityId) instanceof BoatEngineEntity boatEngine)) return;
+                player.openHandledScreen(new ExtendedScreenHandlerFactory() {
+                    @Override
+                    public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+                        buf.writeUuid(uuid);
+                    }
+
+                    @Override
+                    public Text getDisplayName() {
+                        return boatEngine.getDisplayName();
+                    }
+
+                    @Override
+                    public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity player) {
+                        Inventory engineInventory = boatEngine.getMountedInventory();
+                        PacketByteBuf transferBuf = PacketByteBufs.create();
+                        transferBuf.writeVarInt(entityId);
+                        return new EngineControlScreenHandler(syncId, playerInventory, engineInventory,
+                                boatEngine.getPropertyDelegate(), transferBuf);
+                    }
+                });
             });
         });
     }

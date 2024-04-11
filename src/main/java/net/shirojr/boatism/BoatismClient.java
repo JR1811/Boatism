@@ -3,6 +3,7 @@ package net.shirojr.boatism;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.entity.BoatismEntities;
@@ -10,6 +11,8 @@ import net.shirojr.boatism.entity.client.BoatEngineEntityModel;
 import net.shirojr.boatism.entity.client.BoatEngineEntityRenderer;
 import net.shirojr.boatism.event.BoatismEvents;
 import net.shirojr.boatism.network.BoatismS2C;
+import net.shirojr.boatism.screen.EngineControlScreen;
+import net.shirojr.boatism.screen.handler.BoatismScreenHandlers;
 import net.shirojr.boatism.sound.BoatismSoundManager;
 
 public class BoatismClient implements ClientModInitializer {
@@ -25,5 +28,7 @@ public class BoatismClient implements ClientModInitializer {
 
         EntityRendererRegistry.register(BoatismEntities.BOAT_ENGINE, BoatEngineEntityRenderer::new);
         EntityModelLayerRegistry.registerModelLayer(BOAT_ENGINE_LAYER, BoatEngineEntityModel::getTexturedModelData);
+
+        HandledScreens.register(BoatismScreenHandlers.ENGINE_CONTROL_SCREEN_HANDLER, EngineControlScreen::new);
     }
 }

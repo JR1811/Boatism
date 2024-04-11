@@ -43,7 +43,7 @@ public class MouseMixin {
 
         Optional<UUID> boatEngineUuid = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid();
         boatEngineUuid.ifPresent(uuid -> {
-            Optional<BoatEngineEntity> boatEngineEntity = EntityHandler.getBoatEngineEntityFromUuid(uuid, player.getWorld(), player.getPos(), 10);
+            Optional<BoatEngineEntity> boatEngineEntity = EntityHandler.getBoatEngineEntityFromUuid(uuid, player.getWorld(), player.getPos(), 3);
             if (boatEngineEntity.isEmpty() || !boatEngineEntity.get().isRunning()) return;
 
             PacketByteBuf buf = PacketByteBufs.create();

@@ -22,6 +22,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -58,6 +59,7 @@ import java.util.*;
 
 public class BoatEngineEntity extends LivingEntity {
     private final SimpleInventory mountedInventory;
+    private final PropertyDelegate propertyDelegate;
     private static final TrackedData<Integer> POWER_LEVEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Float> OVERHEAT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private static final TrackedData<EulerAngle> ARM_ROTATION = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.ROTATION);
@@ -83,6 +85,32 @@ public class BoatEngineEntity extends LivingEntity {
         this.mountedInventory = new SimpleInventory(32);
         this.setNoGravity(true);
         this.setStepHeight(0.0f);
+        this.propertyDelegate = new PropertyDelegate() {
+            @Override
+            public int get(int index) {
+                // float values are multiplied by 100
+                // to keep an acceptable amount of accuracy when rounding
+                // and moving over int values for screen displaying purposes
+                return switch (index) {
+                    case 0 -> getPowerLevel();
+                    case 1 -> Math.round(getFuel() * 100);
+                    case 2 -> Math.round(getOverheat() * 100);
+                    default -> 0;
+                };
+            }
+
+            @Override
+            public void set(int index, int value) {
+                if (index == 0) {
+                    setPowerLevel(value);
+                }
+            }
+
+            @Override
+            public int size() {
+                return 3;
+            }
+        };
     }
 
     public BoatEngineEntity(World world, double x, double y, double z) {
@@ -163,7 +191,7 @@ public class BoatEngineEntity extends LivingEntity {
         this.setLocked(nbt.getBoolean(NbtKeys.IS_LOCKED));
     }
 
-    private void syncComponentListToTrackingClients() {
+    public void syncComponentListToTrackingClients() {
         if (!(this.getWorld() instanceof ServerWorld)) return;
         PlayerLookup.tracking(this).forEach(player -> {
             PacketByteBuf buf = PacketByteBufs.create();
@@ -230,6 +258,37 @@ public class BoatEngineEntity extends LivingEntity {
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
+        if (player.isSneaking()) {
+            if (stack.getItem() instanceof BoatEngineComponent) {
+                if (engineHandler.canEquipPart(stack) && !mountedInventoryContains(stack)) {
+                    addToMountedInventory(stack);
+                    if (this.getWorld().isClient()) return ActionResult.SUCCESS;
+                    LoggerUtil.devLogger(String.format("Equipped component %s on the engine", stack.getName()));
+                    if (!player.isCreative()) stack.decrement(1);
+                    player.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
+                            BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
+                    return ActionResult.SUCCESS;
+                } else {
+                    player.sendMessage(Text.translatable("warning.boatism.component_is_blocked"), true);
+                }
+            } else if (stack.isEmpty()) {
+                if (getMountedInventorySize() > 0) {
+                    EntityHandler.dropMountedInventory(this, false, true);
+                    syncComponentListToTrackingClients();
+                    if (this.getWorld().isClient()) return ActionResult.SUCCESS;
+                    player.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
+                            BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
+                } else {
+                    if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
+                    else engineHandler.stopEngine();
+                    LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
+                }
+                return ActionResult.SUCCESS;
+            }
+            return super.interact(player, hand);
+        }
+
+
         if (player.isSneaking() && stack.getItem() instanceof BoatEngineComponent) {
             if (engineHandler.canEquipPart(stack) && !mountedInventoryContains(stack)) {
                 addToMountedInventory(stack);
@@ -294,6 +353,10 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     //region getter & setter
+    public PropertyDelegate getPropertyDelegate() {
+        return this.propertyDelegate;
+    }
+
     public Optional<BoatEntity> getHookedBoatEntity() {
         if (!(this.getWorld() instanceof ServerWorld serverWorld)) return Optional.empty();
         Entity entity = serverWorld.getEntity(this.hookedBoatEntityUuid);

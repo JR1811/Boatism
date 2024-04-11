@@ -19,7 +19,7 @@ public class BoatismTags {
         }
     }
 
-    public static void register() {
+    public static void initialize() {
         Entities.register();
         LoggerUtil.devLogger("initialized tags");
     }

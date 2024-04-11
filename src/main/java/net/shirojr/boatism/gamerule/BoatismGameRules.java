@@ -10,6 +10,6 @@ public class BoatismGameRules {
             GameRuleRegistry.register("engineExplosionDestruction", GameRules.Category.MISC,
                     GameRuleFactory.createBooleanRule(true));
 
-    public static void register() {
+    public static void initialize() {
     }
 }

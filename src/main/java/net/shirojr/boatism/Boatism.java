@@ -10,6 +10,7 @@ import net.shirojr.boatism.event.BoatismEvents;
 import net.shirojr.boatism.gamerule.BoatismGameRules;
 import net.shirojr.boatism.item.BoatismItems;
 import net.shirojr.boatism.network.BoatismC2S;
+import net.shirojr.boatism.screen.handler.BoatismScreenHandlers;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.tag.BoatismTags;
@@ -27,8 +28,9 @@ public class Boatism implements ModInitializer {
         BoatismEvents.registerEvents();
         BoatismSounds.initializeSounds();
         BoatismC2S.registerServerReceivers();
-        BoatismTags.register();
-        BoatismGameRules.register();
+        BoatismTags.initialize();
+        BoatismGameRules.initialize();
+        BoatismScreenHandlers.initialize();
 
         LoggerUtil.LOGGER.info("Spread the Boatism!");
     }

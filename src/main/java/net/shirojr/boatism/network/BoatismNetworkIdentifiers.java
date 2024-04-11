@@ -7,8 +7,9 @@ public enum BoatismNetworkIdentifiers {
     SOUND_START("custom_sound_start_instance", TargetSide.CLIENT),
     SOUND_END_ENGINE("custom_sound_stop_engine_instances", TargetSide.CLIENT),
     SOUND_END_ALL("custom_sound_stop_all_instances", TargetSide.CLIENT),
+    BOAT_COMPONENT_SYNC("component_sync", TargetSide.CLIENT),
     SCROLLED("scrolled", TargetSide.SERVER),
-    BOAT_COMPONENT_SYNC("component_sync", TargetSide.CLIENT);
+    OPEN_ENGINE_INVENTORY("engine_inventory_open", TargetSide.SERVER);
 
     private final Identifier identifier;
     private final TargetSide side;
