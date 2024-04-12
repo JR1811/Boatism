@@ -40,13 +40,10 @@ public class MinecraftClientMixin {
     private boolean openEngineInventoryScreen(KeyBinding instance, Operation<Boolean> original) {
         Optional<BoatEngineEntity> boatEngine = getBoatEngineEntity(player);
         while (original.call(instance)) {
-            if (boatEngine.isPresent()) {
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeVarInt(boatEngine.get().getId());
-                ClientPlayNetworking.send(BoatismNetworkIdentifiers.OPEN_ENGINE_INVENTORY.getIdentifier(), buf);
-                continue;
-            }
-            return true;
+            if (boatEngine.isEmpty()) return true;
+            PacketByteBuf buf = PacketByteBufs.create();
+            buf.writeVarInt(boatEngine.get().getId());
+            ClientPlayNetworking.send(BoatismNetworkIdentifiers.OPEN_ENGINE_INVENTORY.getIdentifier(), buf);
         }
         return false;
     }
