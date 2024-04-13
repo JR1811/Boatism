@@ -11,6 +11,7 @@ import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.instance.custom.*;
 import net.shirojr.boatism.util.LoggerUtil;
+import net.shirojr.boatism.util.data.EngineComponent;
 import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
 import java.util.ArrayList;
@@ -78,9 +79,9 @@ public class BoatismS2C {
                                                                 PacketByteBuf clientBuf, PacketSender packetSender) {
         int entityId = clientBuf.readVarInt();
         int componentListSize = clientBuf.readVarInt();
-        List<BoatEngineEntity.EngineComponent> componentList = new ArrayList<>();
+        List<EngineComponent> componentList = new ArrayList<>();
         for (int i = 0; i < componentListSize; i++) {
-            componentList.add(new BoatEngineEntity.EngineComponent(clientBuf.readVarInt(), clientBuf.readItemStack()));
+            componentList.add(new EngineComponent(clientBuf.readVarInt(), clientBuf.readItemStack()));
         }
 
         client.execute(() -> {

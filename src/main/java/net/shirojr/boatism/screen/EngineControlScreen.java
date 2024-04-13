@@ -8,6 +8,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
+import net.shirojr.boatism.util.data.EnginePartTexture;
 
 public class EngineControlScreen extends HandledScreen<EngineControlScreenHandler> {
     public static final Identifier TEXTURE = new Identifier(Boatism.MODID, "textures/gui/engine_control.png");
@@ -50,13 +51,13 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
 
     public void renderEngineOverlay(DrawContext context, int x, int y, EnginePartTexture enginePart) {
         // TODO: implement maxHeat with delegates from handler to normalize heat
-        float heat = this.handler.getOverheat();
+        float heat = this.handler.getOverheat() / this.handler.getMaxOverheat();
 
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.enableBlend();
-        context.setShaderColor(1.0f, 1.0f, 1.0f, 0.0f);
-        context.drawTexture(TEXTURE, x, y, enginePart.u, enginePart.v, enginePart.width, enginePart.height);
+        context.setShaderColor(1.0f, 1.0f, 1.0f, heat);
+        context.drawTexture(TEXTURE, x, y, enginePart.u(), enginePart.v(), enginePart.width(), enginePart.height());
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
@@ -66,8 +67,5 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
-    }
-
-    private record EnginePartTexture(int u, int v, int width, int height) {
     }
 }

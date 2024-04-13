@@ -46,6 +46,7 @@ import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.BoatEngineExplosionBehaviour;
 import net.shirojr.boatism.util.LoggerUtil;
+import net.shirojr.boatism.util.data.EngineComponent;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import net.shirojr.boatism.util.handler.EntityHandler;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
@@ -95,6 +96,7 @@ public class BoatEngineEntity extends LivingEntity {
                     case 0 -> getPowerLevel();
                     case 1 -> Math.round(getFuel() * 100);
                     case 2 -> Math.round(getOverheat() * 100);
+                    case 3 -> Math.round(engineHandler.getMaxOverHeatCapacity() * 100);
                     default -> 0;
                 };
             }
@@ -108,7 +110,7 @@ public class BoatEngineEntity extends LivingEntity {
 
             @Override
             public int size() {
-                return 3;
+                return 4;
             }
         };
     }
@@ -278,13 +280,13 @@ public class BoatEngineEntity extends LivingEntity {
                     if (this.getWorld().isClient()) return ActionResult.SUCCESS;
                     player.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
                             BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
-                } else {
-                    if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
-                    else engineHandler.stopEngine();
-                    LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
                 }
-                return ActionResult.SUCCESS;
             }
+        } else if (stack.isEmpty()) {
+            if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
+            else engineHandler.stopEngine();
+            LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
+            return ActionResult.SUCCESS;
         }
         return super.interact(player, hand);
     }
@@ -369,7 +371,7 @@ public class BoatEngineEntity extends LivingEntity {
     public void setMountedItemsFromComponentList(List<EngineComponent> components) {
         this.mountedInventory.clear();
         for (EngineComponent component : components) {
-            this.mountedInventory.addStack(component.componentStack);
+            this.mountedInventory.addStack(component.componentStack());
         }
     }
 
@@ -609,8 +611,5 @@ public class BoatEngineEntity extends LivingEntity {
     public void onDeath(DamageSource damageSource) {
         getHookedBoatEntity().ifPresent(boatEntity -> ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
         super.onDeath(damageSource);
-    }
-
-    public record EngineComponent(int slot, ItemStack componentStack) {
     }
 }
