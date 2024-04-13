@@ -9,14 +9,10 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ArrayPropertyDelegate;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.util.handler.EntityHandler;
 
 public class EngineControlScreenHandler extends ScreenHandler {
     private final Inventory engineInventory;
@@ -83,7 +79,9 @@ public class EngineControlScreenHandler extends ScreenHandler {
 
     @Override
     public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
-        if (this.boatEngine != null) this.boatEngine.syncComponentListToTrackingClients();
+        if (this.boatEngine != null && player.getWorld().isClient()) {
+            this.boatEngine.syncComponentListToTrackingClients();
+        }
         super.onSlotClick(slotIndex, button, actionType, player);
     }
 
