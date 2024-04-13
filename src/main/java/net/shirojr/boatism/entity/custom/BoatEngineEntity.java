@@ -192,7 +192,7 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     public void syncComponentListToTrackingClients() {
-        if (!(this.getWorld() instanceof ServerWorld)) return;
+        if (this.getWorld().isClient()) return;
         PlayerLookup.tracking(this).forEach(player -> {
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeVarInt(this.getId());
@@ -285,34 +285,6 @@ public class BoatEngineEntity extends LivingEntity {
                 }
                 return ActionResult.SUCCESS;
             }
-            return super.interact(player, hand);
-        }
-
-
-        if (player.isSneaking() && stack.getItem() instanceof BoatEngineComponent) {
-            if (engineHandler.canEquipPart(stack) && !mountedInventoryContains(stack)) {
-                addToMountedInventory(stack);
-                if (this.getWorld().isClient()) return ActionResult.SUCCESS;
-                LoggerUtil.devLogger(String.format("Equipped component %s on the engine", stack.getName()));
-                if (!player.isCreative()) stack.decrement(1);
-                player.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
-                        BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
-                return ActionResult.SUCCESS;
-            } else {
-                player.sendMessage(Text.translatable("warning.boatism.component_is_blocked"), true);
-            }
-        } else if (player.getMainHandStack().isEmpty() && player.isSneaking() && getMountedInventorySize() > 0) {
-            EntityHandler.dropMountedInventory(this, false, true);
-            syncComponentListToTrackingClients();
-            if (this.getWorld().isClient()) return ActionResult.SUCCESS;
-            player.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
-                    BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
-            return ActionResult.SUCCESS;
-        } else if (player.getMainHandStack().isEmpty()) {
-            if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
-            else engineHandler.stopEngine();
-            LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
-            return ActionResult.SUCCESS;
         }
         return super.interact(player, hand);
     }
