@@ -12,10 +12,6 @@ import net.shirojr.boatism.util.data.EnginePartTexture;
 
 public class EngineControlScreen extends HandledScreen<EngineControlScreenHandler> {
     public static final Identifier TEXTURE = new Identifier(Boatism.MODID, "textures/gui/engine_control.png");
-    public static final EnginePartTexture TOP = new EnginePartTexture(206, 1, 29, 15);
-    public static final EnginePartTexture MID = new EnginePartTexture(206, 17, 10, 8);
-    public static final EnginePartTexture BOTTOM = new EnginePartTexture(206, 26, 6, 18);
-    public static final EnginePartTexture TURBINE = new EnginePartTexture(206, 45, 14, 9);
 
     public EngineControlScreen(EngineControlScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -41,23 +37,26 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
     protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
         int x = (width - backgroundWidth) / 2;
         int y = (height - backgroundHeight) / 2;
+
         context.drawTexture(TEXTURE, x, y, 0, 0, this.backgroundWidth, this.backgroundHeight);
 
-        renderEngineOverlay(context, x + 16, y + 41, TURBINE);
-        renderEngineOverlay(context, x + 17, y + 33, BOTTOM);
-        renderEngineOverlay(context, x + 16, y + 29, MID);
-        renderEngineOverlay(context, x + 19, y + 18, TOP);
+        x = x + 16;
+        y = y + 16;
+        renderEngineOverlay(context, x, y, EnginePartTexture.TURBINE);
+        renderEngineOverlay(context, x, y, EnginePartTexture.BOTTOM);
+        renderEngineOverlay(context, x, y, EnginePartTexture.MID);
+        renderEngineOverlay(context, x, y, EnginePartTexture.TOP);
     }
 
-    public void renderEngineOverlay(DrawContext context, int x, int y, EnginePartTexture enginePart) {
-        // TODO: implement maxHeat with delegates from handler to normalize heat
+    private void renderEngineOverlay(DrawContext context, int x, int y, EnginePartTexture part) {
         float heat = this.handler.getOverheat() / this.handler.getMaxOverheat();
 
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.enableBlend();
         context.setShaderColor(1.0f, 1.0f, 1.0f, heat);
-        context.drawTexture(TEXTURE, x, y, enginePart.u(), enginePart.v(), enginePart.width(), enginePart.height());
+        context.drawTexture(TEXTURE, x + part.getXOffset(), y + part.getYOffset(),
+                part.getU(true), part.getV(), part.getWidth(), part.getHeight());
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
