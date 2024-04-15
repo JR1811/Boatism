@@ -5,7 +5,7 @@ import net.shirojr.boatism.event.custom.HudEvents;
 import net.shirojr.boatism.event.custom.KeyBindEvents;
 
 public class BoatismEvents {
-    public static void registerEvents() {
+    public static void registerCommonEvents() {
         CommandRegistrationEvents.register();
     }
 

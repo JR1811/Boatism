@@ -25,7 +25,7 @@ public class Boatism implements ModInitializer {
         BoatismItems.initialize();
         BoatismEntities.initialize();
         BoatismEntityAttributes.initialize();
-        BoatismEvents.registerEvents();
+        BoatismEvents.registerCommonEvents();
         BoatismSounds.initializeSounds();
         BoatismC2S.registerServerReceivers();
         BoatismTags.initialize();

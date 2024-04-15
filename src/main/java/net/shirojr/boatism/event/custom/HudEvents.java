@@ -19,11 +19,11 @@ import java.util.Optional;
 
 public class HudEvents {
     public static void register() {
-        HudRenderCallback.EVENT.register(HudEvents::renderEngineOverlay);
+        HudRenderCallback.EVENT.register(HudEvents::handleEngineOverlay);
     }
 
     @Environment(EnvType.CLIENT)
-    private static void renderEngineOverlay(DrawContext context, float tickDelta) {
+    private static void handleEngineOverlay(DrawContext context, float tickDelta) {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayerEntity player = client.player;
         if (player == null || !(player.getVehicle() instanceof BoatEntity boatEntity)) return;
@@ -42,16 +42,16 @@ public class HudEvents {
         RenderSystem.enableBlend();
 
         context.setShaderColor(1.0f, 1.0f, 1.0f, boatEngine.isRunning() ? 1.0f : 0.0f);
-        constructEngineOverlay(context, EnginePartTexture.TURBINE, x, y, false);
-        constructEngineOverlay(context, EnginePartTexture.BOTTOM, x, y, false);
-        constructEngineOverlay(context, EnginePartTexture.MID, x, y, false);
-        constructEngineOverlay(context, EnginePartTexture.TOP, x, y, false);
+        renderEngineOverlay(context, EnginePartTexture.TURBINE, x, y, false);
+        renderEngineOverlay(context, EnginePartTexture.BOTTOM, x, y, false);
+        renderEngineOverlay(context, EnginePartTexture.MID, x, y, false);
+        renderEngineOverlay(context, EnginePartTexture.TOP, x, y, false);
 
         context.setShaderColor(1.0f, 1.0f, 1.0f, heat);
-        constructEngineOverlay(context, EnginePartTexture.TURBINE, x, y, true);
-        constructEngineOverlay(context, EnginePartTexture.BOTTOM, x, y, true);
-        constructEngineOverlay(context, EnginePartTexture.MID, x, y, true);
-        constructEngineOverlay(context, EnginePartTexture.TOP, x, y, true);
+        renderEngineOverlay(context, EnginePartTexture.TURBINE, x, y, true);
+        renderEngineOverlay(context, EnginePartTexture.BOTTOM, x, y, true);
+        renderEngineOverlay(context, EnginePartTexture.MID, x, y, true);
+        renderEngineOverlay(context, EnginePartTexture.TOP, x, y, true);
 
         context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -60,7 +60,7 @@ public class HudEvents {
         RenderSystem.disableBlend();
     }
 
-    private static void constructEngineOverlay(DrawContext context, EnginePartTexture part, int x, int y, boolean useHeatedTexture) {
+    private static void renderEngineOverlay(DrawContext context, EnginePartTexture part, int x, int y, boolean useHeatedTexture) {
         context.drawTexture(EngineControlScreen.TEXTURE, x + part.getXOffset(), y + part.getYOffset(),
                 part.getU(useHeatedTexture), part.getV(), part.getWidth(), part.getHeight());
     }
