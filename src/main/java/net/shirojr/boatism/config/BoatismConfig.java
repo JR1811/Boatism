@@ -4,6 +4,7 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
+import net.shirojr.boatism.config.custom.EngineHud;
 
 @Config(name = "boatism")
 @Config.Gui.Background("minecraft:textures/block/stone.png")
@@ -24,4 +25,8 @@ public class BoatismConfig implements ConfigData {
     @ConfigEntry.Category("engine_data")
     @Comment("Overheat limit")
     public int maxBaseOverheat = 1000;
+    @ConfigEntry.Gui.CollapsibleObject
+    @ConfigEntry.Category("screen_and_hud")
+    @Comment("Engine status display on Hud")
+    public EngineHud engineHudOverlay = new EngineHud(true, 20, 15);
 }

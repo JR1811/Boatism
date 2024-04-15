@@ -46,11 +46,16 @@
 
   "text.autoconfig.boatism.category.general": "General Settings",
   "text.autoconfig.boatism.category.engine_data": "Boat Engine Settings",
+  "text.autoconfig.boatism.category.screen_and_hud": "Screen And HUD Settings",
 
   "text.autoconfig.boatism.option.powerLevelScrolling": "Remap scrolling to change Power Level",
   "text.autoconfig.boatism.option.health": "Base health",
   "text.autoconfig.boatism.option.lowHealth": "Low health warning",
   "text.autoconfig.boatism.option.maxBaseFuel": "Maximum base fuel capacity",
   "text.autoconfig.boatism.option.lowFuel": "Low fuel warning",
-  "text.autoconfig.boatism.option.maxBaseOverheat": "Base overheat mitigation"
+  "text.autoconfig.boatism.option.maxBaseOverheat": "Base overheat mitigation",
+  "text.autoconfig.boatism.option.engineHudOverlay": "Engine Hud Overlay",
+  "text.autoconfig.boatism.option.engineHudOverlay.shouldDisplay": "Display Engine on HUD if engine is running",
+  "text.autoconfig.boatism.option.engineHudOverlay.x": "Engine Texture Position: X",
+  "text.autoconfig.boatism.option.engineHudOverlay.y": "Engine Texture Position: Y"
 }
