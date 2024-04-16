@@ -5,11 +5,13 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
-import net.shirojr.boatism.util.data.EngineGui;
+import net.shirojr.boatism.util.gui.EngineGuiElement;
+import net.shirojr.boatism.util.gui.FuelGuiElement;
+import net.shirojr.boatism.util.gui.PowerLevelGuiElement;
 
 public class EngineControlScreen extends HandledScreen<EngineControlScreenHandler> {
     private int tick = 0;
-    private EngineGui.FuelAnimation fuelSpriteState = EngineGui.FuelAnimation.FIRST;
+    private FuelGuiElement.FuelAnimation fuelSpriteState = FuelGuiElement.FuelAnimation.FIRST;
 
     public EngineControlScreen(EngineControlScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -25,8 +27,8 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
         super.handledScreenTick();
         if (!handler.isEngineRunning()) return;
         this.tick++;
-        if (this.tick >= EngineGui.FuelAnimation.TICKS_BETWEEN_SPRITE_CHANGE) {
-            this.fuelSpriteState = EngineGui.FuelAnimation.next(this.fuelSpriteState);
+        if (this.tick >= FuelGuiElement.TICKS_BETWEEN_SPRITE_CHANGE) {
+            this.fuelSpriteState = FuelGuiElement.FuelAnimation.next(this.fuelSpriteState);
             this.tick = 0;
         }
     }
@@ -38,30 +40,27 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
     }
 
     @Override
-    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
-        super.drawForeground(context, mouseX, mouseY);
-    }
-
-    @Override
     protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
         if (this.client == null) return;
         int x = (width - backgroundWidth) / 2;
         int y = (height - backgroundHeight) / 2;
         int engineSpriteX = x + 10;
-        int engineSpriteY = y + 20;
+        int engineSpriteY = y + 27;
         int fuelSpriteX = x + 55;
-        int fuelSpriteY = y + 40;
+        int fuelSpriteY = y + 37;
+        int powerLevelX = x + 55;
+        int powerLevelY = y + 60;
 
         float heat = this.handler.getOverheat() / this.handler.getMaxOverheat();
         float fuel = this.handler.getFuel() / this.handler.getMaxFuel();
 
-        context.drawTexture(EngineGui.GUI_TEXTURE, x, y, 0, 0, this.backgroundWidth, this.backgroundHeight);
-        EngineGui.renderEngineParts(context, EngineGui.getAllPartsInOrder(),
+        context.drawTexture(EngineGuiElement.GUI_TEXTURE, x, y, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        EngineGuiElement.renderEngineParts(context, EngineGuiElement.getAllPartsInOrder(),
                 engineSpriteX, engineSpriteY, 1.0f, false);
-        EngineGui.renderEngineParts(context, EngineGui.getAllPartsInOrder(),
+        EngineGuiElement.renderEngineParts(context, EngineGuiElement.getAllPartsInOrder(),
                 engineSpriteX, engineSpriteY, heat, true);
-        EngineGui.renderFuelGage(context, fuelSpriteX, fuelSpriteY, fuel,
-                this.fuelSpriteState, this.client.textRenderer);
+        FuelGuiElement.renderFuelGage(context, this.client.textRenderer, fuelSpriteX, fuelSpriteY, fuel, this.fuelSpriteState);
+        PowerLevelGuiElement.renderElement(context, this.client.textRenderer, powerLevelX, powerLevelY, handler.getPowerLevel());
     }
 
     @Override

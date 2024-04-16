@@ -29,7 +29,7 @@ public class BoatismC2S {
     public static void registerServerReceivers() {
         ServerPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SCROLLED.getIdentifier(),
                 BoatismC2S::handleScrollPackets);
-        ServerPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.OPEN_ENGINE_INVENTORY.getIdentifier(),
+        ServerPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.OPEN_ENGINE_SCREEN.getIdentifier(),
                 BoatismC2S::handleOpenEngineInventoryPackets);
     }
 

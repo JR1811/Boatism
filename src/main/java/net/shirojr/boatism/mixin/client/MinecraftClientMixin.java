@@ -43,7 +43,7 @@ public class MinecraftClientMixin {
             if (boatEngine.isEmpty()) return true;
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeVarInt(boatEngine.get().getId());
-            ClientPlayNetworking.send(BoatismNetworkIdentifiers.OPEN_ENGINE_INVENTORY.getIdentifier(), buf);
+            ClientPlayNetworking.send(BoatismNetworkIdentifiers.OPEN_ENGINE_SCREEN.getIdentifier(), buf);
         }
         return false;
     }

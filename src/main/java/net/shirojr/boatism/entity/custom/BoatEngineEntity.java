@@ -576,7 +576,8 @@ public class BoatEngineEntity extends LivingEntity {
         if (!(this.getWorld() instanceof ServerWorld serverWorld)) return;
         this.getHookedBoatEntity().ifPresent(boatEntity -> {
             for (Entity entry : boatEntity.getPassengerList()) {
-                if (!(entry instanceof PlayerEntity player)) continue;
+                if (!(entry instanceof ServerPlayerEntity player)) continue;
+                player.closeHandledScreen();
                 if (player.isCreative()) continue;
                 player.addStatusEffect(new StatusEffectInstance(
                         StatusEffects.NAUSEA, 240, 1, false, false, true));

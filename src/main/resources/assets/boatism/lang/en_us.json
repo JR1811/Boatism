@@ -43,6 +43,7 @@
   "sound.boatism.boat_engine.equip": "Mechanical noise",
 
   "gui.boatism.title.boat_engine.fuel": "Fuel",
+  "gui.boatism.title.boat_engine.power_level": "Level",
 
   "text.autoconfig.boatism.title": "Boatism configurations",
 

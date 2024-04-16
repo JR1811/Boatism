@@ -9,10 +9,11 @@ public enum BoatismNetworkIdentifiers {
     SOUND_END_ALL("custom_sound_stop_all_instances", TargetSide.CLIENT),
     BOAT_COMPONENT_SYNC("component_sync", TargetSide.CLIENT),
     SCROLLED("scrolled", TargetSide.SERVER),
-    OPEN_ENGINE_INVENTORY("engine_inventory_open", TargetSide.SERVER);
+    OPEN_ENGINE_SCREEN("engine_screen_open", TargetSide.SERVER);
 
     private final Identifier identifier;
     private final TargetSide side;
+
     BoatismNetworkIdentifiers(String packetName, TargetSide side) {
         this.identifier = new Identifier(Boatism.MODID, packetName);
         this.side = side;
