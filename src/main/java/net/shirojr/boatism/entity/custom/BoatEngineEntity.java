@@ -93,10 +93,12 @@ public class BoatEngineEntity extends LivingEntity {
                 // to keep an acceptable amount of accuracy when rounding
                 // and moving over int values for screen displaying purposes
                 return switch (index) {
-                    case 0 -> getPowerLevel();
-                    case 1 -> Math.round(getFuel() * 100);
-                    case 2 -> Math.round(getOverheat() * 100);
-                    case 3 -> Math.round(engineHandler.getMaxOverHeatCapacity() * 100);
+                    case 0 -> engineHandler.engineIsRunning() ? 1 : 0;
+                    case 1 -> getPowerLevel();
+                    case 2 -> Math.round(getFuel() * 100);
+                    case 3 -> Math.round(engineHandler.getMaxFuelCapacity() * 100);
+                    case 4 -> Math.round(getOverheat() * 100);
+                    case 5 -> Math.round(engineHandler.getMaxOverHeatCapacity() * 100);
                     default -> 0;
                 };
             }
@@ -110,7 +112,7 @@ public class BoatEngineEntity extends LivingEntity {
 
             @Override
             public int size() {
-                return 4;
+                return 6;
             }
         };
     }

@@ -11,7 +11,7 @@ import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
-import net.shirojr.boatism.util.data.EngineGuiTexture;
+import net.shirojr.boatism.util.data.EngineGui;
 import net.shirojr.boatism.util.handler.EntityHandler;
 
 import java.util.Optional;
@@ -37,9 +37,9 @@ public class HudEvents {
         int x = Boatism.CONFIG.engineHudOverlay.getX();
         int y = context.getScaledWindowHeight() - (36 + Boatism.CONFIG.engineHudOverlay.getY());
 
-        EngineGuiTexture.renderEngineParts(context, EngineGuiTexture.getAllPartsInOrder(), x, y,
+        EngineGui.renderEngineParts(context, EngineGui.getAllPartsInOrder(), x, y,
                 boatEngine.isRunning() ? 1.0f : 0.0f, false);
-        EngineGuiTexture.renderEngineParts(context, EngineGuiTexture.getAllPartsInOrder(), x, y,
+        EngineGui.renderEngineParts(context, EngineGui.getAllPartsInOrder(), x, y,
                 heat, true);
     }
 }

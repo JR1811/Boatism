@@ -5,9 +5,11 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.text.Text;
 import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
-import net.shirojr.boatism.util.data.EngineGuiTexture;
+import net.shirojr.boatism.util.data.EngineGui;
 
 public class EngineControlScreen extends HandledScreen<EngineControlScreenHandler> {
+    private int tick = 0;
+    private EngineGui.FuelAnimation fuelSpriteState = EngineGui.FuelAnimation.FIRST;
 
     public EngineControlScreen(EngineControlScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -16,6 +18,17 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
     @Override
     protected void init() {
         super.init();
+    }
+
+    @Override
+    protected void handledScreenTick() {
+        super.handledScreenTick();
+        if (!handler.isEngineRunning()) return;
+        this.tick++;
+        if (this.tick >= EngineGui.FuelAnimation.TICKS_BETWEEN_SPRITE_CHANGE) {
+            this.fuelSpriteState = EngineGui.FuelAnimation.next(this.fuelSpriteState);
+            this.tick = 0;
+        }
     }
 
     @Override
@@ -31,15 +44,24 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
 
     @Override
     protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
+        if (this.client == null) return;
         int x = (width - backgroundWidth) / 2;
         int y = (height - backgroundHeight) / 2;
-        float heat = this.handler.getOverheat() / this.handler.getMaxOverheat();
+        int engineSpriteX = x + 10;
+        int engineSpriteY = y + 20;
+        int fuelSpriteX = x + 55;
+        int fuelSpriteY = y + 40;
 
-        context.drawTexture(EngineGuiTexture.GUI_TEXTURE, x, y, 0, 0, this.backgroundWidth, this.backgroundHeight);
-        x = x + 16;
-        y = y + 16;
-        EngineGuiTexture.renderEngineParts(context, EngineGuiTexture.getAllPartsInOrder(), x, y, 1.0f, false);
-        EngineGuiTexture.renderEngineParts(context, EngineGuiTexture.getAllPartsInOrder(), x, y, heat, true);
+        float heat = this.handler.getOverheat() / this.handler.getMaxOverheat();
+        float fuel = this.handler.getFuel() / this.handler.getMaxFuel();
+
+        context.drawTexture(EngineGui.GUI_TEXTURE, x, y, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        EngineGui.renderEngineParts(context, EngineGui.getAllPartsInOrder(),
+                engineSpriteX, engineSpriteY, 1.0f, false);
+        EngineGui.renderEngineParts(context, EngineGui.getAllPartsInOrder(),
+                engineSpriteX, engineSpriteY, heat, true);
+        EngineGui.renderFuelGage(context, fuelSpriteX, fuelSpriteY, fuel,
+                this.fuelSpriteState, this.client.textRenderer);
     }
 
     @Override

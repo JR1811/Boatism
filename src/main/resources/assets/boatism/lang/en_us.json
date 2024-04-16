@@ -42,6 +42,8 @@
   "sound.boatism.boat_engine.pour": "Fuel being poured",
   "sound.boatism.boat_engine.equip": "Mechanical noise",
 
+  "gui.boatism.title.boat_engine.fuel": "Fuel",
+
   "text.autoconfig.boatism.title": "Boatism configurations",
 
   "text.autoconfig.boatism.category.general": "General Settings",

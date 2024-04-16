@@ -20,7 +20,7 @@ public class EngineControlScreenHandler extends ScreenHandler {
     private BoatEngineEntity boatEngine;
 
     public EngineControlScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
-        this(syncId, playerInventory, new SimpleInventory(12), new ArrayPropertyDelegate(4), buf);
+        this(syncId, playerInventory, new SimpleInventory(12), new ArrayPropertyDelegate(6), buf);
     }
 
     public EngineControlScreenHandler(int syncId, PlayerInventory playerInventory, Inventory engineInventory,
@@ -43,20 +43,23 @@ public class EngineControlScreenHandler extends ScreenHandler {
         addProperties(delegate);
     }
 
+    public boolean isEngineRunning() {
+        return this.delegate.get(0) == 1;
+    }
     public int getPowerLevel() {
-        return this.delegate.get(0);
+        return this.delegate.get(1);
     }
-
     public float getFuel() {
-        return (float) this.delegate.get(1) / 100;
-    }
-
-    public float getOverheat() {
         return (float) this.delegate.get(2) / 100;
     }
-
-    public float getMaxOverheat() {
+    public float getMaxFuel() {
         return (float) this.delegate.get(3) / 100;
+    }
+    public float getOverheat() {
+        return (float) this.delegate.get(4) / 100;
+    }
+    public float getMaxOverheat() {
+        return (float) this.delegate.get(5) / 100;
     }
 
     @Override
