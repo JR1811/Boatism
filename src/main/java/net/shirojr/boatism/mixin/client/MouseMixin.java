@@ -48,7 +48,7 @@ public class MouseMixin {
 
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeDouble(delta);
-            ClientPlayNetworking.send(BoatismNetworkIdentifiers.SCROLLED.getIdentifier(), buf);
+            ClientPlayNetworking.send(BoatismNetworkIdentifiers.POWER_LEVEL_CHANGE.getIdentifier(), buf);
             ci.cancel();
         });
     }

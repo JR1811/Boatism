@@ -27,14 +27,14 @@ import java.util.UUID;
 
 public class BoatismC2S {
     public static void registerServerReceivers() {
-        ServerPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.SCROLLED.getIdentifier(),
-                BoatismC2S::handleScrollPackets);
+        ServerPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.POWER_LEVEL_CHANGE.getIdentifier(),
+                BoatismC2S::handlePowerLevelChangePackets);
         ServerPlayNetworking.registerGlobalReceiver(BoatismNetworkIdentifiers.OPEN_ENGINE_SCREEN.getIdentifier(),
                 BoatismC2S::handleOpenEngineInventoryPackets);
     }
 
-    private static void handleScrollPackets(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,
-                                            PacketByteBuf buf, PacketSender responseSender) {
+    private static void handlePowerLevelChangePackets(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler,
+                                                      PacketByteBuf buf, PacketSender responseSender) {
         double delta = buf.readDouble(); // -1.0 = down, 1.0 = up
         server.execute(() -> {
             if (!(player.getVehicle() instanceof BoatEntity boatEntity)) return;
@@ -42,6 +42,7 @@ public class BoatismC2S {
             boatEngineEntityUuid.ifPresent(uuid -> {
                 BoatEngineEntity boatEngineEntity = (BoatEngineEntity) ((ServerWorld) player.getWorld()).getEntity(uuid);
                 if (boatEngineEntity == null) return;
+                if (!boatEngineEntity.isRunning()) return;
                 BoatEngineHandler engineHandler = boatEngineEntity.getEngineHandler();
                 int newPowerLevel = engineHandler.getPowerLevel() + (int) delta;
                 newPowerLevel = Math.min(newPowerLevel, engineHandler.getMaxPowerLevel());
