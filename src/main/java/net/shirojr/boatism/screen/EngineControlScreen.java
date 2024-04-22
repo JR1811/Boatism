@@ -16,11 +16,10 @@ import net.shirojr.boatism.util.gui.PowerLevelGuiElement;
 
 public class EngineControlScreen extends HandledScreen<EngineControlScreenHandler> {
     private int tick = 0;
-    private boolean isHandlePressed = false;
+    private FuelGuiElement.FuelAnimation fuelSpriteState = FuelGuiElement.FuelAnimation.FIRST;
+    private ShapeUtil.Square handleSquare;
     private int previousX = -1;
     private int draggedHorizontalDistance = 0;
-    private ShapeUtil.Square handleSquare;
-    private FuelGuiElement.FuelAnimation fuelSpriteState = FuelGuiElement.FuelAnimation.FIRST;
 
     public EngineControlScreen(EngineControlScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -72,21 +71,19 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
         FuelGuiElement.renderFuelGage(context, this.client.textRenderer, fuelSpriteX, fuelSpriteY, fuel, this.fuelSpriteState);
 
         handleSquare = new ShapeUtil.Square(new ShapeUtil.Position(powerLevelX + handlePosition, powerLevelY - 3), 5, 8);
-        PowerLevelGuiElement.renderElement(context, this.client.textRenderer, powerLevelX, powerLevelY, handleSquare, this.isHandlePressed);
+        PowerLevelGuiElement.renderElement(context, this.client.textRenderer, powerLevelX, powerLevelY, handleSquare, isHandlePressed());
     }
 
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
         super.mouseMoved(mouseX, mouseY);
-        if (!this.isHandlePressed) return;
-        if (this.previousX != -1) {
-            this.draggedHorizontalDistance += (int) mouseX - previousX;
-            if (Math.abs(this.draggedHorizontalDistance) > PowerLevelGuiElement.getPositionForPowerLevel(1)) {
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeDouble(Math.signum(this.draggedHorizontalDistance));
-                ClientPlayNetworking.send(BoatismNetworkIdentifiers.POWER_LEVEL_CHANGE.getIdentifier(), buf);
-                this.draggedHorizontalDistance = 0;
-            }
+        if (!isHandlePressed()) return;
+        this.draggedHorizontalDistance += (int) mouseX - previousX;
+        if (Math.abs(this.draggedHorizontalDistance) > PowerLevelGuiElement.getPositionForPowerLevel(1)) {
+            PacketByteBuf buf = PacketByteBufs.create();
+            buf.writeDouble(Math.signum(this.draggedHorizontalDistance));
+            ClientPlayNetworking.send(BoatismNetworkIdentifiers.POWER_LEVEL_CHANGE.getIdentifier(), buf);
+            this.draggedHorizontalDistance = 0;
         }
         this.previousX = (int) mouseX;
     }
@@ -94,7 +91,6 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.handleSquare.isPositionInSquare(new ShapeUtil.Position((int) mouseX, (int) mouseY))) {
-            if (!this.isHandlePressed) this.isHandlePressed = true;
             this.previousX = (int) mouseX;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -102,10 +98,13 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (this.isHandlePressed) {
-            this.isHandlePressed = false;
+        if (isHandlePressed()) {
             this.previousX = -1;
         }
         return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    private boolean isHandlePressed() {
+        return this.previousX != -1;
     }
 }
