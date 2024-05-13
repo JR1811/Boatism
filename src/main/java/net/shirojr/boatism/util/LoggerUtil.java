@@ -5,12 +5,12 @@ import net.shirojr.boatism.Boatism;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility class for clean LOGGER handling
+ */
 public class LoggerUtil {
     public static final Logger LOGGER = LoggerFactory.getLogger(Boatism.MODID);
 
-    /**
-     * Utility class for clean LOGGER handling
-     */
     private LoggerUtil() {
     }
 

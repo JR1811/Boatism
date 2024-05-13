@@ -2,7 +2,8 @@ package net.shirojr.boatism.item.custom;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.item.BucketItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -14,11 +15,11 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.nbt.NbtKeys;
 
-public class FuelBucketItem extends Item /*BucketItem*/ {
+public class FuelBucketItem extends BucketItem /*BucketItem*/ {
     public final static float MAX_CAPACITY = 3000;
 
-    public FuelBucketItem(/*Fluid fluid, */Settings settings) {
-        super(/*fluid, */settings);
+    public FuelBucketItem(Fluid fluid, Settings settings) {
+        super(fluid, settings);
     }
 
     @Override

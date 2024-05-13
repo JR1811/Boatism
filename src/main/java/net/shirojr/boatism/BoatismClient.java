@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.util.Identifier;
+import net.shirojr.boatism.block.custom.client.FluidClientHandler;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.client.BoatEngineEntityModel;
 import net.shirojr.boatism.entity.client.BoatEngineEntityRenderer;
@@ -24,6 +25,7 @@ public class BoatismClient implements ClientModInitializer {
     public void onInitializeClient() {
         BoatismS2C.registerClientReceivers();
         BoatismEvents.registerClientEvents();
+        FluidClientHandler.initialize();
         soundManager = new BoatismSoundManager();
 
         EntityRendererRegistry.register(BoatismEntities.BOAT_ENGINE, BoatEngineEntityRenderer::new);

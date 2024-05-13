@@ -37,6 +37,7 @@
 	"mixins": [
 		"boatism.mixins.json"
 	],
+	"accessWidener": "boatism.accesswidener",
 	"depends": {
 		"fabricloader": ">=0.15.1",
 		"minecraft": "~1.20.4",

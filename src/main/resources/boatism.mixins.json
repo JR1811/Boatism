@@ -8,6 +8,7 @@
     "BoatEntityMixin",
     "EntityMixin",
     "ItemMixin",
+    "LivingEntityMixin",
     "WardenEntityMixin"
   ],
   "injectors": {
@@ -15,6 +16,7 @@
   },
   "client": [
     "client.MinecraftClientMixin",
-    "client.MouseMixin"
+    "client.MouseMixin",
+    "client.BackgroundRendererMixin"
   ]
 }

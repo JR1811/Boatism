@@ -13,6 +13,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
+import net.shirojr.boatism.block.BoatismFluids;
 import net.shirojr.boatism.item.custom.*;
 import net.shirojr.boatism.item.custom.upgrade.BoatismEquipmentItem;
 import net.shirojr.boatism.item.custom.upgrade.CanisterItem;
@@ -24,7 +25,7 @@ import java.util.List;
 
 public class BoatismItems {
     public static FuelBucketItem FUEL_BUCKET = register("fuel_bucket",
-            new FuelBucketItem(new FabricItemSettings().maxCount(1)));
+            new FuelBucketItem(BoatismFluids.OIL.still(), new FabricItemSettings().maxCount(1)));
     public static BaseEngineItem BASE_ENGINE = register("base_engine",
             new BaseEngineItem(new FabricItemSettings().maxCount(1).fireproof()));
     public static BoatismEquipmentItem COMPONENT_EXHAUST = register("component_exhaust",

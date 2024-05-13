@@ -3,6 +3,8 @@ package net.shirojr.boatism;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
+import net.shirojr.boatism.block.BoatismBlocks;
+import net.shirojr.boatism.block.BoatismFluids;
 import net.shirojr.boatism.config.BoatismConfig;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.BoatismEntityAttributes;
@@ -23,6 +25,8 @@ public class Boatism implements ModInitializer {
     public void onInitialize() {
         initConfig();
         BoatismItems.initialize();
+        BoatismBlocks.initialize();
+        BoatismFluids.initialize();
         BoatismEntities.initialize();
         BoatismEntityAttributes.initialize();
         BoatismEvents.registerCommonEvents();

@@ -76,5 +76,23 @@
     "sounds": [
       "boatism:boat_engine_equip"
     ]
+  },
+  "oil_ambient": {
+    "subtitle": "sound.boatism.oil.ambient",
+    "sounds": [
+      "boatism:oil_ambient"
+    ]
+  },
+  "oil_flowing": {
+    "subtitle": "sound.boatism.oil.flowing",
+    "sounds": [
+      "boatism:oil_flowing"
+    ]
+  },
+  "oil_splash": {
+    "subtitle": "sound.boatism.oil.splash",
+    "sounds": [
+      "boatism:oil_splash"
+    ]
   }
 }
