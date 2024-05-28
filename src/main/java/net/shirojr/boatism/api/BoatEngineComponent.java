@@ -91,8 +91,8 @@ public interface BoatEngineComponent {
      * If you change this method, you migh also want to change
      * {@link BoatEngineComponent#getMountedItemStack(ItemStack) getMountedItemStack}
      *
-     * @param displayedStack Original ItemStack from e.g. the inventory
-     * @return The new ItemStack which will be displayed on the engine
+     * @param displayedStack Original ItemStack which is displayed on the engine
+     * @return The new ItemStack which will be returned from the engine
      */
     default ItemStack getReturnedItemStack(ItemStack displayedStack) {
         return displayedStack;
