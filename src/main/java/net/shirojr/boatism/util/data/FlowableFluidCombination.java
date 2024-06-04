@@ -1,10 +1,15 @@
 package net.shirojr.boatism.util.data;
 
+import net.minecraft.block.FluidBlock;
 import net.minecraft.fluid.FlowableFluid;
+import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public record FlowableFluidCombination(String base, FlowableFluid flowing, FlowableFluid still, @Nullable FlowableFluid infinite) {
     public boolean isInfinite() {
@@ -29,10 +34,23 @@ public record FlowableFluidCombination(String base, FlowableFluid flowing, Flowa
         return this.infinite() != null && this.infinite().equals(fluid);
     }
 
-    public boolean contains(FluidState state) {
+    public boolean contains(@Nullable FluidState state) {
         if (!(state.getFluid() instanceof FlowableFluid flowableFluid)) return false;
         return contains(flowableFluid);
     }
+
+    public List<FlowableFluid> getAllVariants() {
+        List<FlowableFluid> fluids = new ArrayList<>();
+        fluids.add(flowing());
+        fluids.add(still());
+        if (isInfinite()) fluids.add(infinite());
+        return fluids;
+    }
+
+    public FluidBlock getBlock() {
+        return (FluidBlock) still().getDefaultState().getBlockState().getBlock();
+    }
+
 
     public enum Type {
         FLOWING("_flowing"),

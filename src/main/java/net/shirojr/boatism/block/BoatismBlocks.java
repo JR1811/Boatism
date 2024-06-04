@@ -12,6 +12,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.block.custom.OilFluidBlock;
+import net.shirojr.boatism.fluid.BoatismFluids;
 import net.shirojr.boatism.util.LoggerUtil;
 
 public class BoatismBlocks {

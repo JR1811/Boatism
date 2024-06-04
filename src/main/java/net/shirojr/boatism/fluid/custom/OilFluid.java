@@ -1,4 +1,4 @@
-package net.shirojr.boatism.block.custom.fluid;
+package net.shirojr.boatism.fluid.custom;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -11,6 +11,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -20,13 +21,18 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 import net.shirojr.boatism.block.BoatismBlocks;
-import net.shirojr.boatism.block.BoatismFluids;
+import net.shirojr.boatism.fluid.BoatismFluids;
 import net.shirojr.boatism.item.BoatismItems;
 import net.shirojr.boatism.sound.BoatismSounds;
+import net.shirojr.boatism.util.BoatismProperties;
+import net.shirojr.boatism.util.LoggerUtil;
 
 import java.util.Optional;
 
 public abstract class OilFluid extends FlowableFluid {
+    public static final IntProperty FLUID_HEAT = BoatismProperties.FLUID_HEAT;
+
+
     @Override
     public Fluid getFlowing() {
         return BoatismFluids.OIL.flowing();
@@ -45,7 +51,7 @@ public abstract class OilFluid extends FlowableFluid {
     @Override
     protected void appendProperties(StateManager.Builder<Fluid, FluidState> builder) {
         super.appendProperties(builder);
-        builder.add(LEVEL);
+        builder.add(LEVEL, FLUID_HEAT);
     }
 
     @Override
@@ -86,7 +92,9 @@ public abstract class OilFluid extends FlowableFluid {
 
     @Override
     protected BlockState toBlockState(FluidState state) {
-        return BoatismBlocks.OIL_FLUID_BLOCK.getDefaultState().with(Properties.LEVEL_15, getBlockStateLevel(state));
+        return BoatismBlocks.OIL_FLUID_BLOCK.getDefaultState()
+                .with(Properties.LEVEL_15, getBlockStateLevel(state))
+                .with(BoatismProperties.FLUID_HEAT, state.get(FLUID_HEAT));
     }
 
     @Override
@@ -102,6 +110,8 @@ public abstract class OilFluid extends FlowableFluid {
                         false);
             }
         }
+        if (world.isClient()) return;
+        LoggerUtil.devLogger("randomDisplayTicked");
     }
 
     @Override

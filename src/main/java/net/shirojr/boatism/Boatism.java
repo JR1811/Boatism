@@ -4,7 +4,7 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.shirojr.boatism.block.BoatismBlocks;
-import net.shirojr.boatism.block.BoatismFluids;
+import net.shirojr.boatism.fluid.BoatismFluids;
 import net.shirojr.boatism.config.BoatismConfig;
 import net.shirojr.boatism.entity.BoatismEntities;
 import net.shirojr.boatism.entity.BoatismEntityAttributes;

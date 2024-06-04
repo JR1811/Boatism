@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.SimpleFluidRenderHandler;
 import net.minecraft.client.render.RenderLayer;
-import net.shirojr.boatism.block.BoatismFluids;
+import net.shirojr.boatism.fluid.BoatismFluids;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.data.FlowableFluidCombination;
 

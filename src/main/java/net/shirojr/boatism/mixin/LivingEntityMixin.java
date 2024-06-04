@@ -8,14 +8,18 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.math.Vec3d;
 import net.shirojr.boatism.util.tag.BoatismTags;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityMixin {
+public abstract class LivingEntityMixin {
+    @Shadow protected abstract void swimUpward(TagKey<Fluid> fluid);
+
     @WrapOperation(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isInLava()Z"))
     private boolean boatism$isInOilTravel(LivingEntity instance, Operation<Boolean> original) {
         if (isInOilFluid(instance)) return true;
@@ -70,6 +74,22 @@ public class LivingEntityMixin {
     @WrapOperation(method = "baseTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isSubmergedIn(Lnet/minecraft/registry/tag/TagKey;)Z"))
     private boolean boatism$oilBreathing(LivingEntity instance, TagKey<Fluid> tagKey, Operation<Boolean> original) {
         return original.call(instance, tagKey) || instance.isSubmergedIn(BoatismTags.Fluids.OIL);
+    }
+
+    @WrapOperation(method = "tickMovement",
+            slice = @Slice(
+                    from = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;swimUpward(Lnet/minecraft/registry/tag/TagKey;)V", ordinal = 1)
+            ),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isOnGround()Z")
+    )
+    private boolean boatism$preventJumpingInOil(LivingEntity instance, Operation<Boolean> original) {
+        boolean originalEvaluation = original.call(instance);
+        boolean isStandingInOil = originalEvaluation && isInOilFluid(instance);
+        if (isStandingInOil) {
+            swimUpward(BoatismTags.Fluids.OIL);
+            return false;
+        }
+        return originalEvaluation;
     }
 
     @Unique

@@ -1,9 +1,13 @@
 package net.shirojr.boatism.item.custom;
 
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,5 +27,10 @@ public class BaseEngineItem extends Item {
         tooltip.add(Text.translatable("tooltip.boatism.base_engine_4"));
         tooltip.add(Text.translatable("tooltip.boatism.base_engine_5"));
         super.appendTooltip(stack, world, tooltip, context);
+    }
+
+    @Override
+    public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
+        super.inventoryTick(stack, world, entity, slot, selected);
     }
 }

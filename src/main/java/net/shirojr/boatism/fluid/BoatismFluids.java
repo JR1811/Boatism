@@ -1,16 +1,15 @@
-package net.shirojr.boatism.block;
+package net.shirojr.boatism.fluid;
 
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
-import net.shirojr.boatism.block.custom.fluid.OilFluid;
+import net.shirojr.boatism.fluid.custom.OilFluid;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.data.FlowableFluidCombination;
 
 public class BoatismFluids {
-    public static FlowableFluidCombination OIL = registerFlowableFluid(new FlowableFluidCombination("oil",
-            new OilFluid.Flowing(), new OilFluid.Still(), null));
+    public static FlowableFluidCombination OIL = registerFlowableFluid(new FlowableFluidCombination("oil", new OilFluid.Flowing(), new OilFluid.Still(), null));
 
 
     @SuppressWarnings("SameParameterValue")

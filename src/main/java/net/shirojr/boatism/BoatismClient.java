@@ -15,6 +15,7 @@ import net.shirojr.boatism.network.BoatismS2C;
 import net.shirojr.boatism.screen.EngineControlScreen;
 import net.shirojr.boatism.screen.handler.BoatismScreenHandlers;
 import net.shirojr.boatism.sound.BoatismSoundManager;
+import net.shirojr.boatism.util.BoatismColorProviders;
 
 public class BoatismClient implements ClientModInitializer {
     public static BoatismSoundManager soundManager;
@@ -25,6 +26,7 @@ public class BoatismClient implements ClientModInitializer {
     public void onInitializeClient() {
         BoatismS2C.registerClientReceivers();
         BoatismEvents.registerClientEvents();
+        BoatismColorProviders.initialize();
         FluidClientHandler.initialize();
         soundManager = new BoatismSoundManager();
 
