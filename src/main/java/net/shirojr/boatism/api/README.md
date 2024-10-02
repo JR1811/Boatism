@@ -5,11 +5,11 @@ Boatism has compatibility with any Entity which extends from the `BoatEntity` by
 
 Here you can find all the utilities to adjust and add your content to Boatism.
 
-| Class                                                                                                                                             | description                                                                                                                            |
-|---------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
-| [BoatEngineComponent](https://github.com/JR1811/Boatism/blob/master/src/main/java/net/shirojr/boatism/api/BoatEngineComponent.java)               | Improve or punish engine performance with your custom Items                                                                            |
-| [CustomBoatEngineAttachment](https://github.com/JR1811/Boatism/blob/master/src/main/java/net/shirojr/boatism/api/CustomBoatEngineAttachment.java) | Adjust the relative attachment position of the Engine if your custom Boat has a different size compared to default Boat Entities       |
-| [BoatEngineCoupler](https://github.com/JR1811/Boatism/blob/master/src/main/java/net/shirojr/boatism/api/BoatEngineCoupler.java)                   | Get a `BoatEngineEntity` from a `BoatEntity` or set a new hooked boat entry by casting a (custom) `BoatEntity` class to this interface |
+| Class                                                           | description                                                                                                                            |
+|-----------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| [BoatEngineComponent](./BoatEngineComponent.java)               | Improve or punish engine performance with your custom Items                                                                            |
+| [CustomBoatEngineAttachment](./CustomBoatEngineAttachment.java) | Adjust the relative attachment position of the Engine if your custom Boat has a different size compared to default Boat Entities       |
+| [BoatEngineCoupler](./BoatEngineCoupler.java)                   | Get a `BoatEngineEntity` from a `BoatEntity` or set a new hooked boat entry by casting a (custom) `BoatEntity` class to this interface |
 
 ---
 
