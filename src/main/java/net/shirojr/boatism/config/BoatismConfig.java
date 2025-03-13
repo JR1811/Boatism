@@ -28,5 +28,5 @@ public class BoatismConfig implements ConfigData {
     @ConfigEntry.Gui.CollapsibleObject
     @ConfigEntry.Category("screen_and_hud")
     @Comment("Engine status display on Hud")
-    public EngineHud engineHudOverlay = new EngineHud(true, 20, 15);
+    public EngineHud engineHudOverlay = new EngineHud(false, 20, 15);
 }
