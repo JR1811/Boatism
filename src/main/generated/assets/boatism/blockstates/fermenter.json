@@ -1,0 +1,164 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "north",
+        "open_lid": "true",
+        "part": "mid"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "north",
+        "open_lid": "false",
+        "part": "mid"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "east",
+        "open_lid": "true",
+        "part": "mid"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "east",
+        "open_lid": "false",
+        "part": "mid"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "south",
+        "open_lid": "true",
+        "part": "mid"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "south",
+        "open_lid": "false",
+        "part": "mid"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "west",
+        "open_lid": "true",
+        "part": "mid"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "west",
+        "open_lid": "false",
+        "part": "mid"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "north",
+        "open_lid": "true",
+        "part": "top"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "north",
+        "open_lid": "false",
+        "part": "top"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "east",
+        "open_lid": "true",
+        "part": "top"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "east",
+        "open_lid": "false",
+        "part": "top"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "south",
+        "open_lid": "true",
+        "part": "top"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "south",
+        "open_lid": "false",
+        "part": "top"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "west",
+        "open_lid": "true",
+        "part": "top"
+      }
+    },
+    {
+      "apply": {
+        "model": "boatism:block/fermenter"
+      },
+      "when": {
+        "facing": "west",
+        "open_lid": "false",
+        "part": "top"
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-package net.shirojr.boatism.util;
+package net.shirojr.boatism.init;
 
 import net.minecraft.state.property.IntProperty;
 

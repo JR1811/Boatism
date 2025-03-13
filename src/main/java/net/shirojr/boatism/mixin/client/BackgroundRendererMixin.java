@@ -7,7 +7,7 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
-import net.shirojr.boatism.util.BoatismProperties;
+import net.shirojr.boatism.init.BoatismProperties;
 import net.shirojr.boatism.util.tag.BoatismTags;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;

@@ -20,11 +20,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
-import net.shirojr.boatism.block.BoatismBlocks;
-import net.shirojr.boatism.fluid.BoatismFluids;
-import net.shirojr.boatism.item.BoatismItems;
-import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.util.BoatismProperties;
+import net.shirojr.boatism.init.*;
 import net.shirojr.boatism.util.LoggerUtil;
 
 import java.util.Optional;

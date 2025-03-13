@@ -15,10 +15,9 @@ import net.minecraft.util.math.MathHelper;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.init.BoatismSounds;
 import net.shirojr.boatism.mixin.BoatEntityInvoker;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
-import net.shirojr.boatism.sound.BoatismSounds;
-import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
 import java.util.ArrayList;

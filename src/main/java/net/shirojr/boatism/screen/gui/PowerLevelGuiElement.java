@@ -1,4 +1,4 @@
-package net.shirojr.boatism.util.gui;
+package net.shirojr.boatism.screen.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.font.TextRenderer;
@@ -6,7 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
-import net.shirojr.boatism.util.geometry.ShapeUtil;
+import net.shirojr.boatism.screen.geometry.ShapeUtil;
 
 public class PowerLevelGuiElement {
     public static final Identifier GUI_TEXTURE = new Identifier(Boatism.MODID, "textures/gui/engine_control.png");

@@ -1,24 +1,27 @@
-package net.shirojr.boatism.block;
+package net.shirojr.boatism.init;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.MapColor;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
+import net.shirojr.boatism.block.custom.FermentBlock;
 import net.shirojr.boatism.block.custom.OilFluidBlock;
-import net.shirojr.boatism.fluid.BoatismFluids;
 import net.shirojr.boatism.util.LoggerUtil;
 
-public class BoatismBlocks {
-    public static final OilFluidBlock OIL_FLUID_BLOCK =
-            registerBlock("oil_fluid_block", false,
-                    new OilFluidBlock(BoatismFluids.OIL.still(), FabricBlockSettings.copyOf(Blocks.WATER).mapColor(MapColor.BLACK)));
+public interface BoatismBlocks {
+    OilFluidBlock OIL_FLUID_BLOCK = registerBlock("oil_fluid_block", false,
+            new OilFluidBlock(BoatismFluids.OIL.still(), FabricBlockSettings.copyOf(Blocks.WATER).mapColor(MapColor.BLACK)));
+    FermentBlock FERMENTER = registerBlock("fermenter", false,
+            new FermentBlock(AbstractBlock.Settings.create().nonOpaque().mapColor(MapColor.TEAL)));
 
 
     @SuppressWarnings("SameParameterValue")
@@ -30,10 +33,11 @@ public class BoatismBlocks {
     }
 
     private static <T extends Item> void registerBlockItem(Identifier identifier, T item) {
-        Registry.register(Registries.ITEM, identifier, item);
+        T registeredEntry = Registry.register(Registries.ITEM, identifier, item);
+        BoatismItems.ALL_ITEMS.add(new ItemStack(registeredEntry));
     }
 
-    public static void initialize() {
+    static void initialize() {
         LoggerUtil.devLogger("initialized blocks");
     }
 }

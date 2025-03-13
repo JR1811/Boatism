@@ -1,4 +1,4 @@
-package net.shirojr.boatism.util.geometry;
+package net.shirojr.boatism.screen.geometry;
 
 import net.minecraft.util.math.MathHelper;
 

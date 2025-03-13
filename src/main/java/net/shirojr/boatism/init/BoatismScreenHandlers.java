@@ -1,13 +1,13 @@
-package net.shirojr.boatism.screen.handler;
+package net.shirojr.boatism.init;
 
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
+import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
 
 public class BoatismScreenHandlers {
     public static ScreenHandlerType<EngineControlScreenHandler> ENGINE_CONTROL_SCREEN_HANDLER = register(

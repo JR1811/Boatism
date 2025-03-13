@@ -12,9 +12,9 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.item.BoatismItems;
-import net.shirojr.boatism.util.handler.BoatEngineHandler;
+import net.shirojr.boatism.init.BoatismItems;
 import net.shirojr.boatism.util.LoggerUtil;
+import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,7 +25,7 @@ import java.util.List;
 
 @Mixin(Item.class)
 public class ItemMixin {
-    @Inject(method = "useOnEntity", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "useOnEntity", at = @At(value = "HEAD"), cancellable = true)
     private void boatism$debugBoatCoupling(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand,
                                            CallbackInfoReturnable<ActionResult> cir) {
         World world = entity.getWorld();

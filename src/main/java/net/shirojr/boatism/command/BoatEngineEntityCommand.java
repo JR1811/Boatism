@@ -15,7 +15,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineCoupler;
-import net.shirojr.boatism.entity.BoatismEntities;
+import net.shirojr.boatism.init.BoatismEntities;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 
 public class BoatEngineEntityCommand {

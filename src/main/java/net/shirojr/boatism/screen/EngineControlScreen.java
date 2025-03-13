@@ -3,16 +3,19 @@ package net.shirojr.boatism.screen;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
+import net.shirojr.boatism.screen.geometry.ShapeUtil;
+import net.shirojr.boatism.screen.gui.EngineGuiElement;
+import net.shirojr.boatism.screen.gui.FuelGuiElement;
+import net.shirojr.boatism.screen.gui.PowerLevelGuiElement;
 import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
-import net.shirojr.boatism.util.geometry.ShapeUtil;
-import net.shirojr.boatism.util.gui.EngineGuiElement;
-import net.shirojr.boatism.util.gui.FuelGuiElement;
-import net.shirojr.boatism.util.gui.PowerLevelGuiElement;
+
+import java.util.Optional;
 
 public class EngineControlScreen extends HandledScreen<EngineControlScreenHandler> {
     private int tick = 0;
@@ -102,6 +105,14 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
             this.previousX = -1;
         }
         return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public Optional<Element> hoveredElement(double mouseX, double mouseY) {
+        if (this.handleSquare.isPositionInSquare(new ShapeUtil.Position((int) mouseX, (int) mouseY))) {
+            //TODO: show tooltip for engine power level
+        }
+        return super.hoveredElement(mouseX, mouseY);
     }
 
     private boolean isHandlePressed() {

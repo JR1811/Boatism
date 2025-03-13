@@ -4,23 +4,24 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
-import net.minecraft.util.Identifier;
 import net.shirojr.boatism.block.custom.client.FluidClientHandler;
-import net.shirojr.boatism.entity.BoatismEntities;
+import net.shirojr.boatism.block.entity.client.FermentBlockEntityModel;
+import net.shirojr.boatism.block.entity.client.FermentBlockEntityRenderer;
 import net.shirojr.boatism.entity.client.BoatEngineEntityModel;
 import net.shirojr.boatism.entity.client.BoatEngineEntityRenderer;
-import net.shirojr.boatism.event.BoatismEvents;
+import net.shirojr.boatism.init.*;
 import net.shirojr.boatism.network.BoatismS2C;
 import net.shirojr.boatism.screen.EngineControlScreen;
-import net.shirojr.boatism.screen.handler.BoatismScreenHandlers;
 import net.shirojr.boatism.sound.BoatismSoundManager;
-import net.shirojr.boatism.util.BoatismColorProviders;
 
 public class BoatismClient implements ClientModInitializer {
     public static BoatismSoundManager soundManager;
     public static final EntityModelLayer BOAT_ENGINE_LAYER =
-            new EntityModelLayer(new Identifier(Boatism.MODID, "boat_engine_layer"), "main");
+            new EntityModelLayer(Boatism.getId("boat_engine_layer"), "main");
+    public static final EntityModelLayer FERMENTER_LAYER =
+            new EntityModelLayer(Boatism.getId("fermenter_layer"), "main");
 
     @Override
     public void onInitializeClient() {
@@ -32,6 +33,9 @@ public class BoatismClient implements ClientModInitializer {
 
         EntityRendererRegistry.register(BoatismEntities.BOAT_ENGINE, BoatEngineEntityRenderer::new);
         EntityModelLayerRegistry.registerModelLayer(BOAT_ENGINE_LAYER, BoatEngineEntityModel::getTexturedModelData);
+
+        BlockEntityRendererFactories.register(BoatismBlockEntities.FERMENTER, FermentBlockEntityRenderer::new);
+        EntityModelLayerRegistry.registerModelLayer(FERMENTER_LAYER, FermentBlockEntityModel::getTexturedModelData);
 
         HandledScreens.register(BoatismScreenHandlers.ENGINE_CONTROL_SCREEN_HANDLER, EngineControlScreen::new);
     }

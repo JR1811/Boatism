@@ -8,7 +8,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.EulerAngle;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.item.BoatismItems;
+import net.shirojr.boatism.init.BoatismItems;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 
 import java.util.ArrayList;

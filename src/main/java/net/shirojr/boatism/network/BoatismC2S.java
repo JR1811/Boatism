@@ -1,6 +1,5 @@
 package net.shirojr.boatism.network;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -19,8 +18,8 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.init.BoatismSounds;
 import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
-import net.shirojr.boatism.sound.BoatismSounds;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 
 import java.util.Optional;

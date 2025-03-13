@@ -3,16 +3,14 @@ package net.shirojr.boatism.util.handler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.shirojr.boatism.entity.BoatismEntities;
-import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.api.BoatEngineCoupler;
+import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.init.BoatismEntities;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
-import net.shirojr.boatism.util.nbt.NbtKeys;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;

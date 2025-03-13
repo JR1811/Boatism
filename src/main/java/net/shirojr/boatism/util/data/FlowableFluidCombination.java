@@ -2,7 +2,6 @@ package net.shirojr.boatism.util.data;
 
 import net.minecraft.block.FluidBlock;
 import net.minecraft.fluid.FlowableFluid;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
@@ -35,6 +34,7 @@ public record FlowableFluidCombination(String base, FlowableFluid flowing, Flowa
     }
 
     public boolean contains(@Nullable FluidState state) {
+        if (state == null) return false;
         if (!(state.getFluid() instanceof FlowableFluid flowableFluid)) return false;
         return contains(flowableFluid);
     }

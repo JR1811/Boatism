@@ -4,7 +4,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.RotationAxis;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.item.BoatismItems;
+import net.shirojr.boatism.init.BoatismItems;
 
 import java.util.List;
 

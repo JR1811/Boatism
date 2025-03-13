@@ -1,4 +1,4 @@
-package net.shirojr.boatism.gamerule;
+package net.shirojr.boatism.init;
 
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleFactory;
 import net.fabricmc.fabric.api.gamerule.v1.GameRuleRegistry;

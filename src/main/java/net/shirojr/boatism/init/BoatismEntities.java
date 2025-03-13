@@ -1,4 +1,4 @@
-package net.shirojr.boatism.entity;
+package net.shirojr.boatism.init;
 
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.entity.Entity;

@@ -3,7 +3,7 @@ package net.shirojr.boatism.sound.instance.custom;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.sound.BoatismSounds;
+import net.shirojr.boatism.init.BoatismSounds;
 import net.shirojr.boatism.sound.instance.SoundInstanceState;
 
 @Environment(EnvType.CLIENT)

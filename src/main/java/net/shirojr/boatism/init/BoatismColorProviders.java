@@ -1,9 +1,9 @@
-package net.shirojr.boatism.util;
+package net.shirojr.boatism.init;
 
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.ColorHelper;
-import net.shirojr.boatism.block.BoatismBlocks;
+import net.shirojr.boatism.util.LoggerUtil;
 
 public class BoatismColorProviders {
     @SuppressWarnings("SameParameterValue")

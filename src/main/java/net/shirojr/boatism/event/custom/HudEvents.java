@@ -10,8 +10,8 @@ import net.minecraft.entity.vehicle.BoatEntity;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.screen.gui.EngineGuiElement;
 import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
-import net.shirojr.boatism.util.gui.EngineGuiElement;
 import net.shirojr.boatism.util.handler.EntityHandler;
 
 import java.util.Optional;

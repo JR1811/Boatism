@@ -9,10 +9,11 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.IntProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
-import net.shirojr.boatism.fluid.BoatismFluids;
-import net.shirojr.boatism.util.BoatismProperties;
+import net.shirojr.boatism.init.BoatismFluids;
+import net.shirojr.boatism.init.BoatismProperties;
 
 public class OilFluidBlock extends FluidBlock {
     private static final IntProperty FLUID_HEAT = BoatismProperties.FLUID_HEAT;
@@ -25,6 +26,11 @@ public class OilFluidBlock extends FluidBlock {
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
         super.appendProperties(builder);
         builder.add(FLUID_HEAT);
+    }
+
+    @Override
+    public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+        super.randomDisplayTick(state, world, pos, random);
     }
 
     @Override

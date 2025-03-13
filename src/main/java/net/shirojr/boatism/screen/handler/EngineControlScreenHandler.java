@@ -13,6 +13,7 @@ import net.minecraft.screen.slot.Slot;
 import net.minecraft.screen.slot.SlotActionType;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.init.BoatismScreenHandlers;
 
 public class EngineControlScreenHandler extends ScreenHandler {
     private final Inventory engineInventory;

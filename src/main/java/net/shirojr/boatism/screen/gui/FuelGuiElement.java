@@ -1,4 +1,4 @@
-package net.shirojr.boatism.util.gui;
+package net.shirojr.boatism.screen.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.font.TextRenderer;

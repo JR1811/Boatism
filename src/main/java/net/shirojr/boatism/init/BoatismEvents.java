@@ -1,4 +1,4 @@
-package net.shirojr.boatism.event;
+package net.shirojr.boatism.init;
 
 import net.shirojr.boatism.event.custom.CommandRegistrationEvents;
 import net.shirojr.boatism.event.custom.HudEvents;
