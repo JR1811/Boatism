@@ -3,7 +3,6 @@ package net.shirojr.boatism.init;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.util.LoggerUtil;
 
@@ -27,11 +26,11 @@ public class BoatismSounds {
 
 
     static SoundEvent of(String id) {
-        SoundEvent sound = SoundEvent.of(new Identifier(Boatism.MODID, id));
-        return Registry.register(Registries.SOUND_EVENT, new Identifier(Boatism.MODID, id), sound);
+        SoundEvent sound = SoundEvent.of(Boatism.getId(id));
+        return Registry.register(Registries.SOUND_EVENT, Boatism.getId(id), sound);
     }
 
-    public static void initializeSounds() {
+    public static void initialize() {
         LoggerUtil.devLogger("Registering " + Boatism.MODID + " Sounds");
     }
 }

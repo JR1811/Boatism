@@ -1,5 +1,6 @@
 package net.shirojr.boatism.util.storage;
 
+import com.mojang.serialization.DataResult;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
@@ -14,7 +15,10 @@ import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.registry.RegistryWrapper;
 import net.shirojr.boatism.util.LoggerUtil;
+import net.shirojr.boatism.util.data.FluidStack;
 import net.shirojr.boatism.util.data.TransactionalLong;
 import net.shirojr.boatism.util.tag.BoatismTags;
 import org.jetbrains.annotations.Nullable;
@@ -217,32 +221,24 @@ public class FermentingInventory extends SimpleInventory {
      * Reads the stored Items and the FluidVariant
      */
     @Override
-    public void readNbtList(NbtList nbtList) {
-        this.clearItemsAndFluid();
+    public void readNbtList(NbtList nbtList, RegistryWrapper.WrapperLookup registries) {
+        super.readNbtList(nbtList, registries);
+        this.clearFluidStorage();
 
-        for (int i = 0; i < nbtList.size(); i++) {
-            NbtCompound nbtEntry = nbtList.getCompound(i);
-            ItemStack itemStack = ItemStack.fromNbt(nbtEntry);
-            if (!itemStack.isEmpty()) {
-                this.addStack(itemStack);
-            } else if (nbtEntry.contains("variant")) {
-                FluidVariant variant = FluidVariant.fromNbt(nbtEntry.getCompound("variant"));
-                long amount = nbtEntry.getLong("amount");
-                this.setFilter(getSimpleFluidPredicate(variant));
-                this.insertFluid(variant, amount);
-            }
-        }
+        DataResult<FluidStack> fluidStorageData = FluidStack.CODEC.parse(NbtOps.INSTANCE, nbtList);
+        fluidStorageData.result().ifPresent(fluidStack -> this.insertFluid(fluidStack.variant(), fluidStack.amount()));
     }
 
     /**
-     * Writes the stored Items and the FluidVariant
+     * Writes the stored Items and the {@link FluidStack}
      */
     @Override
-    public NbtList toNbtList() {
-        NbtList list = super.toNbtList();
-        NbtCompound fluidNbt = new NbtCompound();
-        this.getFluidStorage().writeNbt(fluidNbt);
-        list.add(fluidNbt);
+    public NbtList toNbtList(RegistryWrapper.WrapperLookup registries) {
+        NbtList list = super.toNbtList(registries);
+
+        FluidStack fluidStack = new FluidStack(this.getFluidVariant(), this.getFluidStorage().getAmount());
+        var fluidNbt = FluidStack.CODEC.encodeStart(NbtOps.INSTANCE, fluidStack);
+        fluidNbt.result().ifPresent(list::add);
         return list;
     }
 

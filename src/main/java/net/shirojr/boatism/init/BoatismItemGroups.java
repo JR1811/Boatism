@@ -22,7 +22,7 @@ public interface BoatismItemGroups {
 
     private static RegistryKey<ItemGroup> registerItemGroup(String name, Text displayName, ItemStack displayItemStack) {
         ItemGroup group = FabricItemGroup.builder().icon(() -> displayItemStack).displayName(displayName).build();
-        Identifier groupIdentifier = new Identifier(Boatism.MODID, name);
+        Identifier groupIdentifier = Boatism.getId(name);
         Registry.register(Registries.ITEM_GROUP, groupIdentifier, group);
         return RegistryKey.of(RegistryKeys.ITEM_GROUP, groupIdentifier);
     }

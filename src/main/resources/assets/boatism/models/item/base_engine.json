@@ -2,8 +2,8 @@
 	"credit": "Made with Blockbench by ShiroJR",
 	"texture_size": [64, 64],
 	"textures": {
-		"0": "boatism:item/boatengine",
-		"particle": "boatism:item/boatengine"
+		"0": "boatism:item/boat_engine",
+		"particle": "boatism:item/boat_engine"
 	},
 	"elements": [
 		{

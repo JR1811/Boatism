@@ -15,11 +15,11 @@ public enum BoatismNetworkIdentifiers {
     private final TargetSide side;
 
     BoatismNetworkIdentifiers(String packetName, TargetSide side) {
-        this.identifier = new Identifier(Boatism.MODID, packetName);
+        this.identifier = Boatism.getId(packetName);
         this.side = side;
     }
 
-    public Identifier getIdentifier() {
+    public Identifier getId() {
         return this.identifier;
     }
 
@@ -27,7 +27,7 @@ public enum BoatismNetworkIdentifiers {
         return this.side;
     }
 
-    enum TargetSide {
+    public enum TargetSide {
         CLIENT, SERVER
     }
 }

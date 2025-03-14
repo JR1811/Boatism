@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
 
 public class FuelGuiElement {
-    public static final Identifier GUI_TEXTURE = new Identifier(Boatism.MODID, "textures/gui/engine_control.png");
+    public static final Identifier GUI_TEXTURE = Boatism.getId("textures/gui/engine_control.png");
     public static final int TICKS_BETWEEN_SPRITE_CHANGE = 10;
 
     private FuelGuiElement() {

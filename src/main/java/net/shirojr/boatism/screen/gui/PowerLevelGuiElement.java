@@ -9,7 +9,7 @@ import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.screen.geometry.ShapeUtil;
 
 public class PowerLevelGuiElement {
-    public static final Identifier GUI_TEXTURE = new Identifier(Boatism.MODID, "textures/gui/engine_control.png");
+    public static final Identifier GUI_TEXTURE = Boatism.getId("textures/gui/engine_control.png");
     public static final int WIDTH = 53;
 
     private PowerLevelGuiElement() {

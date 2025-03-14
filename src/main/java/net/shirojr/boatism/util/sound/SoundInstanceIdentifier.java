@@ -16,7 +16,7 @@ public enum SoundInstanceIdentifier {
     private final Identifier identifier;
 
     SoundInstanceIdentifier(String soundInstanceName) {
-        this.identifier = new Identifier(Boatism.MODID, soundInstanceName);
+        this.identifier = Boatism.getId(soundInstanceName);
     }
 
     public Identifier getIdentifier() {

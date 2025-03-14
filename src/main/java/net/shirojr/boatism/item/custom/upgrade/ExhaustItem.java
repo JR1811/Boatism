@@ -24,4 +24,9 @@ public class ExhaustItem extends BoatismEquipmentItem {
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180));
         return matrixStack;
     }
+
+    @Override
+    public long addedConsumedFuel() {
+        return 1;
+    }
 }

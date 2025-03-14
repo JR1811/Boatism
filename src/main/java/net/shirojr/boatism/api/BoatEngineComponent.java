@@ -46,15 +46,15 @@ public interface BoatEngineComponent {
      * This value will add to the consumed fuel, if e.g. your custom Item is heavy.
      * Keep in mind that fuel is reduced per tick.
      */
-    default float addedConsumedFuel() {
-        return 0.0f;
+    default long addedConsumedFuel() {
+        return 0L;
     }
 
     /**
      * This value will add to the maximum capacity of the fuel engine.
      */
-    default float addedFuelCapacity() {
-        return 0.0f;
+    default long addedFuelCapacity() {
+        return 0L;
     }
 
     /**
@@ -91,11 +91,11 @@ public interface BoatEngineComponent {
      * If you change this method, you migh also want to change
      * {@link BoatEngineComponent#getMountedItemStack(ItemStack) getMountedItemStack}
      *
-     * @param displayedStack Original ItemStack which is displayed on the engine
+     * @param mountedStack Original ItemStack which is displayed on the engine
      * @return The new ItemStack which will be returned from the engine
      */
-    default ItemStack getReturnedItemStack(ItemStack displayedStack) {
-        return displayedStack;
+    default ItemStack getReturnedItemStack(ItemStack mountedStack) {
+        return mountedStack;
     }
 
     /**

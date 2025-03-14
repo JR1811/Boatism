@@ -28,8 +28,8 @@ public class EntityHandler {
         List<BoatEngineEntity> possibleEntities = world.getEntitiesByType(BoatismEntities.BOAT_ENGINE,
                 Box.of(pos, searchSize, searchSize, searchSize),
                 boatEngine -> boatEngine.getUuid().equals(uuid));
-        if (possibleEntities.size() < 1) return Optional.empty();
-        return Optional.ofNullable(possibleEntities.get(0));
+        if (possibleEntities.isEmpty()) return Optional.empty();
+        return Optional.ofNullable(possibleEntities.getFirst());
     }
 
     public static void removePossibleBoatEngineEntry(Entity entity) {
@@ -62,6 +62,7 @@ public class EntityHandler {
         for (int i = 0; i < boatEngineEntity.getMountedInventory().size(); i++) {
             boatEngineEntity.getMountedInventory().setStack(i, ItemStack.EMPTY);
         }
+        boatEngineEntity.updateArmorModifier();
     }
 
     public static void engineLinkCleanUp(BoatEntity boatEntity) {

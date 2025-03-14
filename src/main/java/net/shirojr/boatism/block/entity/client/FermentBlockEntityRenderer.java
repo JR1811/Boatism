@@ -9,6 +9,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
@@ -38,7 +39,7 @@ public class FermentBlockEntityRenderer<T extends FermentBlockEntity> implements
         //matrices.scale(1, -1, 1);
 
         VertexConsumer vertexConsumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(Boatism.getId("textures/entity/fermenter.png")));
-        this.model.render(normalizedLidOpenState, tickDelta, matrices, vertexConsumer, light, overlay, 1.0f, 1.0f, 1.0f, 1.0f);
+        this.model.render(normalizedLidOpenState, tickDelta, matrices, vertexConsumer, light, overlay, ColorHelper.Argb.fromFloats(1.0F, 1.0F, 1.0F, 1.0F));
         matrices.pop();
     }
 

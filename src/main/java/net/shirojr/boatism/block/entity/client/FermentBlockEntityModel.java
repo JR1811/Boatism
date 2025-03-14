@@ -52,14 +52,14 @@ public class FermentBlockEntityModel extends Model {
     }
 
     @Override
-    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
-        this.base.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
+        this.base.render(matrices, vertices, light, overlay);
     }
 
-    public void render(float normalizedLidState, float tickDelta, MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
+    public void render(float normalizedLidState, float tickDelta, MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
         this.cap.pitch = (float) Math.toRadians(MathHelper.lerp(normalizedLidState, 0, -70));
         if (normalizedLidState != 0) this.mixer.visible = false;
         else this.mixer.visible = true;
-        this.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+        this.render(matrices, vertices, light, overlay, color);
     }
 }

@@ -16,6 +16,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.api.CustomBoatEngineAttachment;
@@ -25,7 +26,6 @@ import net.shirojr.boatism.item.custom.BaseEngineItem;
 import net.shirojr.boatism.util.handler.EntityHandler;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -48,8 +48,8 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     }
 
     @Inject(method = "initDataTracker", at = @At("TAIL"))
-    private void boatism$injectDataTracker(CallbackInfo ci) {
-        this.dataTracker.startTracking(BOAT_ENGINE_UUID, Optional.empty());
+    private void boatism$injectInitDataTracker(DataTracker.Builder builder, CallbackInfo ci) {
+        builder.add(BOAT_ENGINE_UUID, Optional.empty());
     }
 
     @Override
@@ -121,10 +121,9 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     }
 
     @Inject(method = "getPassengerAttachmentPos", at = @At("HEAD"), cancellable = true)
-    protected void boatism$getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor,
-                                                     CallbackInfoReturnable<Vector3f> info) {
-        if (passenger instanceof BoatEngineEntity) {
-            info.setReturnValue(((CustomBoatEngineAttachment) this).boatism$attachmentPos(dimensions));
+    protected void boatism$getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor, CallbackInfoReturnable<Vec3d> cir) {
+        if (passenger instanceof BoatEngineEntity && this instanceof CustomBoatEngineAttachment attachment) {
+            cir.setReturnValue(attachment.boatism$attachmentPos(dimensions));
         }
     }
 
@@ -139,11 +138,11 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     }
 
     @Override
-    public Vector3f boatism$attachmentPos(EntityDimensions dimensions) {
+    public Vec3d boatism$attachmentPos(EntityDimensions dimensions) {
         if (this.getVariant() == BoatEntity.Type.BAMBOO) {
-            return new Vector3f(0.0f, dimensions.height * 0.7f, -1.2f);
+            return new Vec3d(0.0, dimensions.height() * 0.7, -1.2);
         }
-        return new Vector3f(0.0f, dimensions.height / 3.0f, -1.32f);
+        return new Vec3d(0.0, dimensions.height() / 3.0, -1.32);
     }
 
     @Shadow

@@ -1,14 +1,11 @@
 package net.shirojr.boatism.screen;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
-import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
+import net.shirojr.boatism.network.packet.PowerLevelChangePacket;
 import net.shirojr.boatism.screen.geometry.ShapeUtil;
 import net.shirojr.boatism.screen.gui.EngineGuiElement;
 import net.shirojr.boatism.screen.gui.FuelGuiElement;
@@ -83,9 +80,7 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
         if (!isHandlePressed()) return;
         this.draggedHorizontalDistance += (int) mouseX - previousX;
         if (Math.abs(this.draggedHorizontalDistance) > PowerLevelGuiElement.getPositionForPowerLevel(1)) {
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeDouble(Math.signum(this.draggedHorizontalDistance));
-            ClientPlayNetworking.send(BoatismNetworkIdentifiers.POWER_LEVEL_CHANGE.getIdentifier(), buf);
+            new PowerLevelChangePacket(Math.signum(this.draggedHorizontalDistance)).sendPacket();
             this.draggedHorizontalDistance = 0;
         }
         this.previousX = (int) mouseX;

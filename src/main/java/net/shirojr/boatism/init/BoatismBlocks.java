@@ -1,6 +1,5 @@
 package net.shirojr.boatism.init;
 
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -26,9 +25,9 @@ public interface BoatismBlocks {
 
     @SuppressWarnings("SameParameterValue")
     private static <T extends Block> T registerBlock(String name, boolean registerBlockItem, T block) {
-        Identifier identifier = new Identifier(Boatism.MODID, name);
+        Identifier identifier = Boatism.getId(name);
         T registeredBlock = Registry.register(Registries.BLOCK, identifier, block);
-        if (registerBlockItem) registerBlockItem(identifier, new BlockItem(block, new FabricItemSettings()));
+        if (registerBlockItem) registerBlockItem(identifier, new BlockItem(block, new Item.Settings()));
         return registeredBlock;
     }
 

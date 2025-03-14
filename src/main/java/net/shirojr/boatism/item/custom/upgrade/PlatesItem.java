@@ -38,4 +38,9 @@ public class PlatesItem extends BoatismEquipmentItem {
     public boolean waterProofsEngine() {
         return true;    //TODO: find a better item to waterproof engine
     }
+
+    @Override
+    public long addedConsumedFuel() {
+        return 2;
+    }
 }

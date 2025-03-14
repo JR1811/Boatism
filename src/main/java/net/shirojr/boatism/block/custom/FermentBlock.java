@@ -101,27 +101,32 @@ public class FermentBlock extends BlockWithEntity {
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (player.isSneaking()) {
-            toggleOpenedState(world, pos);
-            return ActionResult.SUCCESS;
-        }
+    protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         FermentBlockEntity blockEntity = getBlockEntity(world, pos);
-        if (blockEntity == null) return ActionResult.FAIL;
+        if (blockEntity == null) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         if (blockEntity.insertAndEmptyCanister(player, hand)) {
-            return ActionResult.SUCCESS;
+            return ItemActionResult.success(world.isClient());
         }
         if (blockEntity.extractAndFillCanister(player, hand)) {
-            return ActionResult.SUCCESS;
+            return ItemActionResult.success(world.isClient());
         }
-        ItemStack stack = player.getStackInHand(hand);
         if (blockEntity.getInventory().canInsert(stack)) {
             blockEntity.modifyInventory((inventory, world1) -> {
                 boolean wasInserted = inventory.insert(stack.copy());
                 if (wasInserted && !player.isCreative()) stack.decrement(stack.getCount());
             });
+            return ItemActionResult.success(world.isClient());
         }
-        return ActionResult.FAIL;
+        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+        if (player.isSneaking()) {
+            toggleOpenedState(world, pos);
+            return ActionResult.success(world.isClient());
+        }
+        return ActionResult.PASS;
     }
 
     public static void toggleOpenedState(World world, BlockPos pos) {

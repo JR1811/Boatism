@@ -2,7 +2,6 @@ package net.shirojr.boatism.init;
 
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.fluid.custom.OilFluid;
 import net.shirojr.boatism.util.LoggerUtil;
@@ -14,10 +13,10 @@ public class BoatismFluids {
 
     @SuppressWarnings("SameParameterValue")
     private static FlowableFluidCombination registerFlowableFluid(FlowableFluidCombination fluid) {
-        Registry.register(Registries.FLUID, new Identifier(Boatism.MODID, fluid.getName(FlowableFluidCombination.Type.STILL)), fluid.still());
-        Registry.register(Registries.FLUID, new Identifier(Boatism.MODID, fluid.getName(FlowableFluidCombination.Type.FLOWING)), fluid.flowing());
+        Registry.register(Registries.FLUID, Boatism.getId(fluid.getName(FlowableFluidCombination.Type.STILL)), fluid.still());
+        Registry.register(Registries.FLUID, Boatism.getId(fluid.getName(FlowableFluidCombination.Type.FLOWING)), fluid.flowing());
         if (fluid.isInfinite()) {
-            Registry.register(Registries.FLUID, new Identifier(Boatism.MODID, fluid.getName(FlowableFluidCombination.Type.INFINITE)), fluid.infinite());
+            Registry.register(Registries.FLUID, Boatism.getId(fluid.getName(FlowableFluidCombination.Type.INFINITE)), fluid.infinite());
         }
         return fluid;
     }

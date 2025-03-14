@@ -1,5 +1,6 @@
 package net.shirojr.boatism.util.data;
 
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.FluidState;
@@ -10,7 +11,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public record FlowableFluidCombination(String base, FlowableFluid flowing, FlowableFluid still, @Nullable FlowableFluid infinite) {
+public record FlowableFluidCombination(String base, FlowableFluid flowing, FlowableFluid still,
+                                       @Nullable FlowableFluid infinite) {
     public boolean isInfinite() {
         return infinite != null;
     }
@@ -24,7 +26,7 @@ public record FlowableFluidCombination(String base, FlowableFluid flowing, Flowa
     }
 
     public Identifier getOverlayTextureLocation(String fluidId) {
-        return new Identifier(Boatism.MODID, "misc/" + fluidId + "_overlay");
+        return Boatism.getId("misc/" + fluidId + "_overlay");
     }
 
     public boolean contains(FlowableFluid fluid) {
@@ -37,6 +39,10 @@ public record FlowableFluidCombination(String base, FlowableFluid flowing, Flowa
         if (state == null) return false;
         if (!(state.getFluid() instanceof FlowableFluid flowableFluid)) return false;
         return contains(flowableFluid);
+    }
+
+    public FluidVariant getFluidVariant() {
+        return FluidVariant.of(this.still());
     }
 
     public List<FlowableFluid> getAllVariants() {
@@ -68,7 +74,7 @@ public record FlowableFluidCombination(String base, FlowableFluid flowing, Flowa
         }
 
         public Identifier getPath(String fluidBaseId) {
-            return new Identifier(Boatism.MODID, "block/" + getFluidName(fluidBaseId));
+            return Boatism.getId("block/" + getFluidName(fluidBaseId));
         }
     }
 }

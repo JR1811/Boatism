@@ -2,15 +2,12 @@ package net.shirojr.boatism.mixin.client;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.network.PacketByteBuf;
 import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
+import net.shirojr.boatism.network.packet.OpenEngineInventoryPacket;
 import net.shirojr.boatism.util.handler.EntityHandler;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -41,9 +38,7 @@ public class MinecraftClientMixin {
         Optional<BoatEngineEntity> boatEngine = getBoatEngineEntity(player);
         while (original.call(instance)) {
             if (boatEngine.isEmpty()) return true;
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeVarInt(boatEngine.get().getId());
-            ClientPlayNetworking.send(BoatismNetworkIdentifiers.OPEN_ENGINE_SCREEN.getIdentifier(), buf);
+            new OpenEngineInventoryPacket(boatEngine.get().getId()).sendPacket();
         }
         return false;
     }

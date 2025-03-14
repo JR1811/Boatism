@@ -1,12 +1,10 @@
 package net.shirojr.boatism.util.handler;
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -17,7 +15,7 @@ import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismSounds;
 import net.shirojr.boatism.mixin.BoatEntityInvoker;
-import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
+import net.shirojr.boatism.network.packet.StartSoundInstancePacket;
 import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
 import java.util.ArrayList;
@@ -26,7 +24,7 @@ import java.util.List;
 public class BoatEngineHandler {
     public static final int MAX_POWER_LEVEL = 9;
     public static final int LIMITED_MAX_POWER_LEVEL = 3;
-    public static final int MAX_BASE_FUEL = Boatism.CONFIG.maxBaseFuel;
+    public static final long MAX_BASE_FUEL = Boatism.CONFIG.maxBaseFuel;
     public static final int MAX_BASE_OVERHEAT = Boatism.CONFIG.maxBaseOverheat;
 
     private final BoatEngineEntity boatEngine;
@@ -81,7 +79,7 @@ public class BoatEngineHandler {
                 return true;
             }
             if (engineIsRunning()) {
-                consumeFuel(1.0f);
+                consumeFuel(FluidConstants.NUGGET);
             }
         }
 
@@ -150,17 +148,16 @@ public class BoatEngineHandler {
         return !this.boatEngine.isRunning();
     }
 
-    public float getFuel() {
+    public long getFuel() {
         return this.boatEngine.getFuel();
     }
 
-    public void setFuel(float fuel) {
-        fuel = Math.min(getMaxFuelCapacity(), fuel);
-        this.boatEngine.setFuel(fuel);
+    public void setFuel(long fuel) {
+        this.boatEngine.setFuel(Math.min(getMaxFuelCapacity(), fuel));
     }
 
-    public float getMaxFuelCapacity() {
-        float maxCapacity = MAX_BASE_FUEL;
+    public long getMaxFuelCapacity() {
+        long maxCapacity = MAX_BASE_FUEL;
 
         for (ItemStack stack : getMountedItems()) {
             if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
@@ -174,8 +171,8 @@ public class BoatEngineHandler {
      * @return left over fuel (bigger than 0 if engine has been filled up)
      */
     @SuppressWarnings("UnusedReturnValue")
-    public float fillUpFuel(float fuel) {
-        float newFuelValue = getFuel() + fuel;
+    public long fillUpFuel(long fuel) {
+        long newFuelValue = getFuel() + fuel;
         if (fuel <= 0) return 0;
         if (newFuelValue == getMaxFuelCapacity() + fuel) return fuel;
         playSoundEvent(BoatismSounds.BOAT_ENGINE_FILL_UP);
@@ -187,13 +184,13 @@ public class BoatEngineHandler {
         return fuel;
     }
 
-    public void consumeFuel(float baseFuelConsumption) {
-        float consumedFuel = baseFuelConsumption + additionalConsumedFuel();
+    public void consumeFuel(long baseFuelConsumption) {
+        long consumedFuel = baseFuelConsumption + additionalConsumedFuel();
         setFuel(Math.max(getFuel() - consumedFuel, 0));
     }
 
-    private float additionalConsumedFuel() {
-        float fuelPerTick = 0;
+    private long additionalConsumedFuel() {
+        long fuelPerTick = 0;
         for (ItemStack entry : getMountedItems()) {
             if (entry.getItem() instanceof BoatEngineComponent component) {
                 fuelPerTick += component.addedConsumedFuel();
@@ -290,7 +287,7 @@ public class BoatEngineHandler {
         List<ItemStack> boatComponentStacks = new ArrayList<>();
         int passengerCount = Math.max(hookedBoatEntity.getPassengerList().size() - 1, 0);    // engine is passenger too
         int maxPassenger = ((BoatEntityInvoker) hookedBoatEntity).invokeGetMaxPassenger();
-        int thrust = 1;
+        float thrust = 1;
 
         getMountedItems().forEach(stack -> {
             if (stack.getItem() instanceof BoatEngineComponent component && component.addedThrust() > 0.0f) {
@@ -298,7 +295,8 @@ public class BoatEngineHandler {
             }
         });
         for (ItemStack thrustModifierStack : boatComponentStacks) {
-            thrust += ((BoatEngineComponent) thrustModifierStack.getItem()).addedThrust();
+            if (!(thrustModifierStack.getItem() instanceof BoatEngineComponent engineComponent)) continue;
+            thrust += engineComponent.addedThrust();
         }
         float passengerDeficit = (float) passengerCount / maxPassenger;
         return thrust * MathHelper.lerp(passengerDeficit, 1.0f, 0.7f);
@@ -333,10 +331,7 @@ public class BoatEngineHandler {
         if (!(boatEngine.getWorld() instanceof ServerWorld serverWorld)) return;
         PlayerLookup.around(serverWorld, boatEngine.getPos(), 60).forEach(player -> {
             for (SoundInstanceIdentifier entry : changedSoundList) {
-                PacketByteBuf buf = PacketByteBufs.create();
-                buf.writeVarInt(this.boatEngine.getId());
-                buf.writeIdentifier(entry.getIdentifier());
-                ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_START.getIdentifier(), buf);
+                new StartSoundInstancePacket(this.boatEngine.getId(), entry.getIdentifier()).sendPacket(player);
             }
         });
     }

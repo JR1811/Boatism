@@ -1,17 +1,14 @@
 package net.shirojr.boatism.mixin.client;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.entity.vehicle.BoatEntity;
-import net.minecraft.network.PacketByteBuf;
 import net.shirojr.boatism.Boatism;
-import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.api.BoatEngineCoupler;
+import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.network.packet.PowerLevelChangePacket;
 import net.shirojr.boatism.util.handler.EntityHandler;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -45,10 +42,7 @@ public class MouseMixin {
         boatEngineUuid.ifPresent(uuid -> {
             Optional<BoatEngineEntity> boatEngineEntity = EntityHandler.getBoatEngineEntityFromUuid(uuid, player.getWorld(), player.getPos(), 3);
             if (boatEngineEntity.isEmpty() || !boatEngineEntity.get().isRunning()) return;
-
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeDouble(delta);
-            ClientPlayNetworking.send(BoatismNetworkIdentifiers.POWER_LEVEL_CHANGE.getIdentifier(), buf);
+            new PowerLevelChangePacket(delta).sendPacket();
             ci.cancel();
         });
     }

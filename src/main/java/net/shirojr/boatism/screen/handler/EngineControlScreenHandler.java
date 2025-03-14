@@ -5,7 +5,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ArrayPropertyDelegate;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
@@ -14,25 +13,26 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismScreenHandlers;
+import net.shirojr.boatism.network.packet.OpenEngineInventoryPacket;
 
 public class EngineControlScreenHandler extends ScreenHandler {
     private final Inventory engineInventory;
     private final PropertyDelegate delegate;
     private BoatEngineEntity boatEngine;
 
-    public EngineControlScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
-        this(syncId, playerInventory, new SimpleInventory(12), new ArrayPropertyDelegate(6), buf);
+    public EngineControlScreenHandler(int syncId, PlayerInventory playerInventory, OpenEngineInventoryPacket openEngineInventoryPacket) {
+        this(syncId, playerInventory, new SimpleInventory(12), new ArrayPropertyDelegate(6), openEngineInventoryPacket);
     }
 
     public EngineControlScreenHandler(int syncId, PlayerInventory playerInventory, Inventory engineInventory,
-                                      PropertyDelegate delegate, PacketByteBuf buf) {
+                                      PropertyDelegate delegate, OpenEngineInventoryPacket data) {
         super(BoatismScreenHandlers.ENGINE_CONTROL_SCREEN_HANDLER, syncId);
         checkSize(engineInventory, 12);
         this.engineInventory = engineInventory;
         this.delegate = delegate;
         PlayerEntity player = playerInventory.player;
         if (!player.getWorld().isClient()) {
-            if (player.getWorld().getEntityById(buf.readVarInt()) instanceof BoatEngineEntity entity) {
+            if (player.getWorld().getEntityById(data.entityNetworkId()) instanceof BoatEngineEntity entity) {
                 this.boatEngine = entity;
             }
         }
@@ -47,18 +47,23 @@ public class EngineControlScreenHandler extends ScreenHandler {
     public boolean isEngineRunning() {
         return this.delegate.get(0) == 1;
     }
+
     public int getPowerLevel() {
         return this.delegate.get(1);
     }
+
     public float getFuel() {
         return (float) this.delegate.get(2) / 100;
     }
+
     public float getMaxFuel() {
         return (float) this.delegate.get(3) / 100;
     }
+
     public float getOverheat() {
         return (float) this.delegate.get(4) / 100;
     }
+
     public float getMaxOverheat() {
         return (float) this.delegate.get(5) / 100;
     }

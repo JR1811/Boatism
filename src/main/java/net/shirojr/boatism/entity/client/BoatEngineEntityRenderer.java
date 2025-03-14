@@ -16,7 +16,7 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 
 public class BoatEngineEntityRenderer
         extends LivingEntityRenderer<BoatEngineEntity, BoatEngineEntityModel<BoatEngineEntity>> {
-    private static final Identifier TEXTURE = new Identifier(Boatism.MODID, "textures/entity/boatengine.png");
+    private static final Identifier TEXTURE = Boatism.getId("textures/entity/boat_engine.png");
 
     public BoatEngineEntityRenderer(EntityRendererFactory.Context ctx) {
         super(ctx, new BoatEngineEntityModel<>(ctx.getPart(BoatismClient.BOAT_ENGINE_LAYER)), 0.4f);
@@ -66,17 +66,16 @@ public class BoatEngineEntityRenderer
     }
 
     @Override
-    protected void renderLabelIfPresent(BoatEngineEntity entity, Text text, MatrixStack matrices,
-                                        VertexConsumerProvider vertexConsumers, int light) {
-        // super.renderLabelIfPresent(entity, text, matrices, vertexConsumers, light);
+    protected void renderLabelIfPresent(BoatEngineEntity entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float tickDelta) {
+        // super.renderLabelIfPresent(entity, text, matrices, vertexConsumers, light, tickDelta);
     }
 
     @Override
     protected void setupTransforms(BoatEngineEntity entity, MatrixStack matrices, float animationProgress,
-                                   float bodyYaw, float tickDelta) {
+                                   float bodyYaw, float tickDelta, float scale) {
         float scaleFactor = 1.5f;
 
-        super.setupTransforms(entity, matrices, animationProgress, bodyYaw, tickDelta);
+        super.setupTransforms(entity, matrices, animationProgress, bodyYaw, tickDelta, scale);
         if (entity.getHookedBoatEntity().isPresent()) {
             BoatEntity boat = entity.getHookedBoatEntity().get();
         }

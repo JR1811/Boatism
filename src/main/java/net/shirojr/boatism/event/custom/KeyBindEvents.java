@@ -2,19 +2,17 @@ package net.shirojr.boatism.event.custom;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.network.PacketByteBuf;
 import net.shirojr.boatism.Boatism;
-import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
+import net.shirojr.boatism.network.packet.PowerLevelChangePacket;
 
 public class KeyBindEvents {
     private static KeyBinding POWER_LEVEL_UP;
     private static KeyBinding POWER_LEVEL_DOWN;
 
     private static final String BOATISM_KEYBINDINGS_GROUP = "key.%s.group".formatted(Boatism.MODID);
+
     public static void register() {
         POWER_LEVEL_UP = KeyBindingHelper.registerKeyBinding(
                 new KeyBinding("key.%s.power_level_up".formatted(Boatism.MODID),
@@ -37,8 +35,6 @@ public class KeyBindEvents {
     }
 
     private static void sendPowerLevelChangePacket(int delta) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeDouble(delta);
-        ClientPlayNetworking.send(BoatismNetworkIdentifiers.POWER_LEVEL_CHANGE.getIdentifier(), buf);
+        new PowerLevelChangePacket(delta).sendPacket();
     }
 }

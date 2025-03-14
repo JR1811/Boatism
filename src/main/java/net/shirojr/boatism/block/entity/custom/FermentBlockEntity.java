@@ -19,6 +19,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -282,18 +283,18 @@ public class FermentBlockEntity extends BlockEntity {
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt() {
+    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
         NbtCompound nbt = new NbtCompound();
-        this.writeNbt(nbt);
-        return createNbt();
+        this.writeNbt(nbt, registryLookup);
+        return createNbt(registryLookup);
     }
 
     @Override
-    public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
+    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+        super.readNbt(nbt, registryLookup);
         if (nbt.contains("inventory")) {
             NbtList list = nbt.getList("inventory", NbtElement.COMPOUND_TYPE);
-            this.getInventory().readNbtList(list);
+            this.getInventory().readNbtList(list, registryLookup);
         }
         this.setLidOpeningTick(nbt.getInt("lidOpeningTick"));
         this.setHeatTick(nbt.getInt("heatTick"));
@@ -301,9 +302,9 @@ public class FermentBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt) {
-        super.writeNbt(nbt);
-        NbtList list = this.getInventory().toNbtList();
+    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+        super.writeNbt(nbt, registryLookup);
+        NbtList list = this.getInventory().toNbtList(registryLookup);
         nbt.put("inventory", list);
         nbt.putInt("lidOpeningTick", this.getLidOpeningTick());
         nbt.putInt("heatTick", this.getHeatTick());

@@ -19,7 +19,7 @@ public enum EngineGuiElement {
     TURBINE(176, 45, 14, 9, 0, 25);
 
     private final int u, v, width, height, xOffset, yOffset;
-    public static final Identifier GUI_TEXTURE = new Identifier(Boatism.MODID, "textures/gui/engine_control.png");
+    public static final Identifier GUI_TEXTURE = Boatism.getId("textures/gui/engine_control.png");
 
     EngineGuiElement(int u, int v, int width, int height, int xOffset, int yOffset) {
         this.u = u;

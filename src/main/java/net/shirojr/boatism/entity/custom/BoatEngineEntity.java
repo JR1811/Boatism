@@ -1,8 +1,7 @@
 package net.shirojr.boatism.entity.custom;
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
@@ -20,7 +19,6 @@ import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -32,6 +30,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.EulerAngle;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -39,11 +38,15 @@ import net.minecraft.world.explosion.Explosion;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.api.BoatEngineCoupler;
+import net.shirojr.boatism.entity.BoatismEntityAttributeModifierIdentifiers;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
 import net.shirojr.boatism.init.BoatismEntities;
 import net.shirojr.boatism.init.BoatismGameRules;
 import net.shirojr.boatism.init.BoatismSounds;
-import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
+import net.shirojr.boatism.init.BoatismStorage;
+import net.shirojr.boatism.network.packet.EngineComponentSyncPacket;
+import net.shirojr.boatism.network.packet.StartSoundInstancePacket;
+import net.shirojr.boatism.network.packet.StoppedTrackingEnginePacket;
 import net.shirojr.boatism.util.BoatEngineExplosionBehaviour;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.data.EngineComponent;
@@ -61,14 +64,16 @@ import java.util.*;
 public class BoatEngineEntity extends LivingEntity {
     private final SimpleInventory mountedInventory;
     private final PropertyDelegate propertyDelegate;
+
     private static final TrackedData<Integer> POWER_LEVEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Float> OVERHEAT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private static final TrackedData<EulerAngle> ARM_ROTATION = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.ROTATION);
     private static final TrackedData<Boolean> SUBMERGED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> RUNNING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Float> FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
+    private static final TrackedData<Long> FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.LONG);
     private static final TrackedData<Boolean> LOCKED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    public static final UUID COMPONENT_ARMOR_ID = UUID.fromString("7E0292F2-9434-48D5-A29F-9583AF7DF27F");
+
+    public static final int INVENTORY_SIZE = 32;
 
     // public final AnimationState rightSpinAnimationState = new AnimationState();
     public final AnimationState leftSpinAnimationState = new AnimationState();
@@ -83,9 +88,8 @@ public class BoatEngineEntity extends LivingEntity {
     public BoatEngineEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
         this.engineHandler = BoatEngineHandler.create(this);
-        this.mountedInventory = new SimpleInventory(32);
+        this.mountedInventory = new SimpleInventory(INVENTORY_SIZE);
         this.setNoGravity(true);
-        this.setStepHeight(0.0f);
         this.propertyDelegate = new PropertyDelegate() {
             @Override
             public int get(int index) {
@@ -130,15 +134,15 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     @Override
-    protected void initDataTracker() {
-        super.initDataTracker();
-        this.dataTracker.startTracking(POWER_LEVEL, 0);
-        this.dataTracker.startTracking(OVERHEAT, 0.0f);
-        this.dataTracker.startTracking(ARM_ROTATION, new EulerAngle(0.0f, 5.0f, 0.0f));
-        this.dataTracker.startTracking(SUBMERGED, false);
-        this.dataTracker.startTracking(FUEL, 0.0f);
-        this.dataTracker.startTracking(LOCKED, false);
-        this.dataTracker.startTracking(RUNNING, false);
+    protected void initDataTracker(DataTracker.Builder builder) {
+        super.initDataTracker(builder);
+        builder.add(POWER_LEVEL, 0);
+        builder.add(OVERHEAT, 0.0f);
+        builder.add(ARM_ROTATION, new EulerAngle(0.0f, 5.0f, 0.0f));
+        builder.add(SUBMERGED, false);
+        builder.add(FUEL, 0L);
+        builder.add(LOCKED, false);
+        builder.add(RUNNING, false);
     }
 
     public static DefaultAttributeContainer.Builder setAttributes() {
@@ -191,21 +195,20 @@ public class BoatEngineEntity extends LivingEntity {
         this.setOverheat(nbt.getFloat(NbtKeys.OVERHEAT));
         this.setArmRotation(new EulerAngle(nbt.getList(NbtKeys.ROTATION, NbtElement.FLOAT_TYPE)));
         this.setSubmerged(nbt.getBoolean(NbtKeys.IS_SUBMERGED));
-        this.setFuel(nbt.getFloat(NbtKeys.FUEL));
+        this.setFuel(nbt.getLong(NbtKeys.FUEL));
         this.setLocked(nbt.getBoolean(NbtKeys.IS_LOCKED));
     }
 
     public void syncComponentListToTrackingClients() {
         if (this.getWorld().isClient()) return;
         PlayerLookup.tracking(this).forEach(player -> {
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeVarInt(this.getId());
-            buf.writeVarInt(this.getMountedInventory().size());
-            for (int i = 0; i < getMountedInventory().size(); i++) {
-                buf.writeVarInt(i);
-                buf.writeItemStack(getMountedInventory().getStack(i));
+            List<EngineComponent> engineComponentList = new ArrayList<>();
+            for (int slot = 0; slot < getMountedInventory().size(); slot++) {
+                ItemStack stack = getMountedInventory().getStack(slot);
+                if (stack.isEmpty()) continue;
+                engineComponentList.add(new EngineComponent(slot, getMountedInventory().getStack(slot)));
             }
-            ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.BOAT_COMPONENT_SYNC.getIdentifier(), buf);
+            new EngineComponentSyncPacket(this.getId(), engineComponentList).sendPacket(player);
         });
     }
 
@@ -314,18 +317,12 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     private void sendPacketForSoundInstance(SoundInstanceIdentifier soundIdentifier, ServerPlayerEntity player) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(this.getId());
-        buf.writeIdentifier(soundIdentifier.getIdentifier());
-        ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_START.getIdentifier(), buf);
+        new StartSoundInstancePacket(this.getId(), soundIdentifier.getIdentifier()).sendPacket(player);
         super.onStoppedTrackingBy(player);
     }
 
     private void sendPacketForStoppingAllSoundInstances(ServerPlayerEntity player) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(this.getId());
-        buf.writeBoolean(true);
-        ServerPlayNetworking.send(player, BoatismNetworkIdentifiers.SOUND_END_ENGINE.getIdentifier(), buf);
+        new StoppedTrackingEnginePacket(this.getId(), true);
     }
 
     //region getter & setter
@@ -348,8 +345,18 @@ public class BoatEngineEntity extends LivingEntity {
         this.hookedBoatEntityUuid = uuid;
     }
 
-    public SimpleInventory getMountedInventory() {
+    @SuppressWarnings("unused")
+    public SimpleInventory getMountedInventory(@Nullable Direction direction) {
         return this.mountedInventory;
+    }
+
+    public SimpleInventory getMountedInventory() {
+        return this.getMountedInventory(null);
+    }
+
+    @Nullable
+    public ItemStorage getMountedInventoryStorage(@Nullable Direction direction) {
+        return BoatismStorage.BoatismApis.ENTITY_ITEM_STORAGE.find(this, direction);
     }
 
     public int getMountedInventorySize() {
@@ -368,22 +375,31 @@ public class BoatEngineEntity extends LivingEntity {
         for (int i = 0; i < mountedItems.size(); i++) {
             getMountedInventory().setStack(i, mountedItems.get(i));
         }
+        updateArmorModifier();
     }
 
     public void setMountedItemsFromComponentList(List<EngineComponent> components) {
         this.mountedInventory.clear();
-        for (EngineComponent component : components) {
-            this.mountedInventory.addStack(component.componentStack());
+        for (int slot = 0; slot < INVENTORY_SIZE; slot++) {
+            ItemStack stack = ItemStack.EMPTY;
+            for (EngineComponent component : components) {
+                if (component.slot() == slot) {
+                    stack = component.componentStack();
+                    break;
+                }
+
+            }
+            this.getMountedInventory().setStack(slot, stack);
         }
+
+        updateArmorModifier();
     }
 
     public void addToMountedInventory(ItemStack itemStack) {
         if (!(itemStack.getItem() instanceof BoatEngineComponent component)) return;
-        EntityAttributeInstance armorAttributeInstance = this.getAttributeInstance(EntityAttributes.GENERIC_ARMOR);
-        if (armorAttributeInstance == null || itemStack == null) return;
         this.getMountedInventory().addStack(component.getMountedItemStack(itemStack));
         if (this.getWorld().isClient()) return;
-        changeArmorModifier(armorAttributeInstance, COMPONENT_ARMOR_ID);
+        updateArmorModifier();
     }
 
     public boolean mountedInventoryContains(ItemStack itemStack) {
@@ -392,13 +408,17 @@ public class BoatEngineEntity extends LivingEntity {
                 mountedStack.getItem().equals(component.getMountedItemStack(itemStack).getItem()));
     }
 
-    public void changeArmorModifier(EntityAttributeInstance instance, UUID uuid) {
-        instance.removeModifier(uuid);
-        // removeModifier(modifier.getId());
-
-        EntityAttributeModifier COMPONENT_ARMOR_BONUS = new EntityAttributeModifier(uuid, "Component armor bonus", engineHandler.getFullArmorValue(),
-                EntityAttributeModifier.Operation.ADDITION);
-        instance.addPersistentModifier(COMPONENT_ARMOR_BONUS);
+    public void updateArmorModifier() {
+        if (this.getWorld().isClient()) return;
+        EntityAttributeInstance instance = this.getAttributeInstance(EntityAttributes.GENERIC_ARMOR);
+        if (instance == null) return;
+        instance.removeModifier(BoatismEntityAttributeModifierIdentifiers.ENGINE_COMPONENT_ARMOR.getId());
+        EntityAttributeModifier modifier = new EntityAttributeModifier(
+                BoatismEntityAttributeModifierIdentifiers.ENGINE_COMPONENT_ARMOR.getId(),
+                this.engineHandler.getFullArmorValue(),
+                EntityAttributeModifier.Operation.ADD_VALUE
+        );
+        instance.addPersistentModifier(modifier);
     }
 
     @Override
@@ -560,11 +580,11 @@ public class BoatEngineEntity extends LivingEntity {
         this.dataTracker.set(LOCKED, resting);
     }
 
-    public float getFuel() {
+    public long getFuel() {
         return this.dataTracker.get(FUEL);
     }
 
-    public void setFuel(float fuel) {
+    public void setFuel(long fuel) {
         this.dataTracker.set(FUEL, fuel);
     }
 

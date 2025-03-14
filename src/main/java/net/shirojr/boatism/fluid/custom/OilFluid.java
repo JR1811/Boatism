@@ -56,8 +56,14 @@ public abstract class OilFluid extends FlowableFluid {
         Block.dropStacks(state, world, pos, blockEntity);
     }
 
+    /*
     @Override
     protected int getFlowSpeed(WorldView world) {
+        return 2;
+    }*/
+
+    @Override
+    protected int getMaxFlowDistance(WorldView world) {
         return 2;
     }
 

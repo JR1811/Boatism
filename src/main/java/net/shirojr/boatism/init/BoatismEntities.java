@@ -21,7 +21,7 @@ public class BoatismEntities {
                     .trackedUpdateRate(1).spawnableFarFromPlayer().build());
 
     private static <E extends Entity, T extends EntityType<E>> T register(@NotNull String name, @NotNull T entityType) {
-        return Registry.register(Registries.ENTITY_TYPE, new Identifier(Boatism.MODID, name), entityType);
+        return Registry.register(Registries.ENTITY_TYPE, Boatism.getId(name), entityType);
     }
 
     public static void initialize() {

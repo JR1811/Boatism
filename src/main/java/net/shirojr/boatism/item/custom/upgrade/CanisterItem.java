@@ -1,11 +1,13 @@
 package net.shirojr.boatism.item.custom.upgrade;
 
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.RotationAxis;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.init.BoatismDataComponents;
 import net.shirojr.boatism.init.BoatismItems;
 
 import java.util.List;
@@ -19,14 +21,14 @@ public class CanisterItem extends BoatismEquipmentItem implements BoatEngineComp
     @Override
     public ItemStack getMountedItemStack(ItemStack originalStack) {
         ItemStack output = new ItemStack(BoatismItems.COMPONENT_CANISTER_STRAPPED);
-        output.setNbt(originalStack.getNbt());
+        output.set(BoatismDataComponents.ORIGINAL_ITEM, originalStack);
         return output;
     }
 
     @Override
-    public ItemStack getReturnedItemStack(ItemStack displayedStack) {
+    public ItemStack getReturnedItemStack(ItemStack displayedItemStack) {
         ItemStack output = new ItemStack(BoatismItems.COMPONENT_CANISTER);
-        output.setNbt(displayedStack.getNbt());
+        output.set(BoatismDataComponents.DISPLAYED_ITEM, displayedItemStack);
         return output;
     }
 
@@ -47,12 +49,12 @@ public class CanisterItem extends BoatismEquipmentItem implements BoatEngineComp
     }
 
     @Override
-    public float addedFuelCapacity() {
-        return 5500.0f;
+    public long addedFuelCapacity() {
+        return FluidConstants.BUCKET * 5;
     }
 
     @Override
-    public float addedConsumedFuel() {
-        return 0.2f;
+    public long addedConsumedFuel() {
+        return 1;
     }
 }

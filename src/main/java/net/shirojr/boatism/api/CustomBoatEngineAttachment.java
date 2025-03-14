@@ -1,6 +1,7 @@
 package net.shirojr.boatism.api;
 
 import net.minecraft.entity.EntityDimensions;
+import net.minecraft.util.math.Vec3d;
 import org.joml.Vector3f;
 
 /**
@@ -40,5 +41,5 @@ public interface CustomBoatEngineAttachment {
      *     </li>
      * </ul>
      */
-    Vector3f boatism$attachmentPos(EntityDimensions dimensions);
+    Vec3d boatism$attachmentPos(EntityDimensions dimensions);
 }
