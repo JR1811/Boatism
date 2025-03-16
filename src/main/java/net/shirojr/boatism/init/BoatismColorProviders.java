@@ -5,7 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.util.math.ColorHelper;
 import net.shirojr.boatism.util.LoggerUtil;
 
-public class BoatismColorProviders {
+public interface BoatismColorProviders {
     @SuppressWarnings("SameParameterValue")
     private static void registerColorProviderForHeat(int baseColor, Block block) {
         ColorProviderRegistry.BLOCK.register((state, world, pos, tintIndex) -> {
@@ -16,7 +16,7 @@ public class BoatismColorProviders {
         }, block);
     }
 
-    public static void initialize() {
+    static void initialize() {
         registerColorProviderForHeat(0xFFFFFF, BoatismBlocks.OIL_FLUID_BLOCK);
         LoggerUtil.devLogger("initialized color providers");
     }

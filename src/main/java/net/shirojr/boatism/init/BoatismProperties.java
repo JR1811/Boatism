@@ -2,14 +2,10 @@ package net.shirojr.boatism.init;
 
 import net.minecraft.state.property.IntProperty;
 
-public class BoatismProperties {
-    public static final IntProperty FLUID_HEAT;
+public interface BoatismProperties {
+    IntProperty FLUID_HEAT = IntProperty.of("fluid_heat", 0, Bounds.FLUID_HEAT_MAX);
 
-    static {
-        FLUID_HEAT = IntProperty.of("fluid_heat", 0, Bounds.FLUID_HEAT_MAX);
-    }
-
-    public static class Bounds {
+    class Bounds {
         public static final int FLUID_HEAT_MAX = 10;
     }
 }

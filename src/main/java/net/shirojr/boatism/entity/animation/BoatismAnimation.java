@@ -24,4 +24,11 @@ public class BoatismAnimation {
                                     Transformation.Interpolations.LINEAR),
                             new Keyframe(1f, AnimationHelper.createRotationalVector(0f, 0f, 360f),
                                     Transformation.Interpolations.LINEAR))).build();
+    public static final Animation SPIN_LEFT_AIR_BOAT = Animation.Builder.create(SPIN_DURATION_IN_SEC).looping()
+            .addBoneAnimation("propeller",
+                    new Transformation(Transformation.Targets.ROTATE,
+                            new Keyframe(0f, AnimationHelper.createRotationalVector(0f, 0f, 0f),
+                                    Transformation.Interpolations.LINEAR),
+                            new Keyframe(1f, AnimationHelper.createRotationalVector(0f, 0f, 360f),
+                                    Transformation.Interpolations.LINEAR))).build();
 }

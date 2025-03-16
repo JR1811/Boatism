@@ -7,8 +7,8 @@ import net.shirojr.boatism.fluid.custom.OilFluid;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.data.FlowableFluidCombination;
 
-public class BoatismFluids {
-    public static FlowableFluidCombination OIL = registerFlowableFluid(new FlowableFluidCombination("oil", new OilFluid.Flowing(), new OilFluid.Still(), null));
+public interface BoatismFluids {
+    FlowableFluidCombination OIL = registerFlowableFluid(new FlowableFluidCombination("oil", new OilFluid.Flowing(), new OilFluid.Still(), null));
 
 
     @SuppressWarnings("SameParameterValue")
@@ -21,7 +21,7 @@ public class BoatismFluids {
         return fluid;
     }
 
-    public static void initialize() {
-        LoggerUtil.devLogger("initialized fluids");
+    static void initialize() {
+        // static initialisation
     }
 }

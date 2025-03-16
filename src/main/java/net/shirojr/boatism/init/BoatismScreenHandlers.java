@@ -9,8 +9,8 @@ import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.network.packet.OpenEngineInventoryPacket;
 import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
 
-public class BoatismScreenHandlers {
-    public static ScreenHandlerType<EngineControlScreenHandler> ENGINE_CONTROL_SCREEN_HANDLER = register(
+public interface BoatismScreenHandlers {
+    ScreenHandlerType<EngineControlScreenHandler> ENGINE_CONTROL_SCREEN_HANDLER = register(
             "engine_control", new ExtendedScreenHandlerType<>(EngineControlScreenHandler::new, OpenEngineInventoryPacket.CODEC));
 
     @SuppressWarnings("SameParameterValue")
@@ -18,7 +18,7 @@ public class BoatismScreenHandlers {
         return Registry.register(Registries.SCREEN_HANDLER, Boatism.getId(name), type);
     }
 
-    public static void initialize() {
-
+    static void initialize() {
+        // static initialisation
     }
 }
