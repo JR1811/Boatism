@@ -17,7 +17,6 @@ import net.shirojr.boatism.init.BoatismSounds;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 
-import java.util.Optional;
 import java.util.UUID;
 
 // Delta -1.0 = down, 1.0 = up
@@ -42,25 +41,24 @@ public record PowerLevelChangePacket(double delta) implements CustomPayload {
         ServerPlayerEntity player = context.player();
         ServerWorld world = player.getServerWorld();
         if (!(player.getVehicle() instanceof BoatEntity boatEntity)) return;
-        Optional<UUID> boatEngineEntityUuid = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid();
+        UUID boatEngineEntityUuid = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid();
+        if (boatEngineEntityUuid == null) return;
+        BoatEngineEntity boatEngineEntity = (BoatEngineEntity) ((ServerWorld) player.getWorld()).getEntity(boatEngineEntityUuid);
+        if (boatEngineEntity == null) return;
+        if (!boatEngineEntity.isRunning()) return;
+        BoatEngineHandler engineHandler = boatEngineEntity.getEngineHandler();
+        int newPowerLevel = engineHandler.getPowerLevel() + (int) delta;
+        newPowerLevel = Math.min(newPowerLevel, engineHandler.getMaxPowerLevel());
+        newPowerLevel = Math.max(newPowerLevel, 0);
 
-        boatEngineEntityUuid.ifPresent(uuid -> {
-            BoatEngineEntity boatEngineEntity = (BoatEngineEntity) ((ServerWorld) player.getWorld()).getEntity(uuid);
-            if (boatEngineEntity == null) return;
-            if (!boatEngineEntity.isRunning()) return;
-            BoatEngineHandler engineHandler = boatEngineEntity.getEngineHandler();
-            int newPowerLevel = engineHandler.getPowerLevel() + (int) delta;
-            newPowerLevel = Math.min(newPowerLevel, engineHandler.getMaxPowerLevel());
-            newPowerLevel = Math.max(newPowerLevel, 0);
+        if (newPowerLevel > engineHandler.getPowerLevel()) {
+            world.playSound(null, player.getBlockPos(), BoatismSounds.BOAT_ENGINE_POWER_UP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
+        } else if (newPowerLevel < engineHandler.getPowerLevel()) {
+            world.playSound(null, player.getBlockPos(), BoatismSounds.BOAT_ENGINE_POWER_DOWN, SoundCategory.NEUTRAL, 0.7f, 1.0f);
+        }
 
-            if (newPowerLevel > engineHandler.getPowerLevel()) {
-                world.playSound(null, player.getBlockPos(), BoatismSounds.BOAT_ENGINE_POWER_UP, SoundCategory.NEUTRAL, 0.7f, 1.0f);
-            } else if (newPowerLevel < engineHandler.getPowerLevel()) {
-                world.playSound(null, player.getBlockPos(), BoatismSounds.BOAT_ENGINE_POWER_DOWN, SoundCategory.NEUTRAL, 0.7f, 1.0f);
-            }
+        engineHandler.setPowerLevel(newPowerLevel);
+        player.sendMessage(Text.translatable("mouse.boatism.power_level", newPowerLevel), true);
 
-            engineHandler.setPowerLevel(newPowerLevel);
-            player.sendMessage(Text.translatable("mouse.boatism.power_level", newPowerLevel), true);
-        });
     }
 }

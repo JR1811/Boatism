@@ -1,4 +1,4 @@
-package net.shirojr.boatism.entity;
+package net.shirojr.boatism.init;
 
 import net.minecraft.util.Identifier;
 import net.shirojr.boatism.Boatism;

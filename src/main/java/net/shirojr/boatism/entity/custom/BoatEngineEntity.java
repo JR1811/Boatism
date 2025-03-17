@@ -38,7 +38,7 @@ import net.minecraft.world.explosion.Explosion;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.api.BoatEngineCoupler;
-import net.shirojr.boatism.entity.BoatismEntityAttributeModifierIdentifiers;
+import net.shirojr.boatism.init.BoatismEntityAttributeModifierIdentifiers;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
 import net.shirojr.boatism.init.BoatismEntities;
 import net.shirojr.boatism.init.BoatismGameRules;
@@ -50,6 +50,7 @@ import net.shirojr.boatism.network.packet.StoppedTrackingEnginePacket;
 import net.shirojr.boatism.util.BoatEngineExplosionBehaviour;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.data.EngineComponent;
+import net.shirojr.boatism.util.data.codec.BoatismCodecs;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import net.shirojr.boatism.util.handler.EntityHandler;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
@@ -169,7 +170,10 @@ public class BoatEngineEntity extends LivingEntity {
         super.writeCustomDataToNbt(nbt);
         getHookedBoatEntityUuid().ifPresent(hookedBoatEntityUuid ->
                 nbt.putUuid(NbtKeys.HOOKED_ENTITY, hookedBoatEntityUuid));
+
+
         BoatEngineNbtHelper.writeItemStacksToNbt(this.mountedInventory.getHeldStacks(), NbtKeys.MOUNTED_ITEMS, nbt);
+
         nbt.putBoolean(NbtKeys.IS_RUNNING, this.isRunning());
         nbt.putInt(NbtKeys.POWER_OUTPUT, this.getPowerLevel());
         nbt.putFloat(NbtKeys.OVERHEAT, this.getOverheat());
@@ -288,7 +292,9 @@ public class BoatEngineEntity extends LivingEntity {
                 }
             }
         } else if (stack.isEmpty()) {
-            if (!engineHandler.engineIsRunning()) engineHandler.startEngine();
+            if (!engineHandler.engineIsRunning()) {
+                engineHandler.startEngine();
+            }
             else engineHandler.stopEngine();
             LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
             return ActionResult.SUCCESS;
@@ -367,13 +373,13 @@ public class BoatEngineEntity extends LivingEntity {
         return i;
     }
 
-    public void setMountedItemsFromItemStackList(List<ItemStack> mountedItems) {
+    public void setMountedItemsFromItemStackList(LinkedHashSet<BoatismCodecs.MountedInventory.Slot> mountedItems) {
         if (mountedItems.size() > getMountedInventory().size()) {
             LoggerUtil.devLogger("inventory size was bigger than expected", true, null);
             return;
         }
-        for (int i = 0; i < mountedItems.size(); i++) {
-            getMountedInventory().setStack(i, mountedItems.get(i));
+        for (BoatismCodecs.MountedInventory.Slot entry : mountedItems) {
+            getMountedInventory().setStack(entry.index(), entry.stack());
         }
         updateArmorModifier();
     }
@@ -619,8 +625,10 @@ public class BoatEngineEntity extends LivingEntity {
 
     public void removeBoatEngine(Entity entity) {
         if (!(entity instanceof BoatEntity boatEntity)) return;
-        ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().ifPresent(boatEngineEntity ->
-                ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
+        UUID boatEngineUuid = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid();
+        if (boatEngineUuid != null) {
+            ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null);
+        }
         this.discard();
     }
 

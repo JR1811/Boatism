@@ -6,13 +6,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
+import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.network.packet.BoatEntitySyncPacket;
 import net.shirojr.boatism.util.handler.EntityHandler;
 import net.shirojr.boatism.util.tag.BoatismTags;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,14 +26,25 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
-    @Shadow protected boolean firstUpdate;
+    @Shadow
+    protected boolean firstUpdate;
 
-    @Shadow protected Object2DoubleMap<TagKey<Fluid>> fluidHeight;
+    @Shadow
+    protected Object2DoubleMap<TagKey<Fluid>> fluidHeight;
 
-    @Shadow public abstract boolean updateMovementInFluid(TagKey<Fluid> tag, double speed);
+    @Shadow
+    public abstract boolean updateMovementInFluid(TagKey<Fluid> tag, double speed);
+
+    @Inject(method = "onStartedTrackingBy", at = @At("TAIL"))
+    private void startedTrackingBoatEntity(ServerPlayerEntity player, CallbackInfo ci) {
+        if (player.getVehicle() instanceof BoatEntity boat && boat instanceof BoatEngineCoupler coupler) {
+            new BoatEntitySyncPacket(boat.getId(), Optional.ofNullable(coupler.boatism$getBoatEngineEntityUuid())).sendPacket(List.of(player));
+        }
+    }
 
     @Inject(method = "remove", at = @At("HEAD"))
     private void boatism$removeHookedBoatEngineEntries(CallbackInfo ci) {
@@ -107,8 +120,8 @@ public abstract class EntityMixin {
         double movementLength = movement.lengthSquared();
         if (movementLength > 1.0) return false;
         BlockHitResult hitResult = entity.getWorld().raycast(new RaycastContext(entity.getPos(), entity.getPos().add(movement),
-                        RaycastContext.ShapeType.FALLDAMAGE_RESETTING, RaycastContext.FluidHandling.ANY, entity));
-        HitResult.Type hitResultType =hitResult.getType();
+                RaycastContext.ShapeType.FALLDAMAGE_RESETTING, RaycastContext.FluidHandling.ANY, entity));
+        HitResult.Type hitResultType = hitResult.getType();
         return !hitResultType.equals(HitResult.Type.MISS);
     }
 }

@@ -16,6 +16,7 @@ import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
 import net.shirojr.boatism.util.handler.EntityHandler;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public class HudEvents {
     public static void register() {
@@ -29,11 +30,11 @@ public class HudEvents {
         if (player == null || !(player.getVehicle() instanceof BoatEntity boatEntity)) return;
         if (player.currentScreenHandler instanceof EngineControlScreenHandler) return;
         if (!Boatism.CONFIG.engineHudOverlay.shouldDisplay()) return;
-        Optional<BoatEngineEntity> potentialBoatEngine = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid()
-                .flatMap(uuid -> EntityHandler.getBoatEngineEntityFromUuid(uuid, player.getWorld(), player.getPos(), 3));
-        if (potentialBoatEngine.isEmpty()) return;
+        UUID boatEngineUuid = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid();
+        Optional<BoatEngineEntity> boatEngineEntity = EntityHandler.getBoatEngineEntityFromUuid(boatEngineUuid, player.getWorld(), player.getPos(), 3);
+        if (boatEngineEntity.isEmpty()) return;
 
-        BoatEngineEntity boatEngine = potentialBoatEngine.get();
+        BoatEngineEntity boatEngine = boatEngineEntity.get();
         float heat = boatEngine.getOverheat() / boatEngine.getEngineHandler().getMaxOverHeatCapacity();
         int x = Boatism.CONFIG.engineHudOverlay.getX();
         int y = context.getScaledWindowHeight() - (36 + Boatism.CONFIG.engineHudOverlay.getY());

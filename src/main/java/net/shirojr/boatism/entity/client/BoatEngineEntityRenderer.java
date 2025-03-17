@@ -62,7 +62,7 @@ public class BoatEngineEntityRenderer
 
     @Override
     public boolean shouldRender(BoatEngineEntity entity, Frustum frustum, double x, double y, double z) {
-        return super.shouldRender(entity, frustum, x, y, z);
+        return true;
     }
 
     @Override

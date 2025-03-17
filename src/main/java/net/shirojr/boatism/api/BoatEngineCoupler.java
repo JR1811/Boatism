@@ -1,8 +1,8 @@
 package net.shirojr.boatism.api;
 
 import net.minecraft.entity.vehicle.BoatEntity;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public interface BoatEngineCoupler {
@@ -12,7 +12,8 @@ public interface BoatEngineCoupler {
      *
      * @return empty if no link has been found or the entry has been removed
      */
-    Optional<UUID> boatism$getBoatEngineEntityUuid();
+    @Nullable
+    UUID boatism$getBoatEngineEntityUuid();
 
     /**
      * Set a new "BoatEntity to BoatEngineEntity" link. You can remove a hooked entry by passing in <b>null</b>.

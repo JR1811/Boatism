@@ -6,34 +6,39 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.EulerAngle;
 import net.minecraft.util.math.MathHelper;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismDataComponents;
 import net.shirojr.boatism.init.BoatismItems;
+import net.shirojr.boatism.util.data.codec.BoatismCodecs;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class BoatEngineNbtHelper {
 
-    public static void writeItemStacksToNbt(List<ItemStack> stacks, String name, NbtCompound nbt) {
+    public static void writeItemStacksToNbt(DefaultedList<ItemStack> stacks, String name, NbtCompound nbt) {
         NbtList nbtList = new NbtList();
-        for (ItemStack itemStack : stacks) {
-            if (itemStack.isEmpty()) continue;
-            ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, itemStack).result().ifPresent(nbtList::add);
+        for (int i = 0; i < stacks.size(); i++) {
+            ItemStack stack = stacks.get(i);
+            if (stack.isEmpty()) continue;
+            BoatismCodecs.MountedInventory.Slot slot = new BoatismCodecs.MountedInventory.Slot(i, stack);
+            BoatismCodecs.MountedInventory.Slot.CODEC.encodeStart(NbtOps.INSTANCE, slot).result().ifPresent(nbtList::add);
         }
         if (nbtList.isEmpty()) return;
         nbt.put(name, nbtList);
     }
 
-    public static List<ItemStack> readItemStacksFromNbt(NbtCompound nbt, String name) {
-        List<ItemStack> stacks = new ArrayList<>();
+    public static LinkedHashSet<BoatismCodecs.MountedInventory.Slot> readItemStacksFromNbt(NbtCompound nbt, String name) {
+        LinkedHashSet<BoatismCodecs.MountedInventory.Slot> stacks = new LinkedHashSet<>();
         if (nbt.contains(name, NbtElement.LIST_TYPE)) {
             NbtList nbtList = nbt.getList(name, NbtElement.COMPOUND_TYPE);
-            nbtList.forEach(nbtElement -> ItemStack.CODEC.parse(NbtOps.INSTANCE, nbtElement).result().ifPresent(stacks::add));
+            nbtList.forEach(nbtElement -> BoatismCodecs.MountedInventory.Slot.CODEC.parse(NbtOps.INSTANCE, nbtElement).result().ifPresent(stacks::add));
         }
         return stacks;
     }
@@ -41,8 +46,16 @@ public class BoatEngineNbtHelper {
     public static ItemStack getItemStackFromBoatEngineEntity(BoatEngineEntity engineEntity) {
         ItemStack engineStack = new ItemStack(BoatismItems.BASE_ENGINE);
         engineEntity.getHookedBoatEntityUuid().ifPresent(uuid -> engineStack.set(BoatismDataComponents.HOOKED_ENTITY, uuid));
-        engineStack.set(BoatismDataComponents.MOUNTED_ITEMS, engineEntity.getMountedInventory().getHeldStacks());
-        engineStack.set(BoatismDataComponents.MOUNTED_ITEMS, engineEntity.getMountedInventory().getHeldStacks());
+
+        LinkedHashSet<BoatismCodecs.MountedInventory.Slot> mountedInventory = new LinkedHashSet<>();
+        for (int i = 0; i < engineEntity.getMountedInventory().getHeldStacks().size(); i++) {
+            ItemStack stack = engineEntity.getMountedInventory().getStack(i);
+            if (stack.isEmpty()) continue;
+            mountedInventory.add(new BoatismCodecs.MountedInventory.Slot(i, stack));
+        }
+        engineStack.set(BoatismDataComponents.MOUNTED_ITEMS, mountedInventory);
+
+
         engineStack.set(BoatismDataComponents.IS_RUNNING, engineEntity.isRunning());
         engineStack.set(BoatismDataComponents.POWER_OUTPUT, engineEntity.getPowerLevel());
         engineStack.set(BoatismDataComponents.OVERHEAT, engineEntity.getOverheat());
@@ -65,9 +78,10 @@ public class BoatEngineNbtHelper {
 
     public static BoatEngineEntity getBoatEngineEntityFromItemStack(ItemStack stack, BoatEntity linkedBoat) {
         BoatEngineEntity boatEngine = new BoatEngineEntity(linkedBoat.getWorld(), linkedBoat);
-        List<ItemStack> mountedStacks = stack.get(BoatismDataComponents.MOUNTED_ITEMS);
-        if (mountedStacks != null) {
-            boatEngine.setMountedItemsFromItemStackList(mountedStacks);
+
+        LinkedHashSet<BoatismCodecs.MountedInventory.Slot> mountedInventory = stack.get(BoatismDataComponents.MOUNTED_ITEMS);
+        if (mountedInventory != null) {
+            boatEngine.setMountedItemsFromItemStackList(mountedInventory);
         }
         boatEngine.setIsRunning(stack.getOrDefault(BoatismDataComponents.IS_RUNNING, false));
         boatEngine.setPowerLevel(MathHelper.clamp(stack.getOrDefault(BoatismDataComponents.POWER_OUTPUT, 0), 0, BoatEngineHandler.MAX_POWER_LEVEL / 2));

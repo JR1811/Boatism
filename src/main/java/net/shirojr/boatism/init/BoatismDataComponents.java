@@ -9,10 +9,9 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Uuids;
 import net.minecraft.util.math.EulerAngle;
 import net.shirojr.boatism.Boatism;
-import net.shirojr.boatism.util.data.BoatismCodecs;
+import net.shirojr.boatism.util.data.codec.BoatismCodecs;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 public interface BoatismDataComponents {
@@ -21,10 +20,10 @@ public interface BoatismDataComponents {
                     .codec(Uuids.CODEC)
                     .packetCodec(Uuids.PACKET_CODEC)
     );
-    ComponentType<List<ItemStack>> MOUNTED_ITEMS = register("mounted_items",
+    ComponentType<LinkedHashSet<BoatismCodecs.MountedInventory.Slot>> MOUNTED_ITEMS = register("mounted_items",
             listBuilder -> listBuilder
-                    .codec(ItemStack.CODEC.listOf())
-                    .packetCodec(ItemStack.PACKET_CODEC.collect(PacketCodecs.toList()))
+                    .codec(BoatismCodecs.MountedInventory.CODEC)
+                    .packetCodec(BoatismCodecs.MountedInventory.PACKET_CODEC)
     );
     ComponentType<Boolean> IS_RUNNING = register("is_running",
             booleanBuilder -> booleanBuilder
@@ -78,6 +77,8 @@ public interface BoatismDataComponents {
         componentTypeConsumer.accept(builder);
         return Registry.register(Registries.DATA_COMPONENT_TYPE, Boatism.getId(name), builder.build());
     }
+
+
 
     static void initialize() {
         // static initialisation

@@ -36,41 +36,22 @@ public class FuelBucketItem extends BucketItem {
         }
 
         try (Transaction transaction = Transaction.openOuter()) {
-            var fluidStorage = getFluidStorage(stack);
+            var fluidStorage = getFluidStorage(user, hand);
             if (fluidStorage == null) {
                 transaction.abort();
                 return ActionResult.PASS;
             }
             long extractedAmount = fluidStorage.extract(BoatismFluids.OIL.getFluidVariant(), MAX_CAPACITY, transaction);
             boatEngine.getEngineHandler().fillUpFuel(extractedAmount);
-            //TODO: if boat engine gets reworked with fluid storage, adjust that here too
         }
         user.getWorld().playSound(null, boatEngine.getBlockPos(), BoatismSounds.BOAT_ENGINE_FILL_UP, SoundCategory.NEUTRAL, 1f, 1f);
         return ActionResult.SUCCESS;
     }
 
     @Nullable
-    public static Storage<FluidVariant> getFluidStorage(ItemStack stack) {
-        ContainerItemContext context = ContainerItemContext.withConstant(stack);
+    public static Storage<FluidVariant> getFluidStorage(PlayerEntity player, Hand hand) {
+        ContainerItemContext context = ContainerItemContext.ofPlayerHand(player, hand);
+        ItemStack stack = player.getStackInHand(hand);
         return FluidStorage.ITEM.find(stack, context);
-    }
-
-    public static float getFuelAmount(ItemStack stack) {
-        Storage<FluidVariant> fluidStorage = getFluidStorage(stack);
-        if (fluidStorage == null) return 0.0f;
-        for (var fluidEntry : fluidStorage) {
-            if (fluidEntry.isResourceBlank()) continue;
-            if (!fluidEntry.getResource().equals(BoatismFluids.OIL.still())) continue;
-            return fluidEntry.getAmount();
-        }
-        return 0.0f;
-    }
-
-    public static boolean containsFuel(@Nullable Storage<FluidVariant> storage) {
-        if (storage == null) return false;
-        for (var fluidEntry : storage) {
-            if (fluidEntry.getResource().equals(BoatismFluids.OIL.still())) return true;
-        }
-        return false;
     }
 }

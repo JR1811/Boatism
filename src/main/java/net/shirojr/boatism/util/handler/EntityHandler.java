@@ -34,14 +34,13 @@ public class EntityHandler {
 
     public static void removePossibleBoatEngineEntry(Entity entity) {
         if (!(entity instanceof BoatEntity boatEntity)) return;
-        ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid()
-                .flatMap(uuid -> EntityHandler.getBoatEngineEntityFromUuid(uuid, boatEntity.getWorld(),
-                        boatEntity.getPos(), 10))
-                .ifPresent(boatEngineEntity -> {
-                    if (!(boatEngineEntity.getWorld() instanceof ServerWorld)) return;
-                    dropMountedInventory(boatEngineEntity, true, false);
-                    boatEngineEntity.removeBoatEngine(boatEntity);
-                });
+        UUID boatEngineUuid = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid();
+        Optional<BoatEngineEntity> boatEngineEntity = EntityHandler.getBoatEngineEntityFromUuid(boatEngineUuid, boatEntity.getWorld(), boatEntity.getPos(), 10);
+        boatEngineEntity.ifPresent(entry -> {
+            if (!(entry.getWorld() instanceof ServerWorld)) return;
+            dropMountedInventory(entry, true, false);
+            entry.removeBoatEngine(boatEntity);
+        });
     }
 
     public static void dropItemStackFromMountedInventory(ItemStack itemStack, BoatEngineEntity boatEngineEntity) {
@@ -67,7 +66,7 @@ public class EntityHandler {
 
     public static void engineLinkCleanUp(BoatEntity boatEntity) {
         if (!(boatEntity instanceof BoatEngineCoupler boatLink)) return;
-        if (boatLink.boatism$getBoatEngineEntityUuid().isEmpty()) return;
+        if (boatLink.boatism$getBoatEngineEntityUuid() == null) return;
         if (boatEntity.getPassengerList().stream().noneMatch(entity -> entity instanceof BoatEngineEntity)) {
             boatLink.boatism$setBoatEngineEntity(null);
         }

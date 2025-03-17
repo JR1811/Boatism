@@ -38,12 +38,11 @@ public class MouseMixin {
         if (!(player.getVehicle() instanceof BoatEntity boatEntity)) return;
         if (boatEntity.getFirstPassenger() == null || !boatEntity.getFirstPassenger().equals(player)) return;
 
-        Optional<UUID> boatEngineUuid = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid();
-        boatEngineUuid.ifPresent(uuid -> {
-            Optional<BoatEngineEntity> boatEngineEntity = EntityHandler.getBoatEngineEntityFromUuid(uuid, player.getWorld(), player.getPos(), 3);
-            if (boatEngineEntity.isEmpty() || !boatEngineEntity.get().isRunning()) return;
-            new PowerLevelChangePacket(delta).sendPacket();
-            ci.cancel();
-        });
+        UUID boatEngineUuid = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid();
+        if (boatEngineUuid == null) return;
+        Optional<BoatEngineEntity> boatEngineEntity = EntityHandler.getBoatEngineEntityFromUuid(boatEngineUuid, player.getWorld(), player.getPos(), 3);
+        if (boatEngineEntity.isEmpty() || !boatEngineEntity.get().isRunning()) return;
+        new PowerLevelChangePacket(delta).sendPacket();
+        ci.cancel();
     }
 }

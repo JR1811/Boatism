@@ -19,6 +19,8 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
 
+import java.util.Optional;
+
 public record OpenEngineInventoryPacket(int entityNetworkId) implements CustomPayload {
     public static final Id<OpenEngineInventoryPacket> IDENTIFIER = new Id<>(BoatismNetworkIdentifiers.OPEN_ENGINE_SCREEN.getId());
 
@@ -41,7 +43,7 @@ public record OpenEngineInventoryPacket(int entityNetworkId) implements CustomPa
         ServerWorld world = player.getServerWorld();
         if (!(player.getVehicle() instanceof BoatEngineCoupler boatEngineCoupler)) return;
 
-        boatEngineCoupler.boatism$getBoatEngineEntityUuid().map(world::getEntity).ifPresent(entity -> {
+        Optional.ofNullable(boatEngineCoupler.boatism$getBoatEngineEntityUuid()).map(world::getEntity).ifPresent(entity -> {
             if (!(world.getEntityById(entityNetworkId) instanceof BoatEngineEntity boatEngine)) return;
             player.openHandledScreen(new ExtendedScreenHandlerFactory<OpenEngineInventoryPacket>() {
                 @Override

@@ -8,6 +8,7 @@ public enum BoatismNetworkIdentifiers {
     SOUND_END_ENGINE("custom_sound_stop_engine_instances", TargetSide.CLIENT),
     SOUND_END_ALL("custom_sound_stop_all_instances", TargetSide.CLIENT),
     BOAT_COMPONENT_SYNC("component_sync", TargetSide.CLIENT),
+    BOAT_ENTITY_SYNC("boat_entity_sync", TargetSide.CLIENT),
     POWER_LEVEL_CHANGE("power_level_change", TargetSide.SERVER),
     OPEN_ENGINE_SCREEN("engine_screen_open", TargetSide.SERVER);
 
@@ -23,6 +24,7 @@ public enum BoatismNetworkIdentifiers {
         return this.identifier;
     }
 
+    @SuppressWarnings("unused")
     public TargetSide getTargetSide() {
         return this.side;
     }

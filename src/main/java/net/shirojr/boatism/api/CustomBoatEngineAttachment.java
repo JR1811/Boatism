@@ -1,8 +1,8 @@
 package net.shirojr.boatism.api;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.util.math.Vec3d;
-import org.joml.Vector3f;
 
 /**
  * <h1>Position for hooked Engine</h1>
@@ -15,10 +15,11 @@ import org.joml.Vector3f;
 public interface CustomBoatEngineAttachment {
     /**
      * Defines the position of the Boat Engine when it is hooked up to your custom boat.
-     * This will change only the position of the
+     * This will change only the relative position of the
      * {@link net.shirojr.boatism.entity.custom.BoatEngineEntity BoatEngineEntity} which is listed as a passenger.<br><br>
+     * <p>
      * If you need an example, check out the default positions defined
-     * in {@link net.shirojr.boatism.mixin.BoatEntityMixin#boatism$attachmentPos(EntityDimensions)
+     * in {@link net.shirojr.boatism.mixin.BoatEntityMixin#boatism$attachmentPos(Entity, EntityDimensions)
      * BoatEntityMixin}
      *
      * @param dimensions Your entity dimensions (optional to use)
@@ -41,5 +42,5 @@ public interface CustomBoatEngineAttachment {
      *     </li>
      * </ul>
      */
-    Vec3d boatism$attachmentPos(EntityDimensions dimensions);
+    Vec3d boatism$attachmentPos(Entity vehicleEntity, EntityDimensions dimensions);
 }

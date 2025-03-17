@@ -16,8 +16,10 @@ import net.shirojr.boatism.item.custom.upgrade.PlatesItem;
 import net.shirojr.boatism.util.LoggerUtil;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public interface BoatismItems {
     List<ItemStack> ALL_ITEMS = new ArrayList<>();
 
@@ -25,7 +27,7 @@ public interface BoatismItems {
             new FuelBucketItem(BoatismFluids.OIL.still(), new Item.Settings().maxCount(1)));
     BaseEngineItem BASE_ENGINE = register("base_engine",
             new BaseEngineItem(new Item.Settings().maxCount(1).fireproof()
-                    .component(BoatismDataComponents.MOUNTED_ITEMS, new ArrayList<>())
+                    .component(BoatismDataComponents.MOUNTED_ITEMS, new LinkedHashSet<>())
                     .component(BoatismDataComponents.IS_RUNNING, false)
                     .component(BoatismDataComponents.POWER_OUTPUT, 0)
                     .component(BoatismDataComponents.OVERHEAT, 0f)

@@ -21,7 +21,7 @@ public class BoatismConfig implements ConfigData {
     public float lowHealth = 3.0f;
     @ConfigEntry.Category("engine_data")
     @Comment("Base fuel capacity")
-    public int maxBaseFuel = 1000;
+    public long baseFuelCapacityInBuckets = 10;
     @ConfigEntry.Category("engine_data")
     @Comment("Overheat limit")
     public int maxBaseOverheat = 1000;

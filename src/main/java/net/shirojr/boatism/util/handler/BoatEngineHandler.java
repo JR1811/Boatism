@@ -24,7 +24,7 @@ import java.util.List;
 public class BoatEngineHandler {
     public static final int MAX_POWER_LEVEL = 9;
     public static final int LIMITED_MAX_POWER_LEVEL = 3;
-    public static final long MAX_BASE_FUEL = Boatism.CONFIG.maxBaseFuel;
+    public static final long MAX_BASE_FUEL = Boatism.CONFIG.baseFuelCapacityInBuckets * FluidConstants.BUCKET;
     public static final int MAX_BASE_OVERHEAT = Boatism.CONFIG.maxBaseOverheat;
 
     private final BoatEngineEntity boatEngine;
@@ -170,18 +170,16 @@ public class BoatEngineHandler {
      * @param fuel amount of introduced fuel
      * @return left over fuel (bigger than 0 if engine has been filled up)
      */
-    @SuppressWarnings("UnusedReturnValue")
     public long fillUpFuel(long fuel) {
-        long newFuelValue = getFuel() + fuel;
-        if (fuel <= 0) return 0;
-        if (newFuelValue == getMaxFuelCapacity() + fuel) return fuel;
-        playSoundEvent(BoatismSounds.BOAT_ENGINE_FILL_UP);
-        if (newFuelValue > getMaxFuelCapacity()) {
-            setFuel(getMaxFuelCapacity());
-            return newFuelValue - getMaxFuelCapacity();
+        fuel = Math.max(0, fuel);
+        long fuelMissing = Math.max(0, getMaxFuelCapacity() - getFuel());
+        long newFuelLevel = Math.clamp(fuel + getFuel(), 0, getMaxFuelCapacity());
+
+        if (fuelMissing > 0 && fuel > 0) {
+            playSoundEvent(BoatismSounds.BOAT_ENGINE_FILL_UP);
         }
-        setFuel(fuel);
-        return fuel;
+        this.setFuel(newFuelLevel);
+        return fuel - fuelMissing;
     }
 
     public void consumeFuel(long baseFuelConsumption) {
@@ -247,7 +245,9 @@ public class BoatEngineHandler {
     public boolean isExperiencingHeavyLoad() {
         if (!engineIsRunning()) return false;
         if (this.getPowerLevel() > 3) {
-            if (this.getPowerLevel() * 0.1 < boatEngine.getVelocity().horizontalLength()) return true;
+            if (this.getPowerLevel() * 0.1 < boatEngine.getVelocity().horizontalLength()) {
+                return true;
+            }
         }
         return this.getPowerLevel() >= MAX_POWER_LEVEL - 2;
     }

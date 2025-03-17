@@ -3,12 +3,10 @@ package net.shirojr.boatism.init;
 import net.fabricmc.fabric.api.lookup.v1.entity.EntityApiLookup;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
-import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.fluid.base.FullItemFluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage;
-import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Direction;
 import net.shirojr.boatism.Boatism;
@@ -22,7 +20,11 @@ public class BoatismStorage {
             return boatEngine.getMountedInventoryStorage(direction);
         }, BoatismEntities.BOAT_ENGINE);
         FluidStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> blockEntity.getInventory().getFluidStorage(), BoatismBlockEntities.FERMENTER);
-        FluidStorage.ITEM.registerForItems((itemStack, ctx) -> new SingleVariantStorage<>() {
+        FluidStorage.ITEM.registerForItems((itemStack, context) -> {
+            if (!itemStack.isOf(BoatismItems.FUEL_BUCKET)) return null;
+            return new FullItemFluidStorage(context, itemVariant -> ItemVariant.of(Items.BUCKET, itemVariant.getComponents()), BoatismFluids.OIL.getFluidVariant(), FluidConstants.BUCKET);
+        }, BoatismItems.FUEL_BUCKET);
+        /*FluidStorage.ITEM.registerForItems((itemStack, ctx) -> new SingleVariantStorage<>() {
             @Override
             protected FluidVariant getBlankVariant() {
                 return FluidVariant.blank();
@@ -44,6 +46,11 @@ public class BoatismStorage {
             }
 
             @Override
+            public FluidVariant getResource() {
+                return super.getResource();
+            }
+
+            @Override
             protected void onFinalCommit() {
                 if (getAmount() == 0) {
                     try (Transaction transaction = Transaction.openOuter()) {
@@ -57,7 +64,7 @@ public class BoatismStorage {
                     }
                 }
             }
-        }, BoatismItems.FUEL_BUCKET, Items.BUCKET);
+        }, BoatismItems.FUEL_BUCKET, Items.BUCKET);*/
     }
 
     public static void initialize() {

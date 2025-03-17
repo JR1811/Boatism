@@ -47,8 +47,8 @@ public class MinecraftClientMixin {
     private Optional<BoatEngineEntity> getBoatEngineEntity(ClientPlayerEntity clientPlayer) {
         if (clientPlayer == null || clientPlayer.getWorld() == null) return Optional.empty();
         if (!(clientPlayer.getVehicle() instanceof BoatEngineCoupler coupler)) return Optional.empty();
-        if (coupler.boatism$getBoatEngineEntityUuid().isEmpty()) return Optional.empty();
-        UUID uuid = coupler.boatism$getBoatEngineEntityUuid().get();
+        if (coupler.boatism$getBoatEngineEntityUuid() == null) return Optional.empty();
+        UUID uuid = coupler.boatism$getBoatEngineEntityUuid();
         return EntityHandler.getBoatEngineEntityFromUuid(uuid, clientPlayer.getWorld(), clientPlayer.getPos(), 3);
     }
 }

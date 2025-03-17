@@ -2,12 +2,10 @@ package net.shirojr.boatism.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalFloatRef;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.entity.vehicle.VehicleEntity;
@@ -23,6 +21,7 @@ import net.shirojr.boatism.api.CustomBoatEngineAttachment;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismSounds;
 import net.shirojr.boatism.item.custom.BaseEngineItem;
+import net.shirojr.boatism.network.packet.BoatEntitySyncPacket;
 import net.shirojr.boatism.util.handler.EntityHandler;
 import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
 import org.jetbrains.annotations.Nullable;
@@ -40,40 +39,38 @@ import java.util.UUID;
 @Mixin(BoatEntity.class)
 public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngineCoupler, CustomBoatEngineAttachment {
     @Unique
-    private static final TrackedData<Optional<UUID>> BOAT_ENGINE_UUID = DataTracker.registerData(BoatEntityMixin.class,
-            TrackedDataHandlerRegistry.OPTIONAL_UUID);
+    @Nullable
+    private UUID boatEngineUuid;
 
     public BoatEntityMixin(EntityType<?> entityType, World world) {
         super(entityType, world);
     }
 
-    @Inject(method = "initDataTracker", at = @At("TAIL"))
-    private void boatism$injectInitDataTracker(DataTracker.Builder builder, CallbackInfo ci) {
-        builder.add(BOAT_ENGINE_UUID, Optional.empty());
-    }
-
     @Override
     public void boatism$setBoatEngineEntity(@Nullable UUID boatEngineUuid) {
-        this.dataTracker.set(BOAT_ENGINE_UUID, Optional.ofNullable(boatEngineUuid));
+        this.boatEngineUuid = boatEngineUuid;
+        if (this.getWorld().isClient()) return;
+        new BoatEntitySyncPacket(this.getId(), Optional.ofNullable(this.boatEngineUuid)).sendPacket(PlayerLookup.tracking(this));
     }
 
     @Override
-    public Optional<UUID> boatism$getBoatEngineEntityUuid() {
-        return this.dataTracker.get(BOAT_ENGINE_UUID);
+    @Nullable
+    public UUID boatism$getBoatEngineEntityUuid() {
+        return this.boatEngineUuid;
     }
 
     @Inject(method = "updatePaddles", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/entity/vehicle/BoatEntity;getVelocity()Lnet/minecraft/util/math/Vec3d;"))
     private void boatism$controlBoatSpeed(CallbackInfo ci, @Local(ordinal = 0) LocalFloatRef f) {
         BoatEntity boatEntity = (BoatEntity) (Object) this;
-        ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().flatMap(engineUuid ->
-                        EntityHandler.getBoatEngineEntityFromUuid(engineUuid, boatEntity.getWorld(), boatEntity.getPos(), 10))
-                .ifPresent(boatEngine -> {
-                    float baseSpeed = f.get();
-                    float powerLevel = boatEngine.getPowerLevel() * 0.008f;
-                    float thrust = baseSpeed + (powerLevel * boatEngine.getEngineHandler().calculateThrustModifier(boatEntity));
-                    f.set(thrust);
-                });
+        UUID linkedBoatEngineUuid = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid();
+        Optional<BoatEngineEntity> linkedBoatEngine = EntityHandler.getBoatEngineEntityFromUuid(linkedBoatEngineUuid, boatEntity.getWorld(), boatEntity.getPos(), 10);
+        linkedBoatEngine.ifPresent(boatEngine -> {
+            float baseSpeed = f.get();
+            float powerLevel = boatEngine.getPowerLevel() * 0.008f;
+            float thrust = baseSpeed + (powerLevel * boatEngine.getEngineHandler().calculateThrustModifier(boatEntity));
+            f.set(thrust);
+        });
     }
 
     @Inject(method = "interact", at = @At(value = "INVOKE",
@@ -84,12 +81,13 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
         ItemStack stack = player.getMainHandStack();
         BoatEntity boatEntity = (BoatEntity) (Object) this;
         EntityHandler.engineLinkCleanUp(boatEntity);
-        if (((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().isPresent()) return;
+        if (((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid() != null) return;
         if (stack.getItem() instanceof BaseEngineItem) {
             if (!this.getWorld().isClient()) {
                 // BoatEngineEntity engineEntity = new BoatEngineEntity(this.getWorld(), boatEntity);
                 BoatEngineEntity engineEntity = BoatEngineNbtHelper.getBoatEngineEntityFromItemStack(stack, boatEntity);
                 this.getWorld().spawnEntity(engineEntity);
+                boatism$setBoatEngineEntity(engineEntity.getUuid());
                 this.getWorld().playSound(null, boatEntity.getX(), boatEntity.getY(), boatEntity.getZ(),
                         BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.9f, 1.0f);
                 stack.decrement(1);
@@ -116,21 +114,23 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void boatism$writeBoatEngineEntry(NbtCompound nbt, CallbackInfo ci) {
         BoatEntity boatEntity = (BoatEntity) (Object) this;
-        ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid()
-                .ifPresent(uuid -> nbt.putUuid("BoatEngineUuid", uuid));
+        UUID linkedBoatEngineUuid = ((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid();
+        if (linkedBoatEngineUuid != null) {
+            nbt.putUuid("BoatEngineUuid", linkedBoatEngineUuid);
+        }
     }
 
     @Inject(method = "getPassengerAttachmentPos", at = @At("HEAD"), cancellable = true)
     protected void boatism$getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor, CallbackInfoReturnable<Vec3d> cir) {
         if (passenger instanceof BoatEngineEntity && this instanceof CustomBoatEngineAttachment attachment) {
-            cir.setReturnValue(attachment.boatism$attachmentPos(dimensions));
+            cir.setReturnValue(attachment.boatism$attachmentPos(this, dimensions).rotateY(-this.getYaw() * (float) (Math.PI / 180.0)));
         }
     }
 
     @Inject(method = "canAddPassenger", at = @At("HEAD"), cancellable = true)
     protected void boatism$canAddPassenger(Entity passenger, CallbackInfoReturnable<Boolean> info) {
         BoatEntity boatEntity = (BoatEntity) (Object) this;
-        if (((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid().isEmpty()) return;
+        if (((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid() == null) return;
         int maxPassengers = ((BoatEntityInvoker) boatEntity).invokeGetMaxPassenger() + 1;
         if (boatEntity.getPassengerList().size() < maxPassengers) {
             info.setReturnValue(true);
@@ -138,7 +138,7 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     }
 
     @Override
-    public Vec3d boatism$attachmentPos(EntityDimensions dimensions) {
+    public Vec3d boatism$attachmentPos(Entity vehicleEntity, EntityDimensions dimensions) {
         if (this.getVariant() == BoatEntity.Type.BAMBOO) {
             return new Vec3d(0.0, dimensions.height() * 0.7, -1.2);
         }

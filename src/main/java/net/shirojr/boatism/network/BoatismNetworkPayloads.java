@@ -16,6 +16,7 @@ public class BoatismNetworkPayloads {
         registerS2C(EndAllSoundInstancesPacket.IDENTIFIER, EndAllSoundInstancesPacket.CODEC);
         registerS2C(StoppedTrackingEnginePacket.IDENTIFIER, StoppedTrackingEnginePacket.CODEC);
         registerS2C(EngineComponentSyncPacket.IDENTIFIER, EngineComponentSyncPacket.CODEC);
+        registerS2C(BoatEntitySyncPacket.IDENTIFIER, BoatEntitySyncPacket.CODEC);
     }
 
     private static <T extends CustomPayload> void registerS2C(CustomPayload.Id<T> packetIdentifier, PacketCodec<RegistryByteBuf, T> codec) {
