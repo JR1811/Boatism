@@ -60,7 +60,8 @@ public class BoatEngineHandler {
         return false;
     }
 
-    private boolean handleFuel() {
+    // public to avoid javadocs documentation errors
+    public boolean handleFuel() {
         if (isLowOnFuel()) {
             regulateDownIfLimited();
             if (canPlayLowFuel) {
@@ -168,6 +169,7 @@ public class BoatEngineHandler {
      * @param fuel amount of introduced fuel
      * @return left over fuel (bigger than 0 if engine has been filled up)
      */
+    @SuppressWarnings("UnusedReturnValue")
     public long fillUpFuel(long fuel) {
         fuel = Math.max(0, fuel);
         long fuelMissing = Math.max(0, getMaxFuelCapacity() - getFuel());

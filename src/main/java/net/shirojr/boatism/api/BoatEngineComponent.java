@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.item.custom.upgrade.CanisterItem;
+import net.shirojr.boatism.util.handler.BoatEngineHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,8 @@ public interface BoatEngineComponent {
 
     /**
      * This value will add to the consumed fuel, if e.g. your custom Item is heavy.
-     * Keep in mind that fuel is reduced per tick.
+     * Keep in mind that fuel is reduced per tick. For the currently base consumed fuel amount
+     * per tick see {@link BoatEngineHandler#handleFuel()}.
      */
     default long addedConsumedFuel() {
         return 0L;
@@ -52,6 +54,8 @@ public interface BoatEngineComponent {
 
     /**
      * This value will add to the maximum capacity of the fuel engine.
+     * The base capacity is specified in {@link BoatEngineHandler#MAX_BASE_FUEL}
+     * and can be adjusted per config too.
      */
     default long addedFuelCapacity() {
         return 0L;
@@ -103,14 +107,13 @@ public interface BoatEngineComponent {
      * The rendering of this item is implemented as an
      * {@link net.shirojr.boatism.entity.client.EquipedPartFeatureRenderer EquipedPartFeatureRenderer}
      * of the engine entity.<br><br>
-     * @see CanisterItem CanisterItem
-     *
-     * @implNote make sure to push the MatrixStack to transform the item individually. The MatrixStack has the
-     * pop call already defined after it's being rendered.
      *
      * @param boatEngineEntity engine, which has this component equipped
      * @param matrixStack      original MatrixStack from the component renderer
      * @return changed MatrixStack for the item feature renderer
+     * @implNote make sure to push the MatrixStack to transform the item individually. The MatrixStack has the
+     * pop call already defined after it's being rendered.
+     * @see CanisterItem CanisterItem
      */
     default MatrixStack itemRenderTransform(BoatEngineEntity boatEngineEntity, MatrixStack matrixStack) {
         matrixStack.push();
