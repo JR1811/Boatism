@@ -38,14 +38,12 @@ public class BoatEngineHandler {
         return new BoatEngineHandler(boatEngine);
     }
 
+    @SuppressWarnings("UnnecessaryReturnStatement")
     public void incrementTick() {
         if (breaksWhenSubmerged() && isSubmerged()) stopEngine();
         if (handleHealth()) return;
         if (handleOverheating()) return;
         if (handleFuel()) return;
-
-        /*LoggerUtil.devLogger(String.format("Fuel: %s/%s | Overheat: %s/%s",
-                getFuel(), getMaxFuelCapacity(), getOverheat(), getMaxOverHeatCapacity()));*/
     }
 
     private boolean handleHealth() {
@@ -79,7 +77,7 @@ public class BoatEngineHandler {
                 return true;
             }
             if (engineIsRunning()) {
-                consumeFuel(FluidConstants.NUGGET);
+                consumeFuel(FluidConstants.DROPLET * 100);
             }
         }
 

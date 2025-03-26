@@ -12,7 +12,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.init.BoatismItems;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import org.spongepowered.asm.mixin.Mixin;
@@ -39,15 +38,6 @@ public class ItemMixin {
         if (usedItem.equals(Items.STICK) && user.isSneaking()) {
             cir.setReturnValue(boatism$engineCoupling(user, boatEngineEntity, world));
             return;
-        }
-        if (usedItem.equals(BoatismItems.FUEL_BUCKET)) {
-            float leftOver = engineHandler.fillUpFuel(BoatEngineHandler.MAX_BASE_FUEL);
-            if (!user.isCreative()) {
-                stack.decrement(1);
-                user.getInventory().offerOrDrop(Items.BUCKET.getDefaultStack());
-            }
-            LoggerUtil.devLogger(String.format("Filled up fuel. %s was left over", leftOver));
-            cir.setReturnValue(ActionResult.SUCCESS);
         }
     }
 

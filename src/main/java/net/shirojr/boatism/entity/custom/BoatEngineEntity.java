@@ -255,7 +255,6 @@ public class BoatEngineEntity extends LivingEntity {
     private void modifyVelocity(BoatEntity boatEntity) {
         if (boatEntity.getControllingPassenger() instanceof PlayerEntity) return;
         if (!isLogicalSideForUpdatingMovement()) return;
-        if (boatEntity.isOnGround()) setOverheat(getOverheat() + 4);
         else {
             Vec3d newVelocity = boatEntity.getRotationVector().multiply(1.0, 0.0, 1.0).normalize()
                     .multiply(getPowerLevel() * 0.1).multiply(engineHandler.calculateThrustModifier(boatEntity));
@@ -592,6 +591,7 @@ public class BoatEngineEntity extends LivingEntity {
 
     public void setFuel(long fuel) {
         this.dataTracker.set(FUEL, fuel);
+        LoggerUtil.devLogger("Fuel: " + getFuel());
     }
 
     public boolean hasLowHealth() {
