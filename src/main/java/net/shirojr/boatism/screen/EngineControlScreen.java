@@ -60,7 +60,7 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
         int powerLevelY = y + 60;
 
         float heat = this.handler.getOverheat() / this.handler.getMaxOverheat();
-        float fuel = this.handler.getFuel() / this.handler.getMaxFuel();
+        float fuel = (float) this.handler.getFuel() / this.handler.getMaxFuel();
         int handlePosition = PowerLevelGuiElement.getPositionForPowerLevel(handler.getPowerLevel());
 
         context.drawTexture(EngineGuiElement.GUI_TEXTURE, x, y, 0, 0, this.backgroundWidth, this.backgroundHeight);

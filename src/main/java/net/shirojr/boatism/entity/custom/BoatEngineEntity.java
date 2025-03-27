@@ -38,12 +38,8 @@ import net.minecraft.world.explosion.Explosion;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.api.BoatEngineCoupler;
-import net.shirojr.boatism.init.BoatismEntityAttributeModifierIdentifiers;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
-import net.shirojr.boatism.init.BoatismEntities;
-import net.shirojr.boatism.init.BoatismGameRules;
-import net.shirojr.boatism.init.BoatismSounds;
-import net.shirojr.boatism.init.BoatismStorage;
+import net.shirojr.boatism.init.*;
 import net.shirojr.boatism.network.packet.EngineComponentSyncPacket;
 import net.shirojr.boatism.network.packet.StartSoundInstancePacket;
 import net.shirojr.boatism.network.packet.StoppedTrackingEnginePacket;
@@ -94,16 +90,13 @@ public class BoatEngineEntity extends LivingEntity {
         this.propertyDelegate = new PropertyDelegate() {
             @Override
             public int get(int index) {
-                // float values are multiplied by 100
-                // to keep an acceptable amount of accuracy when rounding
-                // and moving over int values for screen displaying purposes
                 return switch (index) {
                     case 0 -> engineHandler.engineIsRunning() ? 1 : 0;
                     case 1 -> getPowerLevel();
-                    case 2 -> Math.round(getFuel() * 100);
-                    case 3 -> Math.round(engineHandler.getMaxFuelCapacity() * 100);
-                    case 4 -> Math.round(getOverheat() * 100);
-                    case 5 -> Math.round(engineHandler.getMaxOverHeatCapacity() * 100);
+                    case 2 -> (int) getFuel() / 100;
+                    case 3 -> (int) engineHandler.getMaxFuelCapacity() / 100;
+                    case 4 -> Math.round(getOverheat());
+                    case 5 -> Math.round(engineHandler.getMaxOverHeatCapacity());
                     default -> 0;
                 };
             }
@@ -293,8 +286,7 @@ public class BoatEngineEntity extends LivingEntity {
         } else if (stack.isEmpty()) {
             if (!engineHandler.engineIsRunning()) {
                 engineHandler.startEngine();
-            }
-            else engineHandler.stopEngine();
+            } else engineHandler.stopEngine();
             LoggerUtil.devLogger(String.format("Engine is running: %s", engineHandler.engineIsRunning()));
             return ActionResult.SUCCESS;
         }
@@ -327,7 +319,7 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     private void sendPacketForStoppingAllSoundInstances(ServerPlayerEntity player) {
-        new StoppedTrackingEnginePacket(this.getId(), true);
+        new StoppedTrackingEnginePacket(this.getId(), true).sendPacket(player);
     }
 
     //region getter & setter

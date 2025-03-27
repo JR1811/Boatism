@@ -52,20 +52,20 @@ public class EngineControlScreenHandler extends ScreenHandler {
         return this.delegate.get(1);
     }
 
-    public float getFuel() {
-        return (float) this.delegate.get(2) / 100;
+    public int getFuel() {
+        return this.delegate.get(2) * 100;
     }
 
-    public float getMaxFuel() {
-        return (float) this.delegate.get(3) / 100;
+    public int getMaxFuel() {
+        return this.delegate.get(3) * 100;
     }
 
     public float getOverheat() {
-        return (float) this.delegate.get(4) / 100;
+        return this.delegate.get(4);
     }
 
     public float getMaxOverheat() {
-        return (float) this.delegate.get(5) / 100;
+        return this.delegate.get(5);
     }
 
     @Override
