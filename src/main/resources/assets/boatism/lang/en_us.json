@@ -8,6 +8,8 @@
   "item.boatism.component_canister_strapped": "Fuel Canister Strapped",
   "item.boatism.component_plates": "Custom Plating",
 
+  "block.boatism.fermenter": "Fermenter",
+
   "entity.boatism.boat_engine": "Boat Engine",
 
   "tooltip.boatism.base_engine_1": "To hook, place the engine on a BoatEntity",

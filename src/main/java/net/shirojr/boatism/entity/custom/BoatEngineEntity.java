@@ -472,6 +472,11 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     @Override
+    public boolean isInsideWall() {
+        return false;
+    }
+
+    @Override
     public boolean canEquip(ItemStack stack) {
         return stack.getItem() instanceof BoatEngineComponent;
     }
