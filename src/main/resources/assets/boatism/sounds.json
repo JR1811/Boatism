@@ -5,6 +5,12 @@
       "boatism:boat_engine_default"
     ]
   },
+  "boat_engine_air": {
+    "subtitle": "sound.boatism.boat_engine.air",
+    "sounds": [
+      "boatism:boat_engine_air"
+    ]
+  },
   "boat_engine_default_fuel_injector": {
     "subtitle": "sound.boatism.boat_engine.default.fuel_injector",
     "sounds": [

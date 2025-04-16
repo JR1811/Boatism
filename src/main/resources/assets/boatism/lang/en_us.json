@@ -34,6 +34,7 @@
 
   "sound.boatism.boat_engine.default": "Running Engine",
   "sound.boatism.boat_engine.default.fuel_injector": "Running Custom Engine",
+  "sound.boatism.boat_engine.air": "Running Engine",
   "sound.boatism.boat_engine.underwater": "Running submerged Engine",
   "sound.boatism.boat_engine.power_up": "Increased Boat Engine power click",
   "sound.boatism.boat_engine.power_down": "Decreased Boat Engine power click",
