@@ -2,7 +2,6 @@ package net.shirojr.boatism.item.custom.upgrade;
 
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.RotationAxis;
 import net.shirojr.boatism.api.BoatEngineComponent;
@@ -34,7 +33,6 @@ public class CanisterItem extends BoatismEquipmentItem implements BoatEngineComp
 
     @Override
     public MatrixStack itemRenderTransform(BoatEngineEntity boatEngineEntity, MatrixStack matrixStack) {
-        matrixStack.push();
         float scaleFactor = 0.48f;
         matrixStack.scale(scaleFactor, scaleFactor, scaleFactor);
         matrixStack.translate(0.05, 2.3, 0);
@@ -44,7 +42,7 @@ public class CanisterItem extends BoatismEquipmentItem implements BoatEngineComp
     }
 
     @Override
-    public List<Item> getConflictingParts() {
+    public List<BoatEngineComponent> getConflictingParts() {
         return List.of(BoatismItems.COMPONENT_PLATES);
     }
 

@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public enum SoundInstanceIdentifier {
     ENGINE_RUNNING("engine_running"),
+    ENGINE_RUNNING_FUEL_INJECTED("engine_running_fuel_injected"),
     ENGINE_RUNNING_UNDERWATER("engine_underwater"),
     ENGINE_LOW_FUEL("engine_low_fuel"),
     ENGINE_LOW_HEALTH("engine_low_health"),

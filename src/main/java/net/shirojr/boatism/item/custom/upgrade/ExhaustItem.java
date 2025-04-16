@@ -17,7 +17,6 @@ public class ExhaustItem extends BoatismEquipmentItem {
 
     @Override
     public MatrixStack itemRenderTransform(BoatEngineEntity boatEngineEntity, MatrixStack matrixStack) {
-        matrixStack.push();
         matrixStack.scale(0.82f, 0.82f, 0.82f);
         matrixStack.translate(0, 1.4, 0);
         matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(180));

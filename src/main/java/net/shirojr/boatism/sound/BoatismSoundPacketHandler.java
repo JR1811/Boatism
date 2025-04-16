@@ -12,11 +12,18 @@ public class BoatismSoundPacketHandler {
         SoundInstanceIdentifier.fromIdentifier(identifier).ifPresent(soundInstanceIdentifier -> {
             BoatismSoundInstance soundInstance;
             switch (soundInstanceIdentifier) {
-                case ENGINE_RUNNING -> soundInstance = new EngineRunningSoundInstance(boatEngineEntity);
-                case ENGINE_RUNNING_UNDERWATER -> soundInstance = new EngineSubmergedSoundInstance(boatEngineEntity);
-                case ENGINE_LOW_FUEL -> soundInstance = new EngineLowFuelSoundInstance(boatEngineEntity);
-                case ENGINE_LOW_HEALTH -> soundInstance = new EngineLowHealthSoundInstance(boatEngineEntity);
-                case ENGINE_OVERHEATING -> soundInstance = new EngineOverheatingSoundInstance(boatEngineEntity);
+                case ENGINE_RUNNING ->
+                        soundInstance = new EngineRunningSoundInstance(boatEngineEntity);
+                case ENGINE_RUNNING_FUEL_INJECTED ->
+                        soundInstance = new EngineRunningFastFuelInjectedSoundInstance(boatEngineEntity);
+                case ENGINE_RUNNING_UNDERWATER ->
+                        soundInstance = new EngineSubmergedSoundInstance(boatEngineEntity);
+                case ENGINE_LOW_FUEL ->
+                        soundInstance = new EngineLowFuelSoundInstance(boatEngineEntity);
+                case ENGINE_LOW_HEALTH ->
+                        soundInstance = new EngineLowHealthSoundInstance(boatEngineEntity);
+                case ENGINE_OVERHEATING ->
+                        soundInstance = new EngineOverheatingSoundInstance(boatEngineEntity);
                 case NO_SOUND -> {
                     BoatismClient.soundManager.stopAllSoundInstancesForBoatEngineEntity(boatEngineEntity, true);
                     return;

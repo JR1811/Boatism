@@ -9,10 +9,7 @@ import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.item.custom.BaseEngineItem;
 import net.shirojr.boatism.item.custom.FermenterBlockItem;
 import net.shirojr.boatism.item.custom.FuelBucketItem;
-import net.shirojr.boatism.item.custom.upgrade.BoatismEquipmentItem;
-import net.shirojr.boatism.item.custom.upgrade.CanisterItem;
-import net.shirojr.boatism.item.custom.upgrade.ExhaustItem;
-import net.shirojr.boatism.item.custom.upgrade.PlatesItem;
+import net.shirojr.boatism.item.custom.upgrade.*;
 import net.shirojr.boatism.util.LoggerUtil;
 
 import java.util.ArrayList;
@@ -35,15 +32,14 @@ public interface BoatismItems {
                     .component(BoatismDataComponents.IS_SUBMERGED, false)
                     .component(BoatismDataComponents.FUEL, 0L)
                     .component(BoatismDataComponents.IS_LOCKED, false)
-            ));
-    BoatismEquipmentItem COMPONENT_EXHAUST = register("component_exhaust",
-            new ExhaustItem(new Item.Settings().maxCount(1)));
-    CanisterItem COMPONENT_CANISTER = register("component_canister",
-            new CanisterItem(new Item.Settings().maxCount(1)));
-    CanisterItem COMPONENT_CANISTER_STRAPPED = register("component_canister_strapped",
-            new CanisterItem(new Item.Settings().maxCount(1)));
-    BoatismEquipmentItem COMPONENT_PLATES = register("component_plates",
-            new PlatesItem(new Item.Settings().maxCount(1)));
+            )
+    );
+
+    BoatismEquipmentItem COMPONENT_EXHAUST = register("component_exhaust", new ExhaustItem(new Item.Settings().maxCount(1)));
+    BoatismEquipmentItem COMPONENT_CANISTER = register("component_canister", new CanisterItem(new Item.Settings().maxCount(1)));
+    BoatismEquipmentItem COMPONENT_CANISTER_STRAPPED = register("component_canister_strapped", new CanisterItem(new Item.Settings().maxCount(1)));
+    BoatismEquipmentItem COMPONENT_PLATES = register("component_plates", new PlatesItem(new Item.Settings().maxCount(1)));
+    BoatismEquipmentItem PERFORMANCE_FUEL_INJECTOR = register("component_fuel_injector", new PerformanceFuelInjectorItem(new Item.Settings().maxCount(1)));
 
     FermenterBlockItem FERMENTER_BLOCK = register("fermenter", new FermenterBlockItem(BoatismBlocks.FERMENTER, new Item.Settings().maxCount(1)));
 

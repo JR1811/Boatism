@@ -1,8 +1,8 @@
 package net.shirojr.boatism.item.custom.upgrade;
 
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.Item;
 import net.minecraft.util.math.RotationAxis;
+import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismItems;
 
@@ -15,7 +15,7 @@ public class PlatesItem extends BoatismEquipmentItem {
     }
 
     @Override
-    public List<Item> getConflictingParts() {
+    public List<BoatEngineComponent> getConflictingParts() {
         return List.of(BoatismItems.COMPONENT_CANISTER, BoatismItems.COMPONENT_CANISTER_STRAPPED);
     }
 
@@ -26,7 +26,6 @@ public class PlatesItem extends BoatismEquipmentItem {
 
     @Override
     public MatrixStack itemRenderTransform(BoatEngineEntity boatEngineEntity, MatrixStack matrixStack) {
-        matrixStack.push();
         matrixStack.scale(0.5f, 0.5f, 0.5f);
         matrixStack.translate(0, 2.43, 0);
         matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90));

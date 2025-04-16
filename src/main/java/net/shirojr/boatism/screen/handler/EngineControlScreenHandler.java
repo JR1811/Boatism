@@ -87,12 +87,14 @@ public class EngineControlScreenHandler extends ScreenHandler {
         } else {
             slot.markDirty();
         }
+        this.updateValidStacks();
         return newStack;
     }
 
     @Override
     public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
         if (this.boatEngine != null && player.getWorld().isClient()) {
+            this.updateValidStacks();
             this.boatEngine.syncComponentListToTrackingClients();
         }
         super.onSlotClick(slotIndex, button, actionType, player);
@@ -105,12 +107,7 @@ public class EngineControlScreenHandler extends ScreenHandler {
 
     @Override
     public boolean canInsertIntoSlot(ItemStack stack, Slot slot) {
-        boolean isEngineComponent = stack.getItem() instanceof BoatEngineComponent;
-        return switch (slot.getIndex()) {
-            case 0, 1, 2 -> isEngineComponent;
-            // TODO: include fuel slot handling!
-            default -> true;
-        };
+        return this.boatEngine.getEngineHandler().canEquipPart(stack);
     }
 
     private void addPlayerInventory(PlayerInventory playerInventory) {
@@ -135,5 +132,20 @@ public class EngineControlScreenHandler extends ScreenHandler {
                 index++;
             }
         }
+    }
+
+    private void updateValidStacks() {
+        for (int i = 0; i < this.boatEngine.getMountedInventory().size(); i++) {
+            ItemStack mountedStack = this.boatEngine.getMountedInventory().getStack(i);
+            if (mountedStack.isEmpty()) continue;
+            if (!(mountedStack.getItem() instanceof BoatEngineComponent)) continue;
+            if (!this.boatEngine.getEngineHandler().canEquipPart(mountedStack)) {
+                this.removeStack(i);
+            }
+        }
+    }
+
+    private void removeStack(int slotIndex) {
+        this.boatEngine.getMountedInventory().removeStack(slotIndex);
     }
 }

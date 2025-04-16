@@ -1,7 +1,6 @@
 package net.shirojr.boatism.api;
 
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.item.custom.upgrade.CanisterItem;
@@ -25,12 +24,19 @@ public interface BoatEngineComponent {
     /**
      * If engine contains parts which conflict with this list, the engine won't accept equipping your item.
      */
-    default List<Item> getConflictingParts() {
+    default List<BoatEngineComponent> getConflictingParts() {
         return new ArrayList<>();
     }
 
     /**
-     * This value will add to the maximal possible thrust of the engine
+     * If engine doesn't contain all necessary parts, the engine won't accept equipping your item.
+     */
+    default List<BoatEngineComponent> getNecessaryParts() {
+        return new ArrayList<>();
+    }
+
+    /**
+     * This value will add to the maximum possible thrust of the engine
      */
     default float addedThrust() {
         return 0.0f;
@@ -62,7 +68,8 @@ public interface BoatEngineComponent {
     }
 
     /**
-     * This value will improve the armor of the engine.
+     * This value will improve the armor of the engine. Keep in mind that an engine which has an
+     * armor value above 0 won't do block damage, if it blows up ({@link net.shirojr.boatism.util.BoatEngineExplosionBehaviour BoatEngineExplosionBehaviour})
      */
     default float getAdditionalArmor() {
         return 0.0f;
@@ -116,7 +123,6 @@ public interface BoatEngineComponent {
      * @see CanisterItem CanisterItem
      */
     default MatrixStack itemRenderTransform(BoatEngineEntity boatEngineEntity, MatrixStack matrixStack) {
-        matrixStack.push();
         return matrixStack;
     }
 }

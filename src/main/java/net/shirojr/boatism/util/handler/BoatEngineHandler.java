@@ -3,7 +3,6 @@ package net.shirojr.boatism.util.handler;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.minecraft.entity.vehicle.BoatEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -14,11 +13,13 @@ import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismSounds;
+import net.shirojr.boatism.item.custom.upgrade.PerformanceFuelInjectorItem;
 import net.shirojr.boatism.mixin.BoatEntityInvoker;
 import net.shirojr.boatism.network.packet.StartSoundInstancePacket;
 import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class BoatEngineHandler {
@@ -284,33 +285,31 @@ public class BoatEngineHandler {
 
     public float calculateThrustModifier(BoatEntity hookedBoatEntity) {
         if (hookedBoatEntity == null) return 0.0f;
-        List<ItemStack> boatComponentStacks = new ArrayList<>();
         int passengerCount = Math.max(hookedBoatEntity.getPassengerList().size() - 1, 0);    // engine is passenger too
         int maxPassenger = ((BoatEntityInvoker) hookedBoatEntity).invokeGetMaxPassenger();
         float thrust = 1;
 
-        getMountedItems().forEach(stack -> {
-            if (stack.getItem() instanceof BoatEngineComponent component && component.addedThrust() > 0.0f) {
-                boatComponentStacks.add(stack);
-            }
-        });
-        for (ItemStack thrustModifierStack : boatComponentStacks) {
-            if (!(thrustModifierStack.getItem() instanceof BoatEngineComponent engineComponent)) continue;
-            thrust += engineComponent.addedThrust();
+        for (int i = 0; i < getMountedItems().size(); i++) {
+            ItemStack stack = getMountedItems().get(i);
+            if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
+            thrust += component.addedThrust();
         }
-        float passengerDeficit = (float) passengerCount / maxPassenger;
-        return thrust * MathHelper.lerp(passengerDeficit, 1.0f, 0.7f);
+        float normalizedPassengerDeficit = (float) passengerCount / maxPassenger;
+        return thrust * MathHelper.lerp(normalizedPassengerDeficit, 1.0f, 0.7f);
     }
 
     public boolean canEquipPart(ItemStack stack) {
-        if (!(stack.getItem() instanceof BoatEngineComponent)) return false;
-        List<Item> flaggedParts = new ArrayList<>();
-        for (ItemStack entry : getMountedItems()) {
-            if (entry.getItem() instanceof BoatEngineComponent component) {
-                flaggedParts.addAll(component.getConflictingParts());
-            }
+        if (!(stack.getItem() instanceof BoatEngineComponent newComponent)) return false;
+        List<BoatEngineComponent> flaggedParts = new ArrayList<>();
+        HashSet<BoatEngineComponent> necessaryParts = new HashSet<>();
+
+        for (ItemStack mountedItem : getMountedItems()) {
+            if (!(mountedItem.getItem() instanceof BoatEngineComponent component)) continue;
+            flaggedParts.addAll(component.getConflictingParts());
+            if (newComponent.getNecessaryParts().contains(component)) necessaryParts.add(component);
         }
-        return !flaggedParts.contains(stack.getItem());
+
+        return !flaggedParts.contains(newComponent) && necessaryParts.containsAll(newComponent.getNecessaryParts());
     }
 
     public List<ItemStack> getMountedItems() {
@@ -319,7 +318,10 @@ public class BoatEngineHandler {
 
     public void initiateSoundState() {
         List<SoundInstanceIdentifier> identifierList = new ArrayList<>();
-        if (engineIsRunning()) identifierList.add(SoundInstanceIdentifier.ENGINE_RUNNING);
+        boolean hasFastFuelInjector = this.getMountedItems().stream().anyMatch(stack -> stack.getItem() instanceof PerformanceFuelInjectorItem);
+        SoundInstanceIdentifier runningSound = hasFastFuelInjector ? SoundInstanceIdentifier.ENGINE_RUNNING_FUEL_INJECTED : SoundInstanceIdentifier.ENGINE_RUNNING;
+
+        if (engineIsRunning()) identifierList.add(runningSound);
         if (isLowHealth()) identifierList.add(SoundInstanceIdentifier.ENGINE_LOW_HEALTH);
         if (isLowOnFuel()) identifierList.add(SoundInstanceIdentifier.ENGINE_LOW_FUEL);
         if (isSubmerged()) identifierList.add(SoundInstanceIdentifier.ENGINE_RUNNING_UNDERWATER);

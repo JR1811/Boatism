@@ -106,8 +106,7 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void boatism$readBoatEngineEntry(NbtCompound nbt, CallbackInfo ci) {
         BoatEntity boatEntity = (BoatEntity) (Object) this;
-        if (!nbt.contains("BoatEngineUuid"))
-            return;
+        if (!nbt.contains("BoatEngineUuid")) return;
         ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(nbt.getUuid("BoatEngineUuid"));
     }
 

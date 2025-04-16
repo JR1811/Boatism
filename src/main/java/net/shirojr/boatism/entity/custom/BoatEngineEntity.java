@@ -40,6 +40,7 @@ import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.entity.animation.BoatismAnimation;
 import net.shirojr.boatism.init.*;
+import net.shirojr.boatism.item.custom.upgrade.PerformanceFuelInjectorItem;
 import net.shirojr.boatism.network.packet.EngineComponentSyncPacket;
 import net.shirojr.boatism.network.packet.StartSoundInstancePacket;
 import net.shirojr.boatism.network.packet.StoppedTrackingEnginePacket;
@@ -298,7 +299,11 @@ public class BoatEngineEntity extends LivingEntity {
         List<SoundInstanceIdentifier> identifierList = new ArrayList<>();
         syncComponentListToTrackingClients();
         sendPacketForStoppingAllSoundInstances(player);
-        if (engineHandler.engineIsRunning()) identifierList.add(SoundInstanceIdentifier.ENGINE_RUNNING);
+
+        boolean hasFastFuelInjector = this.getEngineHandler().getMountedItems().stream().anyMatch(stack -> stack.getItem() instanceof PerformanceFuelInjectorItem);
+        SoundInstanceIdentifier runningSound = hasFastFuelInjector ? SoundInstanceIdentifier.ENGINE_RUNNING_FUEL_INJECTED : SoundInstanceIdentifier.ENGINE_RUNNING;
+
+        if (engineHandler.engineIsRunning()) identifierList.add(runningSound);
         if (engineHandler.isLowHealth()) identifierList.add(SoundInstanceIdentifier.ENGINE_LOW_HEALTH);
         if (engineHandler.isLowOnFuel()) identifierList.add(SoundInstanceIdentifier.ENGINE_LOW_FUEL);
         if (engineHandler.isSubmerged()) identifierList.add(SoundInstanceIdentifier.ENGINE_RUNNING_UNDERWATER);
@@ -609,9 +614,8 @@ public class BoatEngineEntity extends LivingEntity {
             }
         });
         boolean destructiveExplosion = serverWorld.getGameRules().getBoolean(BoatismGameRules.DESTRUCTIVE_ENGINE_EXPLOSION);
-        for (ItemStack stack : getMountedInventory().getHeldStacks()) {
-            if (!(stack.getItem() instanceof BoatEngineComponent component)) continue;
-            if (component.getAdditionalArmor() > 0) destructiveExplosion = false;
+        if (this.engineHandler.getFullArmorValue() > 0) {
+            destructiveExplosion = false;
         }
         serverWorld.createExplosion(this, Explosion.createDamageSource(serverWorld, this),
                 new BoatEngineExplosionBehaviour(), this.getX(), this.getY(), this.getZ(), 4.0f, destructiveExplosion,

@@ -5,6 +5,12 @@
       "boatism:boat_engine_default"
     ]
   },
+  "boat_engine_default_fuel_injector": {
+    "subtitle": "sound.boatism.boat_engine.default.fuel_injector",
+    "sounds": [
+      "boatism:boat_engine_default_fuel_injector"
+    ]
+  },
   "boat_engine_hit": {
     "subtitle": "sound.boatism.boat_engine.underwater",
     "sounds": [

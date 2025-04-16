@@ -7,6 +7,7 @@
   "item.boatism.component_canister": "Fuel Canister",
   "item.boatism.component_canister_strapped": "Fuel Canister Strapped",
   "item.boatism.component_plates": "Custom Plating",
+  "item.boatism.component_fuel_injector": "Fast Fuel Injector",
 
   "block.boatism.fermenter": "Fermenter",
 
@@ -32,6 +33,7 @@
   "key.boatism.power_level_down": "Power Level Down",
 
   "sound.boatism.boat_engine.default": "Running Engine",
+  "sound.boatism.boat_engine.default.fuel_injector": "Running Custom Engine",
   "sound.boatism.boat_engine.underwater": "Running submerged Engine",
   "sound.boatism.boat_engine.power_up": "Increased Boat Engine power click",
   "sound.boatism.boat_engine.power_down": "Decreased Boat Engine power click",

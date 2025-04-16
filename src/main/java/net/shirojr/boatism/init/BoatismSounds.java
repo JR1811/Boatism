@@ -7,6 +7,7 @@ import net.shirojr.boatism.Boatism;
 
 public interface BoatismSounds {
     SoundEvent BOAT_ENGINE_DEFAULT = of("boat_engine_default");
+    SoundEvent BOAT_ENGINE_DEFAULT_FUEL_INJECTOR = of("boat_engine_default_fuel_injector");
     SoundEvent BOAT_ENGINE_UNDERWATER = of("boat_engine_underwater");
     SoundEvent BOAT_ENGINE_LOW_FUEL = of("boat_engine_low_fuel");
     SoundEvent BOAT_ENGINE_LOW_HEALTH = of("boat_engine_low_health");

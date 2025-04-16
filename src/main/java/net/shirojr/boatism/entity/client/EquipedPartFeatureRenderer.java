@@ -31,6 +31,7 @@ public class EquipedPartFeatureRenderer<T extends LivingEntity, M extends Entity
         for (ItemStack stack : boatEngine.getMountedInventory().getHeldStacks()) {
             if (stack.isEmpty() || !(stack.getItem() instanceof BoatEngineComponent component)) continue;
             ItemStack displayedStack = component.getMountedItemStack(stack);
+            matrices.push();
             matrices = component.itemRenderTransform(boatEngine, matrices);
             this.renderItem(displayedStack, light, matrices, vertexConsumers,
                     boatEngine.getWorld(), boatEngine.getId());
