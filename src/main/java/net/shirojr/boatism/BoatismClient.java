@@ -9,6 +9,8 @@ import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.shirojr.boatism.block.custom.client.FluidClientHandler;
 import net.shirojr.boatism.block.entity.client.FermentBlockEntityModel;
 import net.shirojr.boatism.block.entity.client.FermentBlockEntityRenderer;
+import net.shirojr.boatism.entity.client.AirBoatEngineEntityModel;
+import net.shirojr.boatism.entity.client.AirBoatEngineEntityRenderer;
 import net.shirojr.boatism.entity.client.BoatEngineEntityModel;
 import net.shirojr.boatism.entity.client.BoatEngineEntityRenderer;
 import net.shirojr.boatism.init.*;
@@ -20,6 +22,8 @@ public class BoatismClient implements ClientModInitializer {
     public static BoatismSoundManager soundManager;
     public static final EntityModelLayer BOAT_ENGINE_LAYER =
             new EntityModelLayer(Boatism.getId("boat_engine_layer"), "main");
+    public static final EntityModelLayer AIR_BOAT_ENGINE_LAYER =
+            new EntityModelLayer(Boatism.getId("air_boat_engine_layer"), "main");
     public static final EntityModelLayer FERMENTER_LAYER =
             new EntityModelLayer(Boatism.getId("fermenter_layer"), "main");
 
@@ -32,7 +36,9 @@ public class BoatismClient implements ClientModInitializer {
         soundManager = new BoatismSoundManager();
 
         EntityRendererRegistry.register(BoatismEntities.BOAT_ENGINE, BoatEngineEntityRenderer::new);
+        EntityRendererRegistry.register(BoatismEntities.AIR_BOAT_ENGINE, AirBoatEngineEntityRenderer::new);
         EntityModelLayerRegistry.registerModelLayer(BOAT_ENGINE_LAYER, BoatEngineEntityModel::getTexturedModelData);
+        EntityModelLayerRegistry.registerModelLayer(AIR_BOAT_ENGINE_LAYER, AirBoatEngineEntityModel::getTexturedModelData);
 
         BlockEntityRendererFactories.register(BoatismBlockEntities.FERMENTER, FermentBlockEntityRenderer::new);
         EntityModelLayerRegistry.registerModelLayer(FERMENTER_LAYER, FermentBlockEntityModel::getTexturedModelData);

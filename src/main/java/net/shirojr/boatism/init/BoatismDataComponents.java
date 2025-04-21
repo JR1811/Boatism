@@ -25,7 +25,7 @@ public interface BoatismDataComponents {
                     .codec(BoatismCodecs.MountedInventory.CODEC)
                     .packetCodec(BoatismCodecs.MountedInventory.PACKET_CODEC)
     );
-    ComponentType<Boolean> IS_RUNNING = register("is_running",
+    ComponentType<Boolean> RUNNING = register("running",
             booleanBuilder -> booleanBuilder
                     .codec(Codec.BOOL)
                     .packetCodec(PacketCodecs.BOOL)
@@ -55,7 +55,7 @@ public interface BoatismDataComponents {
                     .codec(Codec.LONG)
                     .packetCodec(PacketCodecs.VAR_LONG)
     );
-    ComponentType<Boolean> IS_LOCKED = register("is_locked",
+    ComponentType<Boolean> LOCKED = register("locked",
             booleanBuilder -> booleanBuilder
                     .codec(Codec.BOOL)
                     .packetCodec(PacketCodecs.BOOL)

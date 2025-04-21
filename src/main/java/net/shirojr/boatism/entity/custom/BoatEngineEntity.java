@@ -50,7 +50,7 @@ import net.shirojr.boatism.util.data.EngineComponent;
 import net.shirojr.boatism.util.data.codec.BoatismCodecs;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import net.shirojr.boatism.util.handler.EntityHandler;
-import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
+import net.shirojr.boatism.util.nbt.BoatEngineDataHelper;
 import net.shirojr.boatism.util.nbt.NbtKeys;
 import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 import net.shirojr.boatism.util.tag.BoatismTags;
@@ -60,28 +60,28 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class BoatEngineEntity extends LivingEntity {
-    private final SimpleInventory mountedInventory;
-    private final PropertyDelegate propertyDelegate;
-
-    private static final TrackedData<Integer> POWER_LEVEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Float> OVERHEAT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
-    private static final TrackedData<EulerAngle> ARM_ROTATION = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.ROTATION);
-    private static final TrackedData<Boolean> SUBMERGED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Boolean> RUNNING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Long> FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.LONG);
-    private static final TrackedData<Boolean> LOCKED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-
     public static final int INVENTORY_SIZE = 32;
+
+    private final SimpleInventory mountedInventory;
+    protected final PropertyDelegate propertyDelegate;
+
+    protected static final TrackedData<Integer> POWER_LEVEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    protected static final TrackedData<Float> OVERHEAT = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.FLOAT);
+    protected static final TrackedData<EulerAngle> ARM_ROTATION = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.ROTATION);
+    protected static final TrackedData<Boolean> SUBMERGED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    protected static final TrackedData<Boolean> RUNNING = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    protected static final TrackedData<Long> FUEL = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.LONG);
+    protected static final TrackedData<Boolean> LOCKED = DataTracker.registerData(BoatEngineEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
     // public final AnimationState rightSpinAnimationState = new AnimationState();
     public final AnimationState leftSpinAnimationState = new AnimationState();
     public float spinAnimationTimeout = 0;
 
     @Nullable
-    private UUID hookedBoatEntityUuid;
+    protected UUID hookedBoatEntityUuid;
     @NotNull
-    private final BoatEngineHandler engineHandler;
-    private Vec3d previousLocation = Vec3d.ZERO;
+    protected final BoatEngineHandler engineHandler;
+    protected Vec3d previousLocation = Vec3d.ZERO;
 
     public BoatEngineEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -116,11 +116,6 @@ public class BoatEngineEntity extends LivingEntity {
         };
     }
 
-    public BoatEngineEntity(World world, double x, double y, double z) {
-        this(BoatismEntities.BOAT_ENGINE, world);
-        this.setPosition(x, y, z);
-    }
-
     public BoatEngineEntity(World world, BoatEntity hookedBoatEntity) {
         this(BoatismEntities.BOAT_ENGINE, world);
         this.setPos(hookedBoatEntity.getX(), hookedBoatEntity.getY(), hookedBoatEntity.getZ());
@@ -147,7 +142,7 @@ public class BoatEngineEntity extends LivingEntity {
                 .add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS, 15.0f);
     }
 
-    private void updateAnimationStates() {
+    protected void updateAnimationStates() {
         if (getPowerLevel() > 0) {
             if (spinAnimationTimeout <= 0) {
                 this.spinAnimationTimeout = (BoatismAnimation.SPIN_DURATION_IN_SEC) * 20;
@@ -166,7 +161,7 @@ public class BoatEngineEntity extends LivingEntity {
                 nbt.putUuid(NbtKeys.HOOKED_ENTITY, hookedBoatEntityUuid));
 
 
-        BoatEngineNbtHelper.writeItemStacksToNbt(this.mountedInventory.getHeldStacks(), NbtKeys.MOUNTED_ITEMS, nbt);
+        BoatEngineDataHelper.writeItemStacksToNbt(this.mountedInventory.getHeldStacks(), NbtKeys.MOUNTED_ITEMS, nbt);
 
         nbt.putBoolean(NbtKeys.IS_RUNNING, this.isRunning());
         nbt.putInt(NbtKeys.POWER_OUTPUT, this.getPowerLevel());
@@ -185,7 +180,7 @@ public class BoatEngineEntity extends LivingEntity {
         }
         if (nbt.contains(NbtKeys.MOUNTED_ITEMS)) {
             this.mountedInventory.clear();
-            setMountedItemsFromItemStackList(BoatEngineNbtHelper.readItemStacksFromNbt(nbt, NbtKeys.MOUNTED_ITEMS));
+            setMountedItemsFromItemStackList(BoatEngineDataHelper.readItemStacksFromNbt(nbt, NbtKeys.MOUNTED_ITEMS));
             syncComponentListToTrackingClients();
         }
         this.setIsRunning(nbt.getBoolean(NbtKeys.IS_RUNNING));

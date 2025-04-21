@@ -13,14 +13,16 @@ import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismDataComponents;
 import net.shirojr.boatism.init.BoatismItems;
+import net.shirojr.boatism.item.util.EnginePlacer;
 import net.shirojr.boatism.util.data.codec.BoatismCodecs;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-public class BoatEngineNbtHelper {
+public class BoatEngineDataHelper {
 
     public static void writeItemStacksToNbt(DefaultedList<ItemStack> stacks, String name, NbtCompound nbt) {
         NbtList nbtList = new NbtList();
@@ -54,15 +56,13 @@ public class BoatEngineNbtHelper {
             mountedInventory.add(new BoatismCodecs.MountedInventory.Slot(i, stack));
         }
         engineStack.set(BoatismDataComponents.MOUNTED_ITEMS, mountedInventory);
-
-
-        engineStack.set(BoatismDataComponents.IS_RUNNING, engineEntity.isRunning());
+        engineStack.set(BoatismDataComponents.RUNNING, engineEntity.isRunning());
         engineStack.set(BoatismDataComponents.POWER_OUTPUT, engineEntity.getPowerLevel());
         engineStack.set(BoatismDataComponents.OVERHEAT, engineEntity.getOverheat());
         engineStack.set(BoatismDataComponents.ROTATION, engineEntity.getArmRotation());
         engineStack.set(BoatismDataComponents.IS_SUBMERGED, engineEntity.isSubmerged());
         engineStack.set(BoatismDataComponents.FUEL, engineEntity.getFuel());
-        engineStack.set(BoatismDataComponents.IS_LOCKED, engineEntity.isLocked());
+        engineStack.set(BoatismDataComponents.LOCKED, engineEntity.isLocked());
         return engineStack;
     }
 
@@ -76,21 +76,23 @@ public class BoatEngineNbtHelper {
         return returnedItemStacks;
     }
 
-    public static BoatEngineEntity getBoatEngineEntityFromItemStack(ItemStack stack, BoatEntity linkedBoat) {
-        BoatEngineEntity boatEngine = new BoatEngineEntity(linkedBoat.getWorld(), linkedBoat);
+    @Nullable
+    public static BoatEngineEntity getBoatEngineEntity(ItemStack stack, BoatEntity linkedBoat) {
+        if (!(stack.getItem() instanceof EnginePlacer enginePlacer)) return null;
+        BoatEngineEntity boatEngine = enginePlacer.getEngineInstance(linkedBoat.getWorld(), linkedBoat);
 
         LinkedHashSet<BoatismCodecs.MountedInventory.Slot> mountedInventory = stack.get(BoatismDataComponents.MOUNTED_ITEMS);
         if (mountedInventory != null) {
             boatEngine.setMountedItemsFromItemStackList(mountedInventory);
         }
-        boatEngine.setIsRunning(stack.getOrDefault(BoatismDataComponents.IS_RUNNING, false));
+        boatEngine.setIsRunning(stack.getOrDefault(BoatismDataComponents.RUNNING, false));
         boatEngine.setPowerLevel(MathHelper.clamp(stack.getOrDefault(BoatismDataComponents.POWER_OUTPUT, 0), 0, BoatEngineHandler.MAX_POWER_LEVEL / 2));
         float overheat = (float) MathHelper.clamp(stack.getOrDefault(BoatismDataComponents.OVERHEAT, 0f), 0, boatEngine.getEngineHandler().getMaxOverHeatCapacity() * 0.8);
         boatEngine.setOverheat(overheat);
         boatEngine.setArmRotation(stack.getOrDefault(BoatismDataComponents.ROTATION, new EulerAngle(0, 0, 0)));
         boatEngine.setSubmerged(stack.getOrDefault(BoatismDataComponents.IS_SUBMERGED, false));
         boatEngine.setFuel(stack.getOrDefault(BoatismDataComponents.FUEL, 0L));
-        boatEngine.setLocked(stack.getOrDefault(BoatismDataComponents.IS_LOCKED, false));
+        boatEngine.setLocked(stack.getOrDefault(BoatismDataComponents.LOCKED, false));
         return boatEngine;
     }
 }

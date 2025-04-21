@@ -6,7 +6,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.math.EulerAngle;
 import net.shirojr.boatism.Boatism;
-import net.shirojr.boatism.item.custom.BaseEngineItem;
+import net.shirojr.boatism.item.custom.engine.BaseEngineItem;
 import net.shirojr.boatism.item.custom.FermenterBlockItem;
 import net.shirojr.boatism.item.custom.FuelBucketItem;
 import net.shirojr.boatism.item.custom.upgrade.*;
@@ -22,16 +22,29 @@ public interface BoatismItems {
 
     FuelBucketItem FUEL_BUCKET = register("fuel_bucket",
             new FuelBucketItem(BoatismFluids.OIL.still(), new Item.Settings().maxCount(1)));
+
     BaseEngineItem BASE_ENGINE = register("base_engine",
             new BaseEngineItem(new Item.Settings().maxCount(1).fireproof()
                     .component(BoatismDataComponents.MOUNTED_ITEMS, new LinkedHashSet<>())
-                    .component(BoatismDataComponents.IS_RUNNING, false)
+                    .component(BoatismDataComponents.RUNNING, false)
                     .component(BoatismDataComponents.POWER_OUTPUT, 0)
                     .component(BoatismDataComponents.OVERHEAT, 0f)
                     .component(BoatismDataComponents.ROTATION, new EulerAngle(0f, 0f, 0f))
                     .component(BoatismDataComponents.IS_SUBMERGED, false)
                     .component(BoatismDataComponents.FUEL, 0L)
-                    .component(BoatismDataComponents.IS_LOCKED, false)
+                    .component(BoatismDataComponents.LOCKED, false)
+            )
+    );
+    BaseEngineItem AIR_BOAT_ENGINE = register("air_boat_engine",
+            new BaseEngineItem(new Item.Settings().maxCount(1).fireproof()
+                    .component(BoatismDataComponents.MOUNTED_ITEMS, new LinkedHashSet<>())
+                    .component(BoatismDataComponents.RUNNING, false)
+                    .component(BoatismDataComponents.POWER_OUTPUT, 0)
+                    .component(BoatismDataComponents.OVERHEAT, 0f)
+                    .component(BoatismDataComponents.ROTATION, new EulerAngle(0f, 0f, 0f))
+                    .component(BoatismDataComponents.IS_SUBMERGED, false)
+                    .component(BoatismDataComponents.FUEL, 0L)
+                    .component(BoatismDataComponents.LOCKED, false)
             )
     );
 

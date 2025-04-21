@@ -12,8 +12,12 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineCoupler;
+import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismEntities;
 import net.shirojr.boatism.network.packet.EndAllSoundInstancesPacket;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BoatEngineEntityCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess,
@@ -34,14 +38,18 @@ public class BoatEngineEntityCommand {
 
     private static int removeBoatEngineEntities(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         Iterable<ServerWorld> serverWorlds = context.getSource().getServer().getWorlds();
-        serverWorlds.forEach(serverWorld -> serverWorld.getEntitiesByType(BoatismEntities.BOAT_ENGINE, boatEngine -> true)
-                .forEach(boatEngine -> {
-                    context.getSource().sendFeedback(() -> Text.literal(context.getSource().getName() +
-                            " removed " + boatEngine.toString()), true);
-                    boatEngine.getHookedBoatEntity().ifPresent(boatEntity ->
-                            ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
-                    boatEngine.remove(Entity.RemovalReason.DISCARDED);
-                }));
+        List<BoatEngineEntity> engines = new ArrayList<>();
+        for (ServerWorld serverWorld : serverWorlds) {
+            engines.addAll(serverWorld.getEntitiesByType(BoatismEntities.BOAT_ENGINE, boatEngine -> true));
+            engines.addAll(serverWorld.getEntitiesByType(BoatismEntities.AIR_BOAT_ENGINE, boatEngine -> true));
+        }
+        for (BoatEngineEntity boatEngine : engines) {
+            context.getSource().sendFeedback(() -> Text.literal(context.getSource().getName() +
+                    " removed " + boatEngine.toString()), true);
+            boatEngine.getHookedBoatEntity().ifPresent(boatEntity ->
+                    ((BoatEngineCoupler) boatEntity).boatism$setBoatEngineEntity(null));
+            boatEngine.remove(Entity.RemovalReason.DISCARDED);
+        }
         return stopAllSoundInstances(context);
     }
 }

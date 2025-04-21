@@ -20,10 +20,10 @@ import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.api.CustomBoatEngineAttachment;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismSounds;
-import net.shirojr.boatism.item.custom.BaseEngineItem;
+import net.shirojr.boatism.item.util.EnginePlacer;
 import net.shirojr.boatism.network.packet.BoatEntitySyncPacket;
 import net.shirojr.boatism.util.handler.EntityHandler;
-import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
+import net.shirojr.boatism.util.nbt.BoatEngineDataHelper;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -74,23 +74,23 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     }
 
     @Inject(method = "interact", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/entity/player/PlayerEntity;startRiding(Lnet/minecraft/entity/Entity;)Z",
-            shift = At.Shift.BEFORE),
+            target = "Lnet/minecraft/entity/player/PlayerEntity;startRiding(Lnet/minecraft/entity/Entity;)Z"),
             cancellable = true)
     private void boatism$equipEngineEntity(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         ItemStack stack = player.getMainHandStack();
         BoatEntity boatEntity = (BoatEntity) (Object) this;
         EntityHandler.engineLinkCleanUp(boatEntity);
         if (((BoatEngineCoupler) boatEntity).boatism$getBoatEngineEntityUuid() != null) return;
-        if (stack.getItem() instanceof BaseEngineItem) {
+        if (stack.getItem() instanceof EnginePlacer) {
             if (!this.getWorld().isClient()) {
-                // BoatEngineEntity engineEntity = new BoatEngineEntity(this.getWorld(), boatEntity);
-                BoatEngineEntity engineEntity = BoatEngineNbtHelper.getBoatEngineEntityFromItemStack(stack, boatEntity);
-                this.getWorld().spawnEntity(engineEntity);
-                boatism$setBoatEngineEntity(engineEntity.getUuid());
-                this.getWorld().playSound(null, boatEntity.getX(), boatEntity.getY(), boatEntity.getZ(),
-                        BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.9f, 1.0f);
-                stack.decrement(1);
+                BoatEngineEntity engineEntity = BoatEngineDataHelper.getBoatEngineEntity(stack, boatEntity);
+                if (engineEntity != null) {
+                    this.getWorld().spawnEntity(engineEntity);
+                    boatism$setBoatEngineEntity(engineEntity.getUuid());
+                    this.getWorld().playSound(null, boatEntity.getX(), boatEntity.getY(), boatEntity.getZ(),
+                            BoatismSounds.BOAT_ENGINE_EQUIP, SoundCategory.NEUTRAL, 0.9f, 1.0f);
+                    stack.decrement(1);
+                }
             }
             cir.setReturnValue(ActionResult.SUCCESS);
         }

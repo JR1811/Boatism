@@ -10,7 +10,7 @@ import net.minecraft.world.World;
 import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismEntities;
-import net.shirojr.boatism.util.nbt.BoatEngineNbtHelper;
+import net.shirojr.boatism.util.nbt.BoatEngineDataHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -27,7 +27,13 @@ public class EntityHandler {
         if (uuid == null) return Optional.empty();
         List<BoatEngineEntity> possibleEntities = world.getEntitiesByType(BoatismEntities.BOAT_ENGINE,
                 Box.of(pos, searchSize, searchSize, searchSize),
-                boatEngine -> boatEngine.getUuid().equals(uuid));
+                boatEngine -> boatEngine.getUuid().equals(uuid)
+        );
+        possibleEntities.addAll(
+                world.getEntitiesByType(BoatismEntities.AIR_BOAT_ENGINE,
+                        Box.of(pos, searchSize, searchSize, searchSize),
+                        boatEngine -> boatEngine.getUuid().equals(uuid))
+        );
         if (possibleEntities.isEmpty()) return Optional.empty();
         return Optional.ofNullable(possibleEntities.getFirst());
     }
@@ -50,10 +56,10 @@ public class EntityHandler {
     public static void dropMountedInventory(BoatEngineEntity boatEngineEntity, boolean dropEngine, boolean dropEquipment) {
         List<ItemStack> allEngineStacks = new ArrayList<>();
         if (dropEngine) {
-            allEngineStacks.add(BoatEngineNbtHelper.getItemStackFromBoatEngineEntity(boatEngineEntity));
+            allEngineStacks.add(BoatEngineDataHelper.getItemStackFromBoatEngineEntity(boatEngineEntity));
         }
         if (dropEquipment) {
-            allEngineStacks.addAll(BoatEngineNbtHelper.getMountedItemsFromBoatEngineEntity(boatEngineEntity));
+            allEngineStacks.addAll(BoatEngineDataHelper.getMountedItemsFromBoatEngineEntity(boatEngineEntity));
         }
         for (ItemStack entry : allEngineStacks) {
             boatEngineEntity.dropStack(entry);

@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Direction;
 import net.shirojr.boatism.Boatism;
+import net.shirojr.boatism.entity.custom.AirBoatEngineEntity;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 
 public class BoatismStorage {
@@ -19,52 +20,15 @@ public class BoatismStorage {
             if (!(entity instanceof BoatEngineEntity boatEngine)) return null;
             return boatEngine.getMountedInventoryStorage(direction);
         }, BoatismEntities.BOAT_ENGINE);
+        BoatismApis.ENTITY_ITEM_STORAGE.registerForType((entity, direction) -> {
+            if (!(entity instanceof AirBoatEngineEntity boatEngine)) return null;
+            return boatEngine.getMountedInventoryStorage(direction);
+        }, BoatismEntities.AIR_BOAT_ENGINE);
         FluidStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> blockEntity.getInventory().getFluidStorage(), BoatismBlockEntities.FERMENTER);
         FluidStorage.ITEM.registerForItems((itemStack, context) -> {
             if (!itemStack.isOf(BoatismItems.FUEL_BUCKET)) return null;
             return new FullItemFluidStorage(context, itemVariant -> ItemVariant.of(Items.BUCKET, itemVariant.getComponents()), BoatismFluids.OIL.getFluidVariant(), FluidConstants.BUCKET);
         }, BoatismItems.FUEL_BUCKET);
-        /*FluidStorage.ITEM.registerForItems((itemStack, ctx) -> new SingleVariantStorage<>() {
-            @Override
-            protected FluidVariant getBlankVariant() {
-                return FluidVariant.blank();
-            }
-
-            @Override
-            protected long getCapacity(FluidVariant variant) {
-                return FluidConstants.BUCKET;
-            }
-
-            @Override
-            protected boolean canInsert(FluidVariant variant) {
-                return ctx.getItemVariant().isOf(Items.BUCKET);
-            }
-
-            @Override
-            protected boolean canExtract(FluidVariant variant) {
-                return ctx.getItemVariant().isOf(BoatismItems.FUEL_BUCKET);
-            }
-
-            @Override
-            public FluidVariant getResource() {
-                return super.getResource();
-            }
-
-            @Override
-            protected void onFinalCommit() {
-                if (getAmount() == 0) {
-                    try (Transaction transaction = Transaction.openOuter()) {
-                        ctx.exchange(ItemVariant.of(Items.BUCKET), 1, transaction);
-                        transaction.commit();
-                    }
-                } else {
-                    try (Transaction transaction = Transaction.openOuter()) {
-                        ctx.exchange(ItemVariant.of(BoatismItems.FUEL_BUCKET), 1, transaction);
-                        transaction.commit();
-                    }
-                }
-            }
-        }, BoatismItems.FUEL_BUCKET, Items.BUCKET);*/
     }
 
     public static void initialize() {
