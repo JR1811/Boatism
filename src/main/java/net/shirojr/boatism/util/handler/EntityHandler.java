@@ -59,6 +59,7 @@ public class EntityHandler {
             boatEngineEntity.dropStack(entry);
         }
         for (int i = 0; i < boatEngineEntity.getMountedInventory().size(); i++) {
+            if (boatEngineEntity.getMountedInventory().getStack(i).isEmpty()) continue;
             boatEngineEntity.getMountedInventory().setStack(i, ItemStack.EMPTY);
         }
         boatEngineEntity.updateArmorModifier();

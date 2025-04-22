@@ -203,7 +203,7 @@ public class BoatEngineEntity extends LivingEntity {
             for (int slot = 0; slot < getMountedInventory().size(); slot++) {
                 ItemStack stack = getMountedInventory().getStack(slot);
                 if (stack.isEmpty()) continue;
-                engineComponentList.add(new EngineComponent(slot, getMountedInventory().getStack(slot)));
+                engineComponentList.add(new EngineComponent(slot, stack));
             }
             new EngineComponentSyncPacket(this.getId(), engineComponentList).sendPacket(player);
         });
@@ -388,7 +388,6 @@ public class BoatEngineEntity extends LivingEntity {
             }
             this.getMountedInventory().setStack(slot, stack);
         }
-
         updateArmorModifier();
     }
 

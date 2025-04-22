@@ -1,8 +1,11 @@
 package net.shirojr.boatism.item.custom.upgrade;
 
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.item.Item;
 import net.minecraft.util.math.RotationAxis;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+
+import java.util.List;
 
 public class ExhaustItem extends BoatismEquipmentItem {
 
@@ -28,5 +31,10 @@ public class ExhaustItem extends BoatismEquipmentItem {
     @Override
     public long addedConsumedFuel() {
         return 1;
+    }
+
+    @Override
+    public List<Item> getConflictingParts() {
+        return List.of(this);
     }
 }

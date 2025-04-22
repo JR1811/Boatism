@@ -92,10 +92,10 @@ public class EngineControlScreenHandler extends ScreenHandler {
 
     @Override
     public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
-        if (this.boatEngine != null && player.getWorld().isClient()) {
+        super.onSlotClick(slotIndex, button, actionType, player);
+        if (this.boatEngine != null) {
             this.boatEngine.syncComponentListToTrackingClients();
         }
-        super.onSlotClick(slotIndex, button, actionType, player);
     }
 
     @Override
@@ -105,12 +105,16 @@ public class EngineControlScreenHandler extends ScreenHandler {
 
     @Override
     public boolean canInsertIntoSlot(ItemStack stack, Slot slot) {
-        boolean isEngineComponent = stack.getItem() instanceof BoatEngineComponent;
-        return switch (slot.getIndex()) {
-            case 0, 1, 2 -> isEngineComponent;
-            // TODO: include fuel slot handling!
-            default -> true;
-        };
+        if (!(stack.getItem() instanceof BoatEngineComponent)) return false;
+        if (this.boatEngine == null) return false;
+        return boatEngine.getEngineHandler().canEquipPart(stack);
+    }
+
+    @Override
+    public void onContentChanged(Inventory inventory) {
+        super.onContentChanged(inventory);
+        if (this.boatEngine == null) return;
+        this.boatEngine.syncComponentListToTrackingClients();
     }
 
     private void addPlayerInventory(PlayerInventory playerInventory) {
@@ -131,7 +135,15 @@ public class EngineControlScreenHandler extends ScreenHandler {
         int maxRows = 4, maxColumns = 3, index = 0;
         for (int row = 0; row < maxRows; row++) {
             for (int column = 0; column < maxColumns; column++) {
-                this.addSlot(new Slot(engineInventory, index, 116 + column * 18, 7 + row * 18));
+                Slot slot = new Slot(engineInventory, index, 116 + column * 18, 7 + row * 18) {
+                    @Override
+                    public boolean canInsert(ItemStack stack) {
+                        if (!(stack.getItem() instanceof BoatEngineComponent)) return false;
+                        if (boatEngine == null) return false;
+                        return boatEngine.getEngineHandler().canEquipPart(stack);
+                    }
+                };
+                this.addSlot(slot);
                 index++;
             }
         }

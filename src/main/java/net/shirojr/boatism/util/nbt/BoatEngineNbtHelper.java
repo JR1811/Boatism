@@ -22,7 +22,7 @@ import java.util.List;
 
 public class BoatEngineNbtHelper {
 
-    public static void writeItemStacksToNbt(DefaultedList<ItemStack> stacks, String name, NbtCompound nbt) {
+    public static void writeItemStacksToNbt(DefaultedList<ItemStack> stacks, String nbtKey, NbtCompound nbt) {
         NbtList nbtList = new NbtList();
         for (int i = 0; i < stacks.size(); i++) {
             ItemStack stack = stacks.get(i);
@@ -31,7 +31,7 @@ public class BoatEngineNbtHelper {
             BoatismCodecs.MountedInventory.Slot.CODEC.encodeStart(NbtOps.INSTANCE, slot).result().ifPresent(nbtList::add);
         }
         if (nbtList.isEmpty()) return;
-        nbt.put(name, nbtList);
+        nbt.put(nbtKey, nbtList);
     }
 
     public static LinkedHashSet<BoatismCodecs.MountedInventory.Slot> readItemStacksFromNbt(NbtCompound nbt, String name) {

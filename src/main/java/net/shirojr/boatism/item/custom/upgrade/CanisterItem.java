@@ -45,7 +45,7 @@ public class CanisterItem extends BoatismEquipmentItem implements BoatEngineComp
 
     @Override
     public List<Item> getConflictingParts() {
-        return List.of(BoatismItems.COMPONENT_PLATES);
+        return List.of(this, BoatismItems.COMPONENT_PLATES);
     }
 
     @Override
