@@ -1,14 +1,14 @@
 package net.shirojr.boatism.network.packet;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Uuids;
+import net.minecraft.util.Identifier;
 import net.shirojr.boatism.api.BoatEngineCoupler;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 
@@ -16,27 +16,39 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
-public record BoatEntitySyncPacket(int entityId, Optional<UUID> linkedEngine) implements CustomPayload {
-    public static final Id<BoatEntitySyncPacket> IDENTIFIER = new Id<>(BoatismNetworkIdentifiers.BOAT_ENTITY_SYNC.getId());
+public class BoatEntitySyncPacket {
+    private final int entityId;
+    private final Optional<UUID> linkedEngine;
 
-    public static final PacketCodec<RegistryByteBuf, BoatEntitySyncPacket> CODEC = PacketCodec.tuple(
-            PacketCodecs.VAR_INT, BoatEntitySyncPacket::entityId,
-            PacketCodecs.optional(Uuids.PACKET_CODEC), BoatEntitySyncPacket::linkedEngine,
-            BoatEntitySyncPacket::new
-    );
+    public static final Identifier IDENTIFIER = BoatismNetworkIdentifiers.BOAT_ENTITY_SYNC.getId();
 
-    @Override
-    public Id<? extends CustomPayload> getId() {
-        return IDENTIFIER;
+    public BoatEntitySyncPacket(int entityId, Optional<UUID> linkedEngine) {
+        this.entityId = entityId;
+        this.linkedEngine = linkedEngine;
     }
 
-    public void sendPacket(Collection<ServerPlayerEntity> targets) {
-        targets.forEach(serverPlayer -> ServerPlayNetworking.send(serverPlayer, this));
+    public static void sendPacket(Collection<ServerPlayerEntity> targets, int entityId, Optional<UUID> linkedEngine) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeVarInt(entityId);
+        buf.writeBoolean(linkedEngine.isPresent());
+        linkedEngine.ifPresent(buf::writeUuid);
+
+        for (ServerPlayerEntity player : targets) {
+            ServerPlayNetworking.send(player, IDENTIFIER, buf);
+        }
     }
 
-    public void handlePacket(ClientPlayNetworking.Context context) {
-        ClientWorld world = context.player().clientWorld;
-        if (world == null || !(world.getEntityById(entityId) instanceof BoatEngineCoupler boat)) return;
-        boat.boatism$setBoatEngineEntity(linkedEngine.orElse(null));
+    public static void handlePacket(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler, PacketByteBuf buf, PacketSender packetSender) {
+        int entityId = buf.readVarInt();
+        Optional<UUID> linkedEngine = buf.readBoolean() ? Optional.of(buf.readUuid()) : Optional.empty();
+
+        client.execute(() -> {
+            ClientWorld world = client.world;
+            if (world == null) return;
+
+            if (world.getEntityById(entityId) instanceof BoatEngineCoupler boat) {
+                boat.boatism$setBoatEngineEntity(linkedEngine.orElse(null));
+            }
+        });
     }
 }

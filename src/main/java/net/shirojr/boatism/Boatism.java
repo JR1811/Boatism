@@ -7,7 +7,6 @@ import net.minecraft.util.Identifier;
 import net.shirojr.boatism.config.BoatismConfig;
 import net.shirojr.boatism.init.*;
 import net.shirojr.boatism.network.BoatismC2S;
-import net.shirojr.boatism.network.BoatismNetworkPayloads;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.tag.BoatismTags;
 
@@ -19,7 +18,6 @@ public class Boatism implements ModInitializer {
     public void onInitialize() {
         initConfig();
         BoatismItems.initialize();
-        BoatismDataComponents.initialize();
         BoatismBlocks.initialize();
         BoatismEntities.initialize();
         BoatismFluids.initialize();
@@ -28,7 +26,6 @@ public class Boatism implements ModInitializer {
         BoatismEntityAttributes.initialize();
         BoatismEvents.registerCommonEvents();
         BoatismSounds.initialize();
-        BoatismNetworkPayloads.initialize();
         BoatismC2S.registerServerReceivers();
         BoatismTags.initialize();
         BoatismGameRules.initialize();

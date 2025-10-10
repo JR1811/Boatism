@@ -96,13 +96,15 @@ public class AirBoatEngineEntityModel<T extends AirBoatEngineEntity> extends Sin
         this.rotor.roll = animationProgress;
     }
 
-    @Override
     public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
         float scaleFactor = 1.0f;
-
         matrices.translate(0.0f, 0.0f, 0.1f);
         matrices.scale(scaleFactor, scaleFactor, scaleFactor);
-        base.render(matrices, vertices, light, overlay, color);
+        base.render(matrices, vertices, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay) {
+        base.render(matrices, vertices, light, overlay, 1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override

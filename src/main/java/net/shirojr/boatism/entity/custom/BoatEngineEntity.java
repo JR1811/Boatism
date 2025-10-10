@@ -19,13 +19,11 @@ import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
@@ -34,7 +32,6 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.EulerAngle;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.api.BoatEngineCoupler;
@@ -45,6 +42,7 @@ import net.shirojr.boatism.network.packet.EngineComponentSyncPacket;
 import net.shirojr.boatism.network.packet.StartSoundInstancePacket;
 import net.shirojr.boatism.network.packet.StoppedTrackingEnginePacket;
 import net.shirojr.boatism.util.BoatEngineExplosionBehaviour;
+import net.shirojr.boatism.util.InventoryUtils;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.data.EngineComponent;
 import net.shirojr.boatism.util.data.codec.BoatismCodecs;
@@ -124,15 +122,15 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(POWER_LEVEL, 0);
-        builder.add(OVERHEAT, 0.0f);
-        builder.add(ARM_ROTATION, new EulerAngle(0.0f, 5.0f, 0.0f));
-        builder.add(SUBMERGED, false);
-        builder.add(FUEL, 0L);
-        builder.add(LOCKED, false);
-        builder.add(RUNNING, false);
+    protected void initDataTracker() {
+        super.initDataTracker();
+        this.dataTracker.startTracking(POWER_LEVEL, 0);
+        this.dataTracker.startTracking(OVERHEAT, 0.0f);
+        this.dataTracker.startTracking(ARM_ROTATION, new EulerAngle(0.0f, 5.0f, 0.0f));
+        this.dataTracker.startTracking(SUBMERGED, false);
+        this.dataTracker.startTracking(FUEL, 0L);
+        this.dataTracker.startTracking(LOCKED, false);
+        this.dataTracker.startTracking(RUNNING, false);
     }
 
     public static DefaultAttributeContainer.Builder setAttributes() {
@@ -161,7 +159,7 @@ public class BoatEngineEntity extends LivingEntity {
                 nbt.putUuid(NbtKeys.HOOKED_ENTITY, hookedBoatEntityUuid));
 
 
-        BoatEngineDataHelper.writeItemStacksToNbt(this.mountedInventory.getHeldStacks(), NbtKeys.MOUNTED_ITEMS, nbt);
+        BoatEngineDataHelper.writeItemStacksToNbt(InventoryUtils.getAllStacks(this.mountedInventory), NbtKeys.MOUNTED_ITEMS, nbt);
 
         nbt.putBoolean(NbtKeys.IS_RUNNING, this.isRunning());
         nbt.putInt(NbtKeys.POWER_OUTPUT, this.getPowerLevel());
@@ -199,9 +197,9 @@ public class BoatEngineEntity extends LivingEntity {
             for (int slot = 0; slot < getMountedInventory().size(); slot++) {
                 ItemStack stack = getMountedInventory().getStack(slot);
                 if (stack.isEmpty()) continue;
-                engineComponentList.add(new EngineComponent(slot, getMountedInventory().getStack(slot)));
+                engineComponentList.add(new EngineComponent(slot, stack));
             }
-            new EngineComponentSyncPacket(this.getId(), engineComponentList).sendPacket(player);
+            EngineComponentSyncPacket.sendPacket(player, this.getId(), engineComponentList);
         });
     }
 
@@ -314,12 +312,12 @@ public class BoatEngineEntity extends LivingEntity {
     }
 
     private void sendPacketForSoundInstance(SoundInstanceIdentifier soundIdentifier, ServerPlayerEntity player) {
-        new StartSoundInstancePacket(this.getId(), soundIdentifier.getIdentifier()).sendPacket(player);
+        StartSoundInstancePacket.sendPacket(player, this.getId(), soundIdentifier.getIdentifier());
         super.onStoppedTrackingBy(player);
     }
 
     private void sendPacketForStoppingAllSoundInstances(ServerPlayerEntity player) {
-        new StoppedTrackingEnginePacket(this.getId(), true).sendPacket(player);
+        StoppedTrackingEnginePacket.sendPacket(player, this.getId(), true);
     }
 
     //region getter & setter
@@ -358,7 +356,7 @@ public class BoatEngineEntity extends LivingEntity {
 
     public int getMountedInventorySize() {
         int i = 0;
-        for (ItemStack entry : getMountedInventory().getHeldStacks()) {
+        for (ItemStack entry : InventoryUtils.getAllStacks(getMountedInventory())) {
             if (entry.getItem() instanceof BoatEngineComponent) i++;
         }
         return i;
@@ -384,11 +382,9 @@ public class BoatEngineEntity extends LivingEntity {
                     stack = component.componentStack();
                     break;
                 }
-
             }
             this.getMountedInventory().setStack(slot, stack);
         }
-
         updateArmorModifier();
     }
 
@@ -407,16 +403,24 @@ public class BoatEngineEntity extends LivingEntity {
 
     public void updateArmorModifier() {
         if (this.getWorld().isClient()) return;
+
         EntityAttributeInstance instance = this.getAttributeInstance(EntityAttributes.GENERIC_ARMOR);
         if (instance == null) return;
-        instance.removeModifier(BoatismEntityAttributeModifierIdentifiers.ENGINE_COMPONENT_ARMOR.getId());
+
+
+        instance.removeModifier(BoatismEntityAttributeModifierIdentifiers.ENGINE_COMPONENT_ARMOR.getUuid());
+
+
         EntityAttributeModifier modifier = new EntityAttributeModifier(
-                BoatismEntityAttributeModifierIdentifiers.ENGINE_COMPONENT_ARMOR.getId(),
+                BoatismEntityAttributeModifierIdentifiers.ENGINE_COMPONENT_ARMOR.getUuid(),
+                BoatismEntityAttributeModifierIdentifiers.ENGINE_COMPONENT_ARMOR.getName(),
                 this.engineHandler.getFullArmorValue(),
-                EntityAttributeModifier.Operation.ADD_VALUE
+                EntityAttributeModifier.Operation.ADDITION
         );
+
         instance.addPersistentModifier(modifier);
     }
+
 
     @Override
     public ItemStack getEquippedStack(EquipmentSlot slot) {
@@ -612,10 +616,16 @@ public class BoatEngineEntity extends LivingEntity {
         if (this.engineHandler.getFullArmorValue() > 0) {
             destructiveExplosion = false;
         }
-        serverWorld.createExplosion(this, Explosion.createDamageSource(serverWorld, this),
-                new BoatEngineExplosionBehaviour(), this.getX(), this.getY(), this.getZ(), 4.0f, destructiveExplosion,
-                World.ExplosionSourceType.NONE, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER,
-                SoundEvents.ENTITY_GENERIC_EXPLODE);
+        DamageSource damageSource = serverWorld.getDamageSources().explosion(this, null);
+        serverWorld.createExplosion(
+                this,
+                damageSource,
+                new BoatEngineExplosionBehaviour(),
+                this.getX(), this.getY(), this.getZ(),
+                4.0f,
+                destructiveExplosion,
+                World.ExplosionSourceType.NONE
+        );
         this.kill();
     }
 

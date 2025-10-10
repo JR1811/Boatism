@@ -38,7 +38,7 @@ public class MinecraftClientMixin {
         Optional<BoatEngineEntity> boatEngine = getBoatEngineEntity(player);
         while (original.call(instance)) {
             if (boatEngine.isEmpty()) return true;
-            new OpenEngineInventoryPacket(boatEngine.get().getId()).sendPacket();
+            OpenEngineInventoryPacket.sendPacket(boatEngine.get().getId());
         }
         return false;
     }

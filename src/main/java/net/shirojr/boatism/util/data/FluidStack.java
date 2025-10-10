@@ -3,19 +3,34 @@ package net.shirojr.boatism.util.data;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 
 public record FluidStack(FluidVariant variant, long amount) {
-    public static final PacketCodec<RegistryByteBuf, FluidStack> PACKET_CODEC = PacketCodec.tuple(
-            FluidVariant.PACKET_CODEC, FluidStack::variant,
-            PacketCodecs.VAR_LONG, FluidStack::amount,
-            FluidStack::new
-    );
+
+    public void write(PacketByteBuf buf) {
+        buf.writeIdentifier(Registries.FLUID.getId(variant.getFluid()));
+        buf.writeNbt(variant.getNbt());
+        buf.writeLong(amount);
+    }
+
+    public static FluidStack read(PacketByteBuf buf) {
+        Identifier id = buf.readIdentifier();
+        Fluid fluid = Registries.FLUID.get(id);
+        NbtCompound tag = buf.readNbt();
+        long amount = buf.readLong();
+        FluidVariant variant = FluidVariant.of(fluid, tag);
+        return new FluidStack(variant, amount);
+    }
 
     public static final Codec<FluidStack> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            FluidVariant.CODEC.fieldOf("variant").forGetter(FluidStack::variant),
+            Codec.STRING.fieldOf("fluid").forGetter(fs -> Registries.FLUID.getId(fs.variant().getFluid()).toString()),
             Codec.LONG.fieldOf("amount").forGetter(FluidStack::amount)
-    ).apply(instance, FluidStack::new));
+    ).apply(instance, (fluidIdStr, amount) -> {
+        Fluid fluid = Registries.FLUID.get(new Identifier(fluidIdStr));
+        return new FluidStack(FluidVariant.of(fluid, null), amount);
+    }));
 }

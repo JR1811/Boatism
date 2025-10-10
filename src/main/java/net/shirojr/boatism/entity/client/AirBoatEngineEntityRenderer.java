@@ -65,20 +65,20 @@ public class AirBoatEngineEntityRenderer
         return true;
     }
 
-    @Override
-    protected void renderLabelIfPresent(AirBoatEngineEntity entity, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, float tickDelta) {
-        // super.renderLabelIfPresent(entity, text, matrices, vertexConsumers, light, tickDelta);
+    protected void renderLabelIfPresent(AirBoatEngineEntity entity, Text text, MatrixStack matrices,
+                                        VertexConsumerProvider vertexConsumers, int light) {
+        // super.renderLabelIfPresent(entity, text, matrices, vertexConsumers, light);
     }
 
     @Override
     protected void setupTransforms(AirBoatEngineEntity entity, MatrixStack matrices, float animationProgress,
-                                   float bodyYaw, float tickDelta, float scale) {
+                                   float bodyYaw, float tickDelta) {
         float scaleFactor = 1.5f;
-
-        super.setupTransforms(entity, matrices, animationProgress, bodyYaw, tickDelta, scale);
+        super.setupTransforms(entity, matrices, animationProgress, bodyYaw, tickDelta);
         if (entity.getHookedBoatEntity().isPresent()) {
             BoatEntity boat = entity.getHookedBoatEntity().get();
         }
         matrices.scale(scaleFactor, scaleFactor, scaleFactor);
     }
+
 }

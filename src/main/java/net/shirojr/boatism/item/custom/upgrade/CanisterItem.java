@@ -6,7 +6,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.RotationAxis;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.init.BoatismDataComponents;
 import net.shirojr.boatism.init.BoatismItems;
 
 import java.util.List;
@@ -20,14 +19,14 @@ public class CanisterItem extends BoatismEquipmentItem implements BoatEngineComp
     @Override
     public ItemStack getMountedItemStack(ItemStack originalStack) {
         ItemStack output = new ItemStack(BoatismItems.COMPONENT_CANISTER_STRAPPED);
-        output.set(BoatismDataComponents.ORIGINAL_ITEM, originalStack);
+        output.setNbt(originalStack.getNbt());
         return output;
     }
 
     @Override
-    public ItemStack getReturnedItemStack(ItemStack displayedItemStack) {
+    public ItemStack getReturnedItemStack(ItemStack displayedStack) {
         ItemStack output = new ItemStack(BoatismItems.COMPONENT_CANISTER);
-        output.set(BoatismDataComponents.DISPLAYED_ITEM, displayedItemStack);
+        output.setNbt(displayedStack.getNbt());
         return output;
     }
 
@@ -43,7 +42,7 @@ public class CanisterItem extends BoatismEquipmentItem implements BoatEngineComp
 
     @Override
     public List<BoatEngineComponent> getConflictingParts() {
-        return List.of(BoatismItems.COMPONENT_PLATES);
+        return List.of(this, BoatismItems.COMPONENT_PLATES);
     }
 
     @Override

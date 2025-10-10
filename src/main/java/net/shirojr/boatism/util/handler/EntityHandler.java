@@ -35,7 +35,7 @@ public class EntityHandler {
                         boatEngine -> boatEngine.getUuid().equals(uuid))
         );
         if (possibleEntities.isEmpty()) return Optional.empty();
-        return Optional.ofNullable(possibleEntities.getFirst());
+        return Optional.ofNullable(possibleEntities.get(0));
     }
 
     public static void removePossibleBoatEngineEntry(Entity entity) {
@@ -65,6 +65,7 @@ public class EntityHandler {
             boatEngineEntity.dropStack(entry);
         }
         for (int i = 0; i < boatEngineEntity.getMountedInventory().size(); i++) {
+            if (boatEngineEntity.getMountedInventory().getStack(i).isEmpty()) continue;
             boatEngineEntity.getMountedInventory().setStack(i, ItemStack.EMPTY);
         }
         boatEngineEntity.updateArmorModifier();

@@ -8,7 +8,6 @@ import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
-import net.minecraft.entity.vehicle.VehicleEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundCategory;
@@ -37,7 +36,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Mixin(BoatEntity.class)
-public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngineCoupler, CustomBoatEngineAttachment {
+public abstract class BoatEntityMixin extends Entity implements BoatEngineCoupler, CustomBoatEngineAttachment {
     @Unique
     @Nullable
     private UUID boatEngineUuid;
@@ -50,7 +49,7 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     public void boatism$setBoatEngineEntity(@Nullable UUID boatEngineUuid) {
         this.boatEngineUuid = boatEngineUuid;
         if (this.getWorld().isClient()) return;
-        new BoatEntitySyncPacket(this.getId(), Optional.ofNullable(this.boatEngineUuid)).sendPacket(PlayerLookup.tracking(this));
+        BoatEntitySyncPacket.sendPacket(PlayerLookup.tracking(this), this.getId(), Optional.ofNullable(this.boatEngineUuid));
     }
 
     @Override
@@ -119,10 +118,26 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
         }
     }
 
-    @Inject(method = "getPassengerAttachmentPos", at = @At("HEAD"), cancellable = true)
-    protected void boatism$getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor, CallbackInfoReturnable<Vec3d> cir) {
-        if (passenger instanceof BoatEngineEntity && this instanceof CustomBoatEngineAttachment attachment) {
-            cir.setReturnValue(attachment.boatism$attachmentPos(this, dimensions).rotateY(-this.getYaw() * (float) (Math.PI / 180.0)));
+    @Inject(method = "updatePassengerPosition", at = @At("HEAD"), cancellable = true)
+    private void boatism$updatePassengerPosition(Entity passenger, PositionUpdater positionUpdater, CallbackInfo ci) {
+        if (passenger instanceof BoatEngineEntity && this instanceof CustomBoatEngineAttachment) {
+            CustomBoatEngineAttachment attachment = (CustomBoatEngineAttachment) this;
+            BoatEntity boat = (BoatEntity) (Object) this;
+
+            Vec3d offset = attachment.boatism$attachmentPos(boat, passenger.getDimensions(passenger.getPose()));
+
+            double yawRad = Math.toRadians(boat.getYaw());
+            double cos = Math.cos(yawRad);
+            double sin = Math.sin(yawRad);
+
+            double x = offset.x * cos - offset.z * sin;
+            double z = offset.x * sin + offset.z * cos;
+
+            passenger.updatePosition(boat.getX() + x, boat.getY() + offset.y, boat.getZ() + z);
+            passenger.setYaw(boat.getYaw());
+            passenger.setBodyYaw(boat.getYaw());
+            passenger.setHeadYaw(boat.getYaw());
+            ci.cancel();
         }
     }
 
@@ -139,9 +154,9 @@ public abstract class BoatEntityMixin extends VehicleEntity implements BoatEngin
     @Override
     public Vec3d boatism$attachmentPos(Entity vehicleEntity, EntityDimensions dimensions) {
         if (this.getVariant() == BoatEntity.Type.BAMBOO) {
-            return new Vec3d(0.0, dimensions.height() * 0.7, -1.2);
+            return new Vec3d(0.0, dimensions.height * 0.7, -1.2);
         }
-        return new Vec3d(0.0, dimensions.height() / 3.0, -1.32);
+        return new Vec3d(0.0, dimensions.height / 3.0, -1.32);
     }
 
     @Shadow

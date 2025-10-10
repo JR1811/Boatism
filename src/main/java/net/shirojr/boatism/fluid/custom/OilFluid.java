@@ -56,14 +56,9 @@ public abstract class OilFluid extends FlowableFluid {
         Block.dropStacks(state, world, pos, blockEntity);
     }
 
-    /*
-    @Override
-    protected int getFlowSpeed(WorldView world) {
-        return 2;
-    }*/
 
     @Override
-    protected int getMaxFlowDistance(WorldView world) {
+    protected int getFlowSpeed(WorldView world) {
         return 2;
     }
 
@@ -137,6 +132,11 @@ public abstract class OilFluid extends FlowableFluid {
         public boolean isStill(FluidState state) {
             return true;
         }
+
+        @Override
+        protected int getFlowSpeed(WorldView world) {
+            return 2;
+        }
     }
 
     public static class Flowing extends OilFluid {
@@ -148,6 +148,11 @@ public abstract class OilFluid extends FlowableFluid {
         @Override
         public boolean isStill(FluidState state) {
             return false;
+        }
+
+        @Override
+        protected int getFlowSpeed(WorldView world) {
+            return 2;
         }
     }
 }

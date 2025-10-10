@@ -11,12 +11,11 @@ import net.shirojr.boatism.block.entity.custom.FermentBlockEntity;
 public interface BoatismBlockEntities {
     BlockEntityType<FermentBlockEntity> FERMENTER = register("fermenter", FermentBlockEntity::new, BoatismBlocks.FERMENTER);
 
-
     private static <T extends BlockEntity> BlockEntityType<T> register(String name,
-                                                                       BlockEntityType.BlockEntityFactory<? extends T> entityFactory,
+                                                                       BlockEntityType.BlockEntityFactory<T> entityFactory,
                                                                        Block... blocks) {
         return Registry.register(Registries.BLOCK_ENTITY_TYPE, Boatism.getId(name),
-                BlockEntityType.Builder.<T>create(entityFactory, blocks).build());
+                BlockEntityType.Builder.create(entityFactory, blocks).build(null));
     }
 
     static void initialize() {

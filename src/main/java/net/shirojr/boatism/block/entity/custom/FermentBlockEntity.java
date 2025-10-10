@@ -19,7 +19,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -32,6 +31,7 @@ import net.minecraft.world.World;
 import net.shirojr.boatism.block.custom.FermentBlock;
 import net.shirojr.boatism.init.BoatismBlockEntities;
 import net.shirojr.boatism.init.BoatismFluids;
+import net.shirojr.boatism.util.InventoryUtils;
 import net.shirojr.boatism.util.storage.FermentingInventory;
 import net.shirojr.boatism.util.tag.BoatismTags;
 import org.jetbrains.annotations.Nullable;
@@ -166,7 +166,7 @@ public class FermentBlockEntity extends BlockEntity {
 
     public boolean hasAllIngredients() {
         if (!this.getInventory().getFluidVariant().equals(INPUT_FLUID)) return false;
-        for (ItemStack stack : this.getInventory().getHeldStacks()) {
+        for (ItemStack stack : InventoryUtils.getAllStacks(this.getInventory())) {
             if (stack.isEmpty()) return false;
             if (!stack.isIn(BoatismTags.Items.FERMENTABLE)) return false;
         }
@@ -243,12 +243,12 @@ public class FermentBlockEntity extends BlockEntity {
         if (state.get(FermentBlock.OPEN) && blockEntity.getLidOpeningTick() < FermentBlockEntity.LID_TOGGLE_DURATION) {
             blockEntity.setLidOpeningTick(blockEntity.getLidOpeningTick() + 1);
             if (blockEntity.isLidOpen()) {
-                blockEntity.playSound(world, SoundEvents.BLOCK_COPPER_DOOR_OPEN);
+                blockEntity.playSound(world, SoundEvents.BLOCK_IRON_DOOR_OPEN);
             }
         } else if (!state.get(FermentBlock.OPEN) && blockEntity.getLidOpeningTick() > 0) {
             blockEntity.setLidOpeningTick(blockEntity.getLidOpeningTick() - 1);
             if (blockEntity.isLidClosed()) {
-                blockEntity.playSound(world, SoundEvents.BLOCK_COPPER_DOOR_CLOSE);
+                blockEntity.playSound(world, SoundEvents.BLOCK_IRON_DOOR_CLOSE);
             }
         }
 
@@ -283,18 +283,18 @@ public class FermentBlockEntity extends BlockEntity {
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
+    public NbtCompound toInitialChunkDataNbt() {
         NbtCompound nbt = new NbtCompound();
-        this.writeNbt(nbt, registryLookup);
-        return createNbt(registryLookup);
+        this.writeNbt(nbt);
+        return nbt;
     }
 
     @Override
-    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
+    public void readNbt(NbtCompound nbt) {
+        super.readNbt(nbt);
         if (nbt.contains("inventory")) {
             NbtList list = nbt.getList("inventory", NbtElement.COMPOUND_TYPE);
-            this.getInventory().readNbtList(list, registryLookup);
+            this.getInventory().readNbtList(list);
         }
         this.setLidOpeningTick(nbt.getInt("lidOpeningTick"));
         this.setHeatTick(nbt.getInt("heatTick"));
@@ -302,9 +302,9 @@ public class FermentBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
-        NbtList list = this.getInventory().toNbtList(registryLookup);
+    protected void writeNbt(NbtCompound nbt) {
+        super.writeNbt(nbt);
+        NbtList list = this.getInventory().toNbtList();
         nbt.put("inventory", list);
         nbt.putInt("lidOpeningTick", this.getLidOpeningTick());
         nbt.putInt("heatTick", this.getHeatTick());

@@ -5,6 +5,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ArrayPropertyDelegate;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.screen.ScreenHandler;
@@ -13,26 +14,28 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismScreenHandlers;
-import net.shirojr.boatism.network.packet.OpenEngineInventoryPacket;
 
 public class EngineControlScreenHandler extends ScreenHandler {
     private final Inventory engineInventory;
     private final PropertyDelegate delegate;
     private BoatEngineEntity boatEngine;
+    private final int entityId;
 
-    public EngineControlScreenHandler(int syncId, PlayerInventory playerInventory, OpenEngineInventoryPacket openEngineInventoryPacket) {
-        this(syncId, playerInventory, new SimpleInventory(12), new ArrayPropertyDelegate(6), openEngineInventoryPacket);
+    public EngineControlScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf buf) {
+        this(syncId, playerInventory, new SimpleInventory(12), new ArrayPropertyDelegate(6), buf.readInt());
     }
 
     public EngineControlScreenHandler(int syncId, PlayerInventory playerInventory, Inventory engineInventory,
-                                      PropertyDelegate delegate, OpenEngineInventoryPacket data) {
+                                      PropertyDelegate delegate, int entityId) {
         super(BoatismScreenHandlers.ENGINE_CONTROL_SCREEN_HANDLER, syncId);
         checkSize(engineInventory, 12);
         this.engineInventory = engineInventory;
         this.delegate = delegate;
+        this.entityId = entityId;
+
         PlayerEntity player = playerInventory.player;
         if (!player.getWorld().isClient()) {
-            if (player.getWorld().getEntityById(data.entityNetworkId()) instanceof BoatEngineEntity entity) {
+            if (player.getWorld().getEntityById(entityId) instanceof BoatEngineEntity entity) {
                 this.boatEngine = entity;
             }
         }
@@ -87,17 +90,15 @@ public class EngineControlScreenHandler extends ScreenHandler {
         } else {
             slot.markDirty();
         }
-        this.updateValidStacks();
         return newStack;
     }
 
     @Override
     public void onSlotClick(int slotIndex, int button, SlotActionType actionType, PlayerEntity player) {
-        if (this.boatEngine != null && player.getWorld().isClient()) {
-            this.updateValidStacks();
+        super.onSlotClick(slotIndex, button, actionType, player);
+        if (this.boatEngine != null) {
             this.boatEngine.syncComponentListToTrackingClients();
         }
-        super.onSlotClick(slotIndex, button, actionType, player);
     }
 
     @Override
@@ -107,7 +108,16 @@ public class EngineControlScreenHandler extends ScreenHandler {
 
     @Override
     public boolean canInsertIntoSlot(ItemStack stack, Slot slot) {
-        return this.boatEngine.getEngineHandler().canEquipPart(stack);
+        if (!(stack.getItem() instanceof BoatEngineComponent)) return false;
+        if (this.boatEngine == null) return false;
+        return boatEngine.getEngineHandler().canEquipPart(stack);
+    }
+
+    @Override
+    public void onContentChanged(Inventory inventory) {
+        super.onContentChanged(inventory);
+        if (this.boatEngine == null) return;
+        this.boatEngine.syncComponentListToTrackingClients();
     }
 
     private void addPlayerInventory(PlayerInventory playerInventory) {
@@ -128,24 +138,17 @@ public class EngineControlScreenHandler extends ScreenHandler {
         int maxRows = 4, maxColumns = 3, index = 0;
         for (int row = 0; row < maxRows; row++) {
             for (int column = 0; column < maxColumns; column++) {
-                this.addSlot(new Slot(engineInventory, index, 116 + column * 18, 7 + row * 18));
+                Slot slot = new Slot(engineInventory, index, 116 + column * 18, 7 + row * 18) {
+                    @Override
+                    public boolean canInsert(ItemStack stack) {
+                        if (!(stack.getItem() instanceof BoatEngineComponent)) return false;
+                        if (boatEngine == null) return false;
+                        return boatEngine.getEngineHandler().canEquipPart(stack);
+                    }
+                };
+                this.addSlot(slot);
                 index++;
             }
         }
-    }
-
-    private void updateValidStacks() {
-        for (int i = 0; i < this.boatEngine.getMountedInventory().size(); i++) {
-            ItemStack mountedStack = this.boatEngine.getMountedInventory().getStack(i);
-            if (mountedStack.isEmpty()) continue;
-            if (!(mountedStack.getItem() instanceof BoatEngineComponent)) continue;
-            if (!this.boatEngine.getEngineHandler().canEquipPart(mountedStack)) {
-                this.removeStack(i);
-            }
-        }
-    }
-
-    private void removeStack(int slotIndex) {
-        this.boatEngine.getMountedInventory().removeStack(slotIndex);
     }
 }

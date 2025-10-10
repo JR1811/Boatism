@@ -32,7 +32,7 @@ public class BoatEngineEntityCommand {
     private static int stopAllSoundInstances(CommandContext<ServerCommandSource> context) {
         ServerPlayerEntity serverPlayerEntity = context.getSource().getPlayer();
         if (serverPlayerEntity == null) return 0;
-        new EndAllSoundInstancesPacket().sendPacket(serverPlayerEntity);
+        EndAllSoundInstancesPacket.sendPacket(serverPlayerEntity);
         return 1;
     }
 
