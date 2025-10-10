@@ -1,6 +1,5 @@
 package net.shirojr.boatism.util.storage;
 
-import com.mojang.serialization.DataResult;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
@@ -15,8 +14,6 @@ import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryWrapper;
 import net.shirojr.boatism.util.LoggerUtil;
 import net.shirojr.boatism.util.data.FluidStack;
 import net.shirojr.boatism.util.data.TransactionalLong;
@@ -220,25 +217,35 @@ public class FermentingInventory extends SimpleInventory {
     /**
      * Reads the stored Items and the FluidVariant
      */
-    @Override
-    public void readNbtList(NbtList nbtList, RegistryWrapper.WrapperLookup registries) {
-        super.readNbtList(nbtList, registries);
+    public void readNbtList(NbtList nbtList) {
+        super.readNbtList(nbtList);
         this.clearFluidStorage();
 
-        DataResult<FluidStack> fluidStorageData = FluidStack.CODEC.parse(NbtOps.INSTANCE, nbtList);
-        fluidStorageData.result().ifPresent(fluidStack -> this.insertFluid(fluidStack.variant(), fluidStack.amount()));
+        for (int i = 0; i < nbtList.size(); i++) {
+            NbtCompound compound = nbtList.getCompound(i);
+            if (compound.contains("fluid")) {
+                NbtCompound fluidNbt = compound.getCompound("fluid");
+                FluidVariant fluid = FluidVariant.fromNbt(fluidNbt);
+                long amount = compound.getLong("amount");
+                this.insertFluid(fluid, amount);
+                break;
+            }
+        }
     }
 
     /**
      * Writes the stored Items and the {@link FluidStack}
      */
-    @Override
-    public NbtList toNbtList(RegistryWrapper.WrapperLookup registries) {
-        NbtList list = super.toNbtList(registries);
+    public NbtList toNbtList() {
+        NbtList list = super.toNbtList();
 
-        FluidStack fluidStack = new FluidStack(this.getFluidVariant(), this.getFluidStorage().getAmount());
-        var fluidNbt = FluidStack.CODEC.encodeStart(NbtOps.INSTANCE, fluidStack);
-        fluidNbt.result().ifPresent(list::add);
+        if (!this.getFluidStorage().isResourceBlank() && this.getFluidStorage().getAmount() > 0) {
+            NbtCompound fluidTag = new NbtCompound();
+            fluidTag.put("fluid", this.getFluidVariant().toNbt());
+            fluidTag.putLong("amount", this.getFluidStorage().getAmount());
+            list.add(fluidTag);
+        }
+
         return list;
     }
 

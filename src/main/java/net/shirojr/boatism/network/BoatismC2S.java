@@ -7,6 +7,7 @@ import net.shirojr.boatism.network.packet.PowerLevelChangePacket;
 public class BoatismC2S {
     public static void registerServerReceivers() {
         ServerPlayNetworking.registerGlobalReceiver(PowerLevelChangePacket.IDENTIFIER, PowerLevelChangePacket::handlePacket);
+
         ServerPlayNetworking.registerGlobalReceiver(OpenEngineInventoryPacket.IDENTIFIER, OpenEngineInventoryPacket::handlePacket);
     }
 }

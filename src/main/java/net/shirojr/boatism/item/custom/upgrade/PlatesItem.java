@@ -16,7 +16,7 @@ public class PlatesItem extends BoatismEquipmentItem {
 
     @Override
     public List<BoatEngineComponent> getConflictingParts() {
-        return List.of(BoatismItems.COMPONENT_CANISTER, BoatismItems.COMPONENT_CANISTER_STRAPPED);
+        return List.of(this, BoatismItems.COMPONENT_CANISTER, BoatismItems.COMPONENT_CANISTER_STRAPPED);
     }
 
     @Override

@@ -3,9 +3,7 @@ package net.shirojr.boatism.util.data.codec;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.EulerAngle;
 
 import java.util.LinkedHashSet;
@@ -26,18 +24,37 @@ public class BoatismCodecs {
                     ItemStack.CODEC.fieldOf("stack").forGetter(Slot::stack)
             ).apply(instance, Slot::new));
 
-            public static final PacketCodec<RegistryByteBuf, Slot> PACKET_CODEC = PacketCodec.tuple(
-                    PacketCodecs.VAR_INT, Slot::index,
-                    ItemStack.PACKET_CODEC, Slot::stack,
-                    Slot::new
-            );
+            // Packet serialization for 1.20.1
+            public static Slot read(PacketByteBuf buf) {
+                int slot = buf.readVarInt();
+                ItemStack stack = buf.readItemStack();
+                return new Slot(slot, stack);
+            }
+
+            public static void write(PacketByteBuf buf, Slot value) {
+                buf.writeVarInt(value.index());
+                buf.writeItemStack(value.stack());
+            }
         }
 
         public static final Codec<LinkedHashSet<Slot>> CODEC =
                 Codec.list(Slot.CODEC).xmap(LinkedHashSet::new, List::copyOf);
 
-        public static final PacketCodec<RegistryByteBuf, LinkedHashSet<Slot>> PACKET_CODEC =
-                Slot.PACKET_CODEC.collect(PacketCodecs.toCollection(LinkedHashSet::new));
-    }
+        // For network serialization
+        public static LinkedHashSet<Slot> read(PacketByteBuf buf) {
+            int size = buf.readVarInt();
+            LinkedHashSet<Slot> set = new LinkedHashSet<>();
+            for (int i = 0; i < size; i++) {
+                set.add(Slot.read(buf));
+            }
+            return set;
+        }
 
+        public static void write(PacketByteBuf buf, LinkedHashSet<Slot> value) {
+            buf.writeVarInt(value.size());
+            for (Slot slot : value) {
+                Slot.write(buf, slot);
+            }
+        }
+    }
 }

@@ -1,6 +1,5 @@
 package net.shirojr.boatism.block.custom;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -35,7 +34,7 @@ public class FermentBlock extends BlockWithEntity {
 
     public FermentBlock(Settings settings) {
         super(settings);
-        this.setDefaultState(this.getDefaultState()
+        this.setDefaultState(this.stateManager.getDefaultState()
                 .with(FACING, Direction.NORTH)
                 .with(OPEN, false)
                 .with(PART, Part.MID)
@@ -43,32 +42,28 @@ public class FermentBlock extends BlockWithEntity {
     }
 
     @Override
-    protected MapCodec<? extends BlockWithEntity> getCodec() {
-        return createCodec(FermentBlock::new);
-    }
-
-    @Override
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
         builder.add(FACING, OPEN, PART);
     }
 
     @Override
     public BlockRenderType getRenderType(BlockState state) {
-        return super.getRenderType(state);
+        return BlockRenderType.MODEL;
     }
 
     @Nullable
     @Override
     public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-        if (!state.contains(PART) || !state.get(PART).equals(Part.MID)) return null;
+        if (!state.contains(PART) || state.get(PART) != Part.MID) return null;
         return new FermentBlockEntity(pos, state);
     }
 
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return validateTicker(type, BoatismBlockEntities.FERMENTER, FermentBlockEntity::tick);
+        return type == BoatismBlockEntities.FERMENTER
+                ? (world1, pos, state1, blockEntity) -> FermentBlockEntity.tick(world1, pos, state1, (FermentBlockEntity) blockEntity)
+                : null;
     }
 
     @Override
@@ -79,8 +74,8 @@ public class FermentBlock extends BlockWithEntity {
     @Override
     public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
         super.onPlaced(world, pos, state, placer, itemStack);
-        if (state.get(PART).equals(Part.MID)) {
-            world.setBlockState(pos.up(), state.with(PART, Part.TOP), NOTIFY_ALL);
+        if (state.get(PART) == Part.MID) {
+            world.setBlockState(pos.up(), state.with(PART, Part.TOP), Block.NOTIFY_ALL);
         }
     }
 
@@ -101,55 +96,57 @@ public class FermentBlock extends BlockWithEntity {
     }
 
     @Override
-    protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        ItemStack stack = player.getStackInHand(hand);
         FermentBlockEntity blockEntity = getBlockEntity(world, pos);
-        if (blockEntity == null) return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        if (blockEntity == null) return ActionResult.PASS;
+
         if (blockEntity.insertAndEmptyCanister(player, hand)) {
-            return ItemActionResult.success(world.isClient());
+            return ActionResult.success(world.isClient);
         }
         if (blockEntity.extractAndFillCanister(player, hand)) {
-            return ItemActionResult.success(world.isClient());
+            return ActionResult.success(world.isClient);
         }
         if (blockEntity.getInventory().canInsert(stack)) {
             blockEntity.modifyInventory((inventory, world1) -> {
                 boolean wasInserted = inventory.insert(stack.copy());
                 if (wasInserted && !player.isCreative()) stack.decrement(stack.getCount());
             });
-            return ItemActionResult.success(world.isClient());
+            return ActionResult.success(world.isClient);
         }
-        return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-    }
 
-    @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
         if (player.isSneaking()) {
             toggleOpenedState(world, pos);
-            return ActionResult.success(world.isClient());
+            return ActionResult.success(world.isClient);
         }
+
         return ActionResult.PASS;
     }
 
     public static void toggleOpenedState(World world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
         if (!state.contains(OPEN) || !state.contains(PART)) return;
-        world.setBlockState(pos, state.with(OPEN, !state.get(OPEN)), NOTIFY_ALL);
+        boolean newOpen = !state.get(OPEN);
+        world.setBlockState(pos, state.with(OPEN, newOpen), Block.NOTIFY_ALL);
 
-        BlockPos offsetPos = state.get(PART).equals(Part.TOP) ? pos.down() : pos.up();
+        BlockPos offsetPos = state.get(PART) == Part.TOP ? pos.down() : pos.up();
         BlockState offsetState = world.getBlockState(offsetPos);
-        if (!offsetState.contains(PART) || !offsetState.contains(OPEN)) return;
-        world.setBlockState(offsetPos, offsetState.with(OPEN, !state.get(OPEN)), NOTIFY_ALL);
-        if (world instanceof ServerWorld serverWorld) {
-            serverWorld.playSound(null, pos, SoundEvents.BLOCK_COPPER_DOOR_OPEN, SoundCategory.BLOCKS, 2f, 1f);
+        if (offsetState.contains(OPEN) && offsetState.contains(PART)) {
+            world.setBlockState(offsetPos, offsetState.with(OPEN, newOpen), Block.NOTIFY_ALL);
+        }
+
+        if (!world.isClient && world instanceof ServerWorld serverWorld) {
+            serverWorld.playSound(null, pos, SoundEvents.BLOCK_IRON_DOOR_OPEN, SoundCategory.BLOCKS, 2f, 1f);
         }
     }
 
     @Nullable
     public static FermentBlockEntity getBlockEntity(World world, BlockPos pos) {
         BlockPos.Mutable mutPos = pos.mutableCopy();
-        BlockState state = world.getBlockState(mutPos.toImmutable());
+        BlockState state = world.getBlockState(mutPos);
         if (!state.contains(PART)) return null;
-        if (state.get(PART).equals(Part.TOP)) mutPos.move(Direction.DOWN);
-        if (!(world.getBlockEntity(mutPos.toImmutable()) instanceof FermentBlockEntity blockEntity)) return null;
+        if (state.get(PART) == Part.TOP) mutPos.move(Direction.DOWN);
+        if (!(world.getBlockEntity(mutPos) instanceof FermentBlockEntity blockEntity)) return null;
         return blockEntity;
     }
 

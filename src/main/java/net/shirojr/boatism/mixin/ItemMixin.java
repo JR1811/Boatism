@@ -53,7 +53,7 @@ public class ItemMixin {
         List<BoatEntity> boatList = world.getEntitiesByType(EntityType.BOAT, box, boatEntity -> true);
         boatList.addAll(world.getEntitiesByType(EntityType.CHEST_BOAT, box, chestBoatEntity -> true));
         if (!boatList.isEmpty()) {
-            BoatEntity boat = boatList.getFirst();
+            BoatEntity boat = boatList.get(0);
             boatEngineEntity.hookOntoBoatEntity(boat);
 
             LoggerUtil.devLogger(String.format("hooked engine to %s", boat.getName()));

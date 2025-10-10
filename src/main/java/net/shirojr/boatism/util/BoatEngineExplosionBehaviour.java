@@ -1,7 +1,6 @@
 package net.shirojr.boatism.util;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
@@ -11,10 +10,6 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.init.BoatismGameRules;
 
 public class BoatEngineExplosionBehaviour extends ExplosionBehavior {
-    @Override
-    public boolean shouldDamage(Explosion explosion, Entity entity) {
-        return super.shouldDamage(explosion, entity);
-    }
 
     @Override
     public boolean canDestroyBlock(Explosion explosion, BlockView world, BlockPos pos, BlockState state, float power) {

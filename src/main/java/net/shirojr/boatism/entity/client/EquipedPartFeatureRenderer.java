@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
+import net.shirojr.boatism.util.InventoryUtils;
 
 public class EquipedPartFeatureRenderer<T extends LivingEntity, M extends EntityModel<T>>
         extends FeatureRenderer<T, M> {
@@ -28,7 +29,7 @@ public class EquipedPartFeatureRenderer<T extends LivingEntity, M extends Entity
                        float limbAngle, float limbDistance, float tickDelta, float animationProgress,
                        float headYaw, float headPitch) {
         if (!(entity instanceof BoatEngineEntity boatEngine)) return;
-        for (ItemStack stack : boatEngine.getMountedInventory().getHeldStacks()) {
+        for (ItemStack stack : InventoryUtils.getAllStacks(boatEngine.getMountedInventory())) {
             if (stack.isEmpty() || !(stack.getItem() instanceof BoatEngineComponent component)) continue;
             ItemStack displayedStack = component.getMountedItemStack(stack);
             matrices.push();

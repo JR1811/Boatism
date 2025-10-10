@@ -1,43 +1,47 @@
 package net.shirojr.boatism.network.packet;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 import net.shirojr.boatism.util.data.EngineComponent;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public record EngineComponentSyncPacket(int entityNetworkId, List<EngineComponent> componentList) implements CustomPayload {
-    public static final Id<EngineComponentSyncPacket> IDENTIFIER = new Id<>(BoatismNetworkIdentifiers.BOAT_COMPONENT_SYNC.getId());
+public class EngineComponentSyncPacket {
+    public static final Identifier IDENTIFIER = BoatismNetworkIdentifiers.BOAT_COMPONENT_SYNC.getId();
 
-    public static final PacketCodec<RegistryByteBuf, EngineComponentSyncPacket> CODEC = PacketCodec.tuple(
-            PacketCodecs.VAR_INT, EngineComponentSyncPacket::entityNetworkId,
-            EngineComponent.CODEC.collect(PacketCodecs.toList()), EngineComponentSyncPacket::componentList,
-            EngineComponentSyncPacket::new
-    );
-
-    @Override
-    public Id<? extends CustomPayload> getId() {
-        return IDENTIFIER;
+    public static void sendPacket(ServerPlayerEntity player, int entityId, List<EngineComponent> components) {
+        PacketByteBuf buf = new PacketByteBuf(io.netty.buffer.Unpooled.buffer());
+        buf.writeVarInt(entityId);
+        buf.writeVarInt(components.size());
+        for (EngineComponent comp : components) {
+            EngineComponent.write(buf, comp);
+        }
+        ServerPlayNetworking.send(player, IDENTIFIER, buf);
     }
 
-    public void sendPacket(ServerPlayerEntity target) {
-        ServerPlayNetworking.send(target, this);
-    }
+    public static void handlePacket(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler, PacketByteBuf buf, PacketSender packetSender) {
+        int entityId = buf.readVarInt();
+        int size = buf.readVarInt();
+        List<EngineComponent> components = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            components.add(EngineComponent.read(buf));
+        }
 
-    public void handlePacket(ClientPlayNetworking.Context context) {
-        MinecraftClient client = context.client();
-        if (client.world == null) return;
-        ClientWorld clientWorld = client.world;
-        if (!(clientWorld.getEntityById(entityNetworkId) instanceof BoatEngineEntity boatEngine)) return;
-        boatEngine.setMountedItemsFromComponentList(componentList);
+        client.execute(() -> {
+            ClientWorld world = client.world;
+            if (world == null) return;
+            if (world.getEntityById(entityId) instanceof BoatEngineEntity engine) {
+                engine.setMountedItemsFromComponentList(components);
+            }
+        });
     }
 }

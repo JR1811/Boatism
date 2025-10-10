@@ -6,12 +6,12 @@ import net.minecraft.registry.Registry;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.shirojr.boatism.Boatism;
-import net.shirojr.boatism.network.packet.OpenEngineInventoryPacket;
 import net.shirojr.boatism.screen.handler.EngineControlScreenHandler;
 
 public interface BoatismScreenHandlers {
     ScreenHandlerType<EngineControlScreenHandler> ENGINE_CONTROL_SCREEN_HANDLER = register(
-            "engine_control", new ExtendedScreenHandlerType<>(EngineControlScreenHandler::new, OpenEngineInventoryPacket.CODEC));
+            "engine_control", new ExtendedScreenHandlerType<>(EngineControlScreenHandler::new)
+    );
 
     @SuppressWarnings("SameParameterValue")
     private static <T extends ScreenHandler> ScreenHandlerType<T> register(String name, ScreenHandlerType<T> type) {

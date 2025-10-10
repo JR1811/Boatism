@@ -42,7 +42,7 @@ public class MouseMixin {
         if (boatEngineUuid == null) return;
         Optional<BoatEngineEntity> boatEngineEntity = EntityHandler.getBoatEngineEntityFromUuid(boatEngineUuid, player.getWorld(), player.getPos(), 3);
         if (boatEngineEntity.isEmpty() || !boatEngineEntity.get().isRunning()) return;
-        new PowerLevelChangePacket(delta).sendPacket();
+        PowerLevelChangePacket.sendPacket(delta);
         ci.cancel();
     }
 }

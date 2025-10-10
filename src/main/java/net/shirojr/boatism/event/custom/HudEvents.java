@@ -6,7 +6,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.shirojr.boatism.Boatism;
 import net.shirojr.boatism.api.BoatEngineCoupler;
@@ -19,12 +18,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class HudEvents {
+
     public static void register() {
         HudRenderCallback.EVENT.register(HudEvents::handleEngineOverlay);
     }
 
     @Environment(EnvType.CLIENT)
-    private static void handleEngineOverlay(DrawContext context, RenderTickCounter tickCounter) {
+    private static void handleEngineOverlay(DrawContext context, float tickDelta) {
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayerEntity player = client.player;
         if (player == null || !(player.getVehicle() instanceof BoatEntity boatEntity)) return;
@@ -44,4 +44,5 @@ public class HudEvents {
         EngineGuiElement.renderEngineParts(context, EngineGuiElement.getAllPartsInOrder(), x, y,
                 heat, true);
     }
+
 }

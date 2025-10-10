@@ -38,11 +38,12 @@ public class BoatismSoundInstance extends MovingSoundInstance {
 
     @Override
     public void tick() {
-        if (boatEngineEntity.getWorld().getTickManager().shouldTick()) this.currentTick++;
-        else return;
-        if (this.boatEngineEntity.isRemoved() || boatEngineEntity.isDead()) {
+        if (this.boatEngineEntity.isRemoved() || this.boatEngineEntity.isDead()) {
             this.finishSoundInstance();
+            return;
         }
+
+        this.currentTick++;
 
         if (this.transitionState.equals(TransitionState.STARTING)) {
             transitionTick++;
@@ -82,7 +83,8 @@ public class BoatismSoundInstance extends MovingSoundInstance {
     }
 
     protected static void defaultSoundHandling(BoatismSoundInstance soundInstance) {
-        boolean shouldTick = soundInstance.boatEngineEntity.getWorld().getTickManager().shouldTick();
+        boolean shouldTick = !(soundInstance.boatEngineEntity.isRemoved() || soundInstance.boatEngineEntity.isDead());
+
         if (!shouldTick) {
             soundInstance.distance = 0.0f;
             soundInstance.volume = 0.0f;

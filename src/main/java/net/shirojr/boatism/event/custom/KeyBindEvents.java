@@ -35,6 +35,6 @@ public class KeyBindEvents {
     }
 
     private static void sendPowerLevelChangePacket(int delta) {
-        new PowerLevelChangePacket(delta).sendPacket();
+        PowerLevelChangePacket.sendPacket(delta);
     }
 }

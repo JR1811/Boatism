@@ -80,7 +80,8 @@ public class EngineControlScreen extends HandledScreen<EngineControlScreenHandle
         if (!isHandlePressed()) return;
         this.draggedHorizontalDistance += (int) mouseX - previousX;
         if (Math.abs(this.draggedHorizontalDistance) > PowerLevelGuiElement.getPositionForPowerLevel(1)) {
-            new PowerLevelChangePacket(Math.signum(this.draggedHorizontalDistance)).sendPacket();
+            double delta = Math.signum(this.draggedHorizontalDistance);
+            PowerLevelChangePacket.sendPacket(delta);
             this.draggedHorizontalDistance = 0;
         }
         this.previousX = (int) mouseX;

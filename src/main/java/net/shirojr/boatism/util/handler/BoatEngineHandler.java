@@ -16,6 +16,7 @@ import net.shirojr.boatism.init.BoatismSounds;
 import net.shirojr.boatism.item.custom.upgrade.PerformanceFuelInjectorItem;
 import net.shirojr.boatism.mixin.BoatEntityInvoker;
 import net.shirojr.boatism.network.packet.StartSoundInstancePacket;
+import net.shirojr.boatism.util.InventoryUtils;
 import net.shirojr.boatism.util.sound.SoundInstanceIdentifier;
 
 import java.util.ArrayList;
@@ -174,7 +175,7 @@ public class BoatEngineHandler {
     public long fillUpFuel(long fuel) {
         fuel = Math.max(0, fuel);
         long fuelMissing = Math.max(0, getMaxFuelCapacity() - getFuel());
-        long newFuelLevel = Math.clamp(fuel + getFuel(), 0, getMaxFuelCapacity());
+        long newFuelLevel = (long) MathHelper.clamp(fuel + getFuel(), 0, getMaxFuelCapacity());
 
         if (fuelMissing > 0 && fuel > 0) {
             playSoundEvent(BoatismSounds.BOAT_ENGINE_FILL_UP);
@@ -276,7 +277,7 @@ public class BoatEngineHandler {
 
     public float getFullArmorValue() {
         float armor = 0;
-        for (ItemStack entry : boatEngine.getMountedInventory().getHeldStacks()) {
+        for (ItemStack entry : InventoryUtils.getAllStacks(boatEngine.getMountedInventory())) {
             if (!(entry.getItem() instanceof BoatEngineComponent component)) continue;
             armor += component.getAdditionalArmor();
         }
@@ -313,7 +314,7 @@ public class BoatEngineHandler {
     }
 
     public List<ItemStack> getMountedItems() {
-        return boatEngine.getMountedInventory().getHeldStacks();
+        return InventoryUtils.getAllStacks(boatEngine.getMountedInventory());
     }
 
     public void initiateSoundState() {
@@ -333,7 +334,7 @@ public class BoatEngineHandler {
         if (!(boatEngine.getWorld() instanceof ServerWorld serverWorld)) return;
         PlayerLookup.around(serverWorld, boatEngine.getPos(), 60).forEach(player -> {
             for (SoundInstanceIdentifier entry : changedSoundList) {
-                new StartSoundInstancePacket(this.boatEngine.getId(), entry.getIdentifier()).sendPacket(player);
+                StartSoundInstancePacket.sendPacket(player, this.boatEngine.getId(), entry.getIdentifier());
             }
         });
     }

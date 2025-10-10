@@ -15,21 +15,39 @@ import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 
 public class BoatismStorage {
     static {
-        ItemStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> InventoryStorage.of(blockEntity.getInventory(), null), BoatismBlockEntities.FERMENTER);
+        ItemStorage.SIDED.registerForBlockEntity(
+                (blockEntity, direction) -> InventoryStorage.of(blockEntity.getInventory(), null),
+                BoatismBlockEntities.FERMENTER
+        );
+
         BoatismApis.ENTITY_ITEM_STORAGE.registerForType((entity, direction) -> {
-            if (!(entity instanceof BoatEngineEntity boatEngine)) return null;
+            if (!(entity instanceof BoatEngineEntity)) return null;
+            BoatEngineEntity boatEngine = (BoatEngineEntity) entity;
             return boatEngine.getMountedInventoryStorage(direction);
         }, BoatismEntities.BOAT_ENGINE);
+
         BoatismApis.ENTITY_ITEM_STORAGE.registerForType((entity, direction) -> {
-            if (!(entity instanceof AirBoatEngineEntity boatEngine)) return null;
+            if (!(entity instanceof AirBoatEngineEntity)) return null;
+            AirBoatEngineEntity boatEngine = (AirBoatEngineEntity) entity;
             return boatEngine.getMountedInventoryStorage(direction);
         }, BoatismEntities.AIR_BOAT_ENGINE);
-        FluidStorage.SIDED.registerForBlockEntity((blockEntity, direction) -> blockEntity.getInventory().getFluidStorage(), BoatismBlockEntities.FERMENTER);
+
+        FluidStorage.SIDED.registerForBlockEntity(
+                (blockEntity, direction) -> blockEntity.getInventory().getFluidStorage(),
+                BoatismBlockEntities.FERMENTER
+        );
+
         FluidStorage.ITEM.registerForItems((itemStack, context) -> {
             if (!itemStack.isOf(BoatismItems.FUEL_BUCKET)) return null;
-            return new FullItemFluidStorage(context, itemVariant -> ItemVariant.of(Items.BUCKET, itemVariant.getComponents()), BoatismFluids.OIL.getFluidVariant(), FluidConstants.BUCKET);
+            return new FullItemFluidStorage(
+                    context,
+                    itemVariant -> ItemVariant.of(Items.BUCKET),
+                    BoatismFluids.OIL.getFluidVariant(),
+                    FluidConstants.BUCKET
+            );
         }, BoatismItems.FUEL_BUCKET);
     }
+
 
     public static void initialize() {
         // static initialisation

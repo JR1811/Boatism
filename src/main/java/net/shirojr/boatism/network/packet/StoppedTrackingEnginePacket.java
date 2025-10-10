@@ -1,39 +1,38 @@
 package net.shirojr.boatism.network.packet;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 import net.shirojr.boatism.BoatismClient;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
 import net.shirojr.boatism.network.BoatismNetworkIdentifiers;
 
-public record StoppedTrackingEnginePacket(int entityNetworkId, boolean force) implements CustomPayload {
-    public static final Id<StoppedTrackingEnginePacket> IDENTIFIER = new Id<>(BoatismNetworkIdentifiers.SOUND_END_ENGINE.getId());
+public class StoppedTrackingEnginePacket {
+    public static final Identifier IDENTIFIER = BoatismNetworkIdentifiers.SOUND_END_ENGINE.getId();
 
-    public static final PacketCodec<RegistryByteBuf, StoppedTrackingEnginePacket> CODEC = PacketCodec.tuple(
-            PacketCodecs.VAR_INT, StoppedTrackingEnginePacket::entityNetworkId,
-            PacketCodecs.BOOL, StoppedTrackingEnginePacket::force,
-            StoppedTrackingEnginePacket::new
-    );
-
-    @Override
-    public Id<? extends CustomPayload> getId() {
-        return IDENTIFIER;
+    public static void sendPacket(ServerPlayerEntity player, int entityId, boolean force) {
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        buf.writeVarInt(entityId);
+        buf.writeBoolean(force);
+        ServerPlayNetworking.send(player, IDENTIFIER, buf);
     }
 
-    public void sendPacket(ServerPlayerEntity target) {
-        ServerPlayNetworking.send(target, this);
-    }
+    public static void handlePacket(MinecraftClient client, ClientPlayNetworkHandler clientPlayNetworkHandler, PacketByteBuf buf, PacketSender packetSender) {
+        int entityId = buf.readVarInt();
+        boolean force = buf.readBoolean();
 
-    public void handlePacket(ClientPlayNetworking.Context context) {
-        MinecraftClient client = context.client();
-        if (client.world == null) return;
-        if (!(client.world.getEntityById(entityNetworkId) instanceof BoatEngineEntity boatEngine)) return;
-        BoatismClient.soundManager.stopAllSoundInstancesForBoatEngineEntity(boatEngine, force);
+        client.execute(() -> {
+            ClientWorld world = client.world;
+            if (world == null) return;
+            if (world.getEntityById(entityId) instanceof BoatEngineEntity boatEngine) {
+                BoatismClient.soundManager.stopAllSoundInstancesForBoatEngineEntity(boatEngine, force);
+            }
+        });
     }
 }

@@ -12,31 +12,32 @@ public class RenderUtil {
     public static void renderQuad(VertexConsumer consumer, MatrixStack.Entry entry, Vector3f pos1, Vector3f pos2,
                                   Vector3f normal, QuadUV uv, int color, int light, int overlay, boolean reverse) {
         List<Runnable> vertices = Arrays.asList(
-                () -> consumer.vertex(entry, pos1)
+                () -> consumer.vertex(entry.getPositionMatrix(), pos1.x(), pos1.y(), pos1.z())
                         .color(color)
                         .texture(uv.minU(), uv.minV())
                         .light(light)
                         .overlay(overlay)
                         .normal(normal.x(), normal.y(), normal.z()),
-                () -> consumer.vertex(entry, pos1.x(), pos2.y(), pos1.z())
+                () -> consumer.vertex(entry.getPositionMatrix(), pos1.x(), pos2.y(), pos1.z())
                         .color(color)
                         .texture(uv.minU(), uv.maxV())
                         .light(light)
                         .overlay(overlay)
                         .normal(normal.x(), normal.y(), normal.z()),
-                () -> consumer.vertex(entry, pos2)
+                () -> consumer.vertex(entry.getPositionMatrix(), pos2.x(), pos2.y(), pos2.z())
                         .color(color)
                         .texture(uv.maxU(), uv.maxV())
                         .light(light)
                         .overlay(overlay)
                         .normal(normal.x(), normal.y(), normal.z()),
-                () -> consumer.vertex(entry, pos2.x(), pos1.y(), pos2.z())
+                () -> consumer.vertex(entry.getPositionMatrix(), pos2.x(), pos1.y(), pos2.z())
                         .color(color)
                         .texture(uv.maxU(), uv.minV())
                         .light(light)
                         .overlay(overlay)
                         .normal(normal.x(), normal.y(), normal.z())
         );
+
 
         if (reverse) {
             Collections.reverse(vertices);

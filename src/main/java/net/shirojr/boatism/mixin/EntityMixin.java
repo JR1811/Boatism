@@ -28,6 +28,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import java.util.Optional;
 
+
+
 @Mixin(Entity.class)
 public abstract class EntityMixin {
     @Shadow
@@ -42,7 +44,7 @@ public abstract class EntityMixin {
     @Inject(method = "onStartedTrackingBy", at = @At("TAIL"))
     private void startedTrackingBoatEntity(ServerPlayerEntity player, CallbackInfo ci) {
         if (player.getVehicle() instanceof BoatEntity boat && boat instanceof BoatEngineCoupler coupler) {
-            new BoatEntitySyncPacket(boat.getId(), Optional.ofNullable(coupler.boatism$getBoatEngineEntityUuid())).sendPacket(List.of(player));
+            BoatEntitySyncPacket.sendPacket(List.of(player), boat.getId(), Optional.ofNullable(coupler.boatism$getBoatEngineEntityUuid()));
         }
     }
 
@@ -82,12 +84,18 @@ public abstract class EntityMixin {
         }
     }
 
-    @ModifyReturnValue(method = "isInFluid", at = @At("RETURN"))
-    private boolean boatism$isInFluid(boolean original) {
+    @ModifyReturnValue(
+            method = "updateWaterState",
+            at = @At("RETURN")
+    )
+    private boolean boatism$updateWaterStateIncludeOil(boolean original) {
         Entity entity = (Entity) (Object) this;
-        if (entity.getWorld().getFluidState(entity.getBlockPos()).isIn(BoatismTags.Fluids.OIL)) return true;
+        if (entity.getWorld().getFluidState(entity.getBlockPos()).isIn(BoatismTags.Fluids.OIL)) {
+            return true;
+        }
         return original;
     }
+
 
     @Inject(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;setPosition(DDD)V", ordinal = 1, shift = At.Shift.BEFORE))
     private void boatism$resetFallDistanceInOil(MovementType movementType, Vec3d movement, CallbackInfo ci) {
@@ -114,7 +122,7 @@ public abstract class EntityMixin {
     }
 
     @Unique
-    private static boolean isLandingInOil(Entity entity, Vec3d originalMovement, MovementType type) {
+    private boolean isLandingInOil(Entity entity, Vec3d originalMovement, MovementType type) {
         originalMovement = entity.adjustMovementForSneaking(originalMovement, type);
         Vec3d movement = entity.adjustMovementForCollisions(originalMovement);
         double movementLength = movement.lengthSquared();

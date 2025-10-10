@@ -11,9 +11,9 @@ import net.minecraft.util.math.EulerAngle;
 import net.minecraft.util.math.MathHelper;
 import net.shirojr.boatism.api.BoatEngineComponent;
 import net.shirojr.boatism.entity.custom.BoatEngineEntity;
-import net.shirojr.boatism.init.BoatismDataComponents;
 import net.shirojr.boatism.init.BoatismItems;
 import net.shirojr.boatism.item.util.EnginePlacer;
+import net.shirojr.boatism.util.InventoryUtils;
 import net.shirojr.boatism.util.data.codec.BoatismCodecs;
 import net.shirojr.boatism.util.handler.BoatEngineHandler;
 import org.jetbrains.annotations.Nullable;
@@ -47,28 +47,42 @@ public class BoatEngineDataHelper {
 
     public static ItemStack getItemStackFromBoatEngineEntity(BoatEngineEntity engineEntity) {
         ItemStack engineStack = new ItemStack(BoatismItems.BASE_ENGINE);
-        engineEntity.getHookedBoatEntityUuid().ifPresent(uuid -> engineStack.set(BoatismDataComponents.HOOKED_ENTITY, uuid));
-
-        LinkedHashSet<BoatismCodecs.MountedInventory.Slot> mountedInventory = new LinkedHashSet<>();
-        for (int i = 0; i < engineEntity.getMountedInventory().getHeldStacks().size(); i++) {
-            ItemStack stack = engineEntity.getMountedInventory().getStack(i);
-            if (stack.isEmpty()) continue;
-            mountedInventory.add(new BoatismCodecs.MountedInventory.Slot(i, stack));
-        }
-        engineStack.set(BoatismDataComponents.MOUNTED_ITEMS, mountedInventory);
-        engineStack.set(BoatismDataComponents.RUNNING, engineEntity.isRunning());
-        engineStack.set(BoatismDataComponents.POWER_OUTPUT, engineEntity.getPowerLevel());
-        engineStack.set(BoatismDataComponents.OVERHEAT, engineEntity.getOverheat());
-        engineStack.set(BoatismDataComponents.ROTATION, engineEntity.getArmRotation());
-        engineStack.set(BoatismDataComponents.IS_SUBMERGED, engineEntity.isSubmerged());
-        engineStack.set(BoatismDataComponents.FUEL, engineEntity.getFuel());
-        engineStack.set(BoatismDataComponents.LOCKED, engineEntity.isLocked());
+        NbtCompound nbt = engineStack.getOrCreateNbt();
+        DefaultedList<ItemStack> mountedList = DefaultedList.of();
+        mountedList.addAll(InventoryUtils.getAllStacks(engineEntity.getMountedInventory()));
+        engineEntity.getHookedBoatEntityUuid().ifPresent(hookedBoatEntityUuid -> nbt.putUuid(NbtKeys.HOOKED_ENTITY, hookedBoatEntityUuid));
+        BoatEngineDataHelper.writeItemStacksToNbt(mountedList, NbtKeys.MOUNTED_ITEMS, nbt);
+        nbt.putBoolean(NbtKeys.IS_RUNNING, engineEntity.isRunning());
+        nbt.putInt(NbtKeys.POWER_OUTPUT, engineEntity.getPowerLevel());
+        nbt.putFloat(NbtKeys.OVERHEAT, engineEntity.getOverheat());
+        nbt.put(NbtKeys.ROTATION, engineEntity.getArmRotation().toNbt());
+        nbt.putBoolean(NbtKeys.IS_SUBMERGED, engineEntity.isSubmerged());
+        nbt.putFloat(NbtKeys.FUEL, engineEntity.getFuel());
+        nbt.putBoolean(NbtKeys.IS_LOCKED, engineEntity.isLocked());
         return engineStack;
     }
 
+    public static ItemStack getItemStackFromAirBoatEngineEntity(BoatEngineEntity engineEntity) {
+        ItemStack engineStack = new ItemStack(BoatismItems.AIR_BOAT_ENGINE);
+        NbtCompound nbt = engineStack.getOrCreateNbt();
+        DefaultedList<ItemStack> mountedList = DefaultedList.of();
+        mountedList.addAll(InventoryUtils.getAllStacks(engineEntity.getMountedInventory()));
+        engineEntity.getHookedBoatEntityUuid().ifPresent(uuid -> nbt.putUuid(NbtKeys.HOOKED_ENTITY, uuid));
+        BoatEngineDataHelper.writeItemStacksToNbt(mountedList, NbtKeys.MOUNTED_ITEMS, nbt);
+        nbt.putBoolean(NbtKeys.IS_RUNNING, engineEntity.isRunning());
+        nbt.putInt(NbtKeys.POWER_OUTPUT, engineEntity.getPowerLevel());
+        nbt.putFloat(NbtKeys.OVERHEAT, engineEntity.getOverheat());
+        nbt.put(NbtKeys.ROTATION, engineEntity.getArmRotation().toNbt());
+        nbt.putBoolean(NbtKeys.IS_SUBMERGED, engineEntity.isSubmerged());
+        nbt.putFloat(NbtKeys.FUEL, engineEntity.getFuel());
+        nbt.putBoolean(NbtKeys.IS_LOCKED, engineEntity.isLocked());
+        return engineStack;
+    }
+
+
     public static List<ItemStack> getMountedItemsFromBoatEngineEntity(BoatEngineEntity engineEntity) {
         List<ItemStack> returnedItemStacks = new ArrayList<>();
-        engineEntity.getMountedInventory().getHeldStacks().forEach(stack -> {
+        InventoryUtils.getAllStacks(engineEntity.getMountedInventory()).forEach(stack -> {
             if (stack.getItem() instanceof BoatEngineComponent component) {
                 returnedItemStacks.add(component.getReturnedItemStack(stack));
             }
@@ -79,20 +93,33 @@ public class BoatEngineDataHelper {
     @Nullable
     public static BoatEngineEntity getBoatEngineEntity(ItemStack stack, BoatEntity linkedBoat) {
         if (!(stack.getItem() instanceof EnginePlacer enginePlacer)) return null;
-        BoatEngineEntity boatEngine = enginePlacer.getEngineInstance(linkedBoat.getWorld(), linkedBoat);
 
-        LinkedHashSet<BoatismCodecs.MountedInventory.Slot> mountedInventory = stack.get(BoatismDataComponents.MOUNTED_ITEMS);
-        if (mountedInventory != null) {
-            boatEngine.setMountedItemsFromItemStackList(mountedInventory);
+        BoatEngineEntity boatEngine = enginePlacer.getEngineInstance(linkedBoat.getWorld(), linkedBoat);
+        NbtCompound nbt = stack.getOrCreateNbt();
+
+        LinkedHashSet<BoatismCodecs.MountedInventory.Slot> mountedInventory =
+                BoatEngineDataHelper.readItemStacksFromNbt(nbt, NbtKeys.MOUNTED_ITEMS);
+        boatEngine.setMountedItemsFromItemStackList(mountedInventory);
+
+        boatEngine.setIsRunning(nbt.getBoolean(NbtKeys.IS_RUNNING));
+        boatEngine.setPowerLevel(MathHelper.clamp(nbt.getInt(NbtKeys.POWER_OUTPUT), 0, BoatEngineHandler.MAX_POWER_LEVEL / 2));
+        boatEngine.setOverheat(MathHelper.clamp(nbt.getFloat(NbtKeys.OVERHEAT), 0f, boatEngine.getEngineHandler().getMaxOverHeatCapacity() * 0.8f));
+
+        if (nbt.contains(NbtKeys.ROTATION, NbtElement.LIST_TYPE)) {
+            NbtList rotationList = nbt.getList(NbtKeys.ROTATION, NbtElement.FLOAT_TYPE);
+            float pitch = rotationList.size() > 0 ? rotationList.getFloat(0) : 0.0F;
+            float yaw   = rotationList.size() > 1 ? rotationList.getFloat(1) : 0.0F;
+            float roll  = rotationList.size() > 2 ? rotationList.getFloat(2) : 0.0F;
+            boatEngine.setArmRotation(new EulerAngle(pitch, yaw, roll));
+        } else {
+            boatEngine.setArmRotation(new EulerAngle(0, 0, 0));
         }
-        boatEngine.setIsRunning(stack.getOrDefault(BoatismDataComponents.RUNNING, false));
-        boatEngine.setPowerLevel(MathHelper.clamp(stack.getOrDefault(BoatismDataComponents.POWER_OUTPUT, 0), 0, BoatEngineHandler.MAX_POWER_LEVEL / 2));
-        float overheat = (float) MathHelper.clamp(stack.getOrDefault(BoatismDataComponents.OVERHEAT, 0f), 0, boatEngine.getEngineHandler().getMaxOverHeatCapacity() * 0.8);
-        boatEngine.setOverheat(overheat);
-        boatEngine.setArmRotation(stack.getOrDefault(BoatismDataComponents.ROTATION, new EulerAngle(0, 0, 0)));
-        boatEngine.setSubmerged(stack.getOrDefault(BoatismDataComponents.IS_SUBMERGED, false));
-        boatEngine.setFuel(stack.getOrDefault(BoatismDataComponents.FUEL, 0L));
-        boatEngine.setLocked(stack.getOrDefault(BoatismDataComponents.LOCKED, false));
+
+        boatEngine.setSubmerged(nbt.getBoolean(NbtKeys.IS_SUBMERGED));
+        boatEngine.setFuel( nbt.getLong(NbtKeys.FUEL)); // если FUEL был float в NBT
+        boatEngine.setLocked(nbt.getBoolean(NbtKeys.IS_LOCKED));
+
         return boatEngine;
     }
+
 }
